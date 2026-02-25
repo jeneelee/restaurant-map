@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>맛집 지도</title>
+  <style>
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+<h2>맛집 지도 테스트</h2>
+<div id="map"></div>
+
+<script>
+function initMap() {
+  var center = { lat: 37.5665, lng: 126.9780 };
+
+  var map = new google.maps.Map(document.getElementById("map"), {
+    zoom: 13,
+    center: center
+  });
+
+  new google.maps.Marker({
+    position: center,
+    map: map,
+    title: "서울 시청"
+  });
+}
+</script>
+
+<script async
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCrVIUiTbbvJzzoj4W5agk26Dy-eTHz05w&callback=initMap">
+</script>
+
+</body>
+</html>
