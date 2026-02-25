@@ -5,35 +5,82 @@
   <title>맛집 지도</title>
   <style>
     #map {
-      height: 100vh;
+      height: 80vh;
       width: 100%;
+    }
+    .buttons {
+      padding: 10px;
+    }
+    button {
+      padding: 8px 12px;
+      margin-right: 10px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
-<h2>맛집 지도 테스트</h2>
+<h2>맛집 지도</h2>
+
+<div class="buttons">
+  <button onclick="showBySource('미슐랭')">미슐랭</button>
+  <button onclick="showBySource('맛있는녀석들')">맛있는녀석들</button>
+</div>
+
 <div id="map"></div>
 
 <script>
+var map;
+var markers = [];
+var allData = [];
+
 function initMap() {
   var center = { lat: 37.5665, lng: 126.9780 };
 
-  var map = new google.maps.Map(document.getElementById("map"), {
-    zoom: 13,
+  map = new google.maps.Map(document.getElementById("map"), {
+    zoom: 12,
     center: center
   });
 
-  new google.maps.Marker({
-    position: center,
-    map: map,
-    title: "서울 시청"
+  // 🔥🔥🔥 여기만 수정하면 됨
+  fetch("https://opensheet.elk.sh/1zNSdIdZeJuUrD56NbYCdby7QGfoRMC-WzGsLHjpKLlo/시트1")
+    .then(response => response.json())
+    .then(data => {
+      allData = data;
+      console.log("데이터 로드 완료:", allData);
+    })
+    .catch(error => {
+      console.error("데이터 불러오기 실패:", error);
+    });
+}
+
+function clearMarkers() {
+  markers.forEach(m => m.setMap(null));
+  markers = [];
+}
+
+function showBySource(type) {
+  clearMarkers();
+
+  var filtered = allData.filter(item => item.source === type);
+
+  filtered.forEach(place => {
+    var marker = new google.maps.Marker({
+      position: {
+        lat: parseFloat(place.lat),
+        lng: parseFloat(place.lng)
+      },
+      map: map,
+      title: place.name
+    });
+
+    markers.push(marker);
   });
 }
 </script>
 
 <script async
-src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCrVIUiTbbvJzzoj4W5agk26Dy-eTHz05w&callback=initMap">
+src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap">
 </script>
 
 </body>
