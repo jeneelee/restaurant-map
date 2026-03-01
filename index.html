@@ -5,6 +5,7 @@
   <title>모두의맛집 지도</title>
 
   <style>
+    body { margin: 0; }
     #map {
       height: 80vh;
       width: 100%;
@@ -19,17 +20,13 @@
     }
   </style>
 
-  <!-- 🔐 여기 Client ID 직접 입력 -->
+  <!-- ✅ 반드시 네이버클라우드 Maps JavaScript용 Client ID -->
   <script
-  type="text/javascript"
-  src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=★★★★★★Client ID★★★★★★">
-</script>
-
-
-
-
-  
+    type="text/javascript"
+    src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=0a2uj6ehjv">
+  </script>
 </head>
+
 <body>
 
 <h2>모두의맛집! 지도</h2>
@@ -42,57 +39,73 @@
 <div id="map"></div>
 
 <script>
-var map;
-var markers = [];
-var allData = [];
+let map;
+let markers = [];
+let allData = [];
 
-// ✅ 지도 초기화
+window.onload = function() {
+  initMap();
+};
+
 function initMap() {
   map = new naver.maps.Map('map', {
     center: new naver.maps.LatLng(37.5665, 126.9780),
     zoom: 12
   });
 
-  // 🔥 구글시트 데이터 불러오기
+  loadData();
+}
+
+function loadData() {
   fetch("https://opensheet.elk.sh/1zNSdIdZeJuUrD56NbYCdby7QGfoRMC-WzGsLHjpKLlo/시트1")
-    .then(response => response.json())
+    .then(res => res.json())
     .then(data => {
       allData = data;
-      console.log("데이터 로드 완료:", allData);
+      console.log("데이터 로드 완료", allData);
     })
-    .catch(error => {
-      console.error("데이터 불러오기 실패:", error);
+    .catch(err => {
+      console.error("시트 로드 실패:", err);
     });
 }
 
-// ✅ 마커 제거
 function clearMarkers() {
   markers.forEach(m => m.setMap(null));
   markers = [];
 }
 
-// ✅ 버튼 필터 기능
 function showBySource(type) {
+
+  if (!allData.length) {
+    alert("데이터 로딩 중입니다. 잠시 후 다시 눌러주세요.");
+    return;
+  }
+
   clearMarkers();
 
-  var filtered = allData.filter(item => item.source === type);
+  // 🔎 source 컬럼 유연 처리
+  const getSource = (item) =>
+    item.source ?? item.Source ?? item["출처"];
+
+  const filtered = allData.filter(item => getSource(item) === type);
 
   filtered.forEach(place => {
 
-    var marker = new naver.maps.Marker({
-      position: new naver.maps.LatLng(
-        parseFloat(place.lat),
-        parseFloat(place.lng)
-      ),
+    const lat = parseFloat(place.lat);
+    const lng = parseFloat(place.lng);
+
+    if (Number.isNaN(lat) || Number.isNaN(lng)) return;
+
+    const marker = new naver.maps.Marker({
+      position: new naver.maps.LatLng(lat, lng),
       map: map,
       title: place.name
     });
 
-    var infoWindow = new naver.maps.InfoWindow({
+    const infoWindow = new naver.maps.InfoWindow({
       content: `
         <div style="padding:10px;">
           <strong>${place.name}</strong><br>
-          출처: ${place.source}
+          출처: ${getSource(place)}
         </div>
       `
     });
@@ -103,11 +116,11 @@ function showBySource(type) {
 
     markers.push(marker);
   });
+
+  if (!filtered.length) {
+    console.warn("필터 결과 없음. 시트 컬럼명 확인 필요.");
+  }
 }
-
-// 페이지 로드되면 지도 실행
-window.onload = initMap;
-
 </script>
 
 </body>
