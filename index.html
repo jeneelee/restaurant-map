@@ -1,128 +1,151 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>모두의맛집 지도</title>
 
-
   <style>
-    body { margin: 0; }
-    #map {
-      height: 80vh;
-      width: 100%;
-    }
-    .buttons {
-      padding: 10px;
-    }
-    button {
-      padding: 8px 12px;
-      margin-right: 10px;
-      cursor: pointer;
-    }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    #map { height: 80vh; width: 100%; }
+    .buttons { padding: 10px; display: flex; gap: 10px; align-items: center; }
+    button { padding: 8px 12px; cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: 0.5; }
+    .status { padding: 0 10px; font-size: 14px; color: #444; }
   </style>
 
-  <!-- ✅ 반드시 네이버클라우드 Maps JavaScript용 Client ID -->
+  <!-- ✅ callback으로 로드 완료 후 initMap 호출 -->
   <script
-    type="text/javascript"
-    src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=0a2uj6ehjv">
-  </script>
+    src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=YOUR_NCP_CLIENT_ID&callback=initMap"
+    defer
+  ></script>
 </head>
 
 <body>
+  <h2 style="padding:10px; margin:0;">모두의맛집! 지도</h2>
 
-<h2>모두의맛집! 지도</h2>
+  <div class="buttons">
+    <button id="btn-michelin" disabled>미슐랭</button>
+    <button id="btn-tasty" disabled>맛있는녀석들</button>
+    <span class="status" id="status">데이터 로딩 중…</span>
+  </div>
 
-<div class="buttons">
-  <button onclick="showBySource('미슐랭')">미슐랭</button>
-  <button onclick="showBySource('맛있는녀석들')">맛있는녀석들</button>
-</div>
+  <div id="map"></div>
 
-<div id="map"></div>
+  <script>
+    let map;
+    let markers = [];
+    let allData = [];
+    let infoWindow;
 
-<script>
-let map;
-let markers = [];
-let allData = [];
+    const SHEET_URL = "https://opensheet.elk.sh/1zNSdIdZeJuUrD56NbYCdby7QGfoRMC-WzGsLHjpKLlo/시트1";
 
-window.onload = function() {
-  initMap();
-};
+    const $ = (id) => document.getElementById(id);
+    const btnMichelin = $("btn-michelin");
+    const btnTasty = $("btn-tasty");
+    const statusEl = $("status");
 
-function initMap() {
-  map = new naver.maps.Map('map', {
-    center: new naver.maps.LatLng(37.5665, 126.9780),
-    zoom: 12
-  });
+    const norm = (v) => (v ?? "").toString().trim();
 
-  loadData();
-}
+    const getSource = (p) => p.source ?? p.Source ?? p["출처"];
+    const getLat    = (p) => p.lat ?? p.Lat ?? p["위도"];
+    const getLng    = (p) => p.lng ?? p.Lng ?? p["경도"];
+    const getName   = (p) => p.name ?? p.Name ?? p["가게명"] ?? p["상호명"] ?? "";
 
-function loadData() {
-  fetch("https://opensheet.elk.sh/1zNSdIdZeJuUrD56NbYCdby7QGfoRMC-WzGsLHjpKLlo/시트1")
-    .then(res => res.json())
-    .then(data => {
-      allData = data;
-      console.log("데이터 로드 완료", allData);
-    })
-    .catch(err => {
-      console.error("시트 로드 실패:", err);
-    });
-}
+    // ✅ maps.js가 로드된 뒤 callback으로 호출됨
+    async function initMap() {
+      map = new naver.maps.Map("map", {
+        center: new naver.maps.LatLng(37.5665, 126.9780),
+        zoom: 12,
+      });
 
-function clearMarkers() {
-  markers.forEach(m => m.setMap(null));
-  markers = [];
-}
+      infoWindow = new naver.maps.InfoWindow({ content: "" });
 
-function showBySource(type) {
+      btnMichelin.addEventListener("click", () => showBySource("미슐랭"));
+      btnTasty.addEventListener("click", () => showBySource("맛있는녀석들"));
 
-  if (!allData.length) {
-    alert("데이터 로딩 중입니다. 잠시 후 다시 눌러주세요.");
-    return;
-  }
+      await loadData();
 
-  clearMarkers();
+      // 데이터 로드 완료 후 버튼 활성화
+      btnMichelin.disabled = false;
+      btnTasty.disabled = false;
+      statusEl.textContent = `데이터 ${allData.length}건 로드 완료`;
 
-  // 🔎 source 컬럼 유연 처리
-  const getSource = (item) =>
-    item.source ?? item.Source ?? item["출처"];
+      // 원하면 최초 자동 표시
+      // showBySource("미슐랭");
+    }
 
-  const filtered = allData.filter(item => getSource(item) === type);
+    async function loadData() {
+      try {
+        const res = await fetch(SHEET_URL, { cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        allData = Array.isArray(data) ? data : [];
+        console.log("데이터 로드 완료", allData);
+      } catch (err) {
+        console.error("시트 로드 실패:", err);
+        statusEl.textContent = "데이터 로드 실패 (시트 공개/URL/CORS 확인)";
+        alert("데이터를 불러오지 못했습니다. 시트 공개 설정과 URL을 확인해주세요.");
+      }
+    }
 
-  filtered.forEach(place => {
+    function clearMarkers() {
+      markers.forEach((m) => m.setMap(null));
+      markers = [];
+      if (infoWindow) infoWindow.close();
+    }
 
-    const lat = parseFloat(place.lat);
-    const lng = parseFloat(place.lng);
+    function showBySource(type) {
+      if (!allData.length) {
+        alert("데이터 로딩 중입니다. 잠시 후 다시 눌러주세요.");
+        return;
+      }
 
-    if (Number.isNaN(lat) || Number.isNaN(lng)) return;
+      clearMarkers();
 
-    const marker = new naver.maps.Marker({
-      position: new naver.maps.LatLng(lat, lng),
-      map: map,
-      title: place.name
-    });
+      const filtered = allData.filter((p) => norm(getSource(p)) === type);
 
-    const infoWindow = new naver.maps.InfoWindow({
-      content: `
-        <div style="padding:10px;">
-          <strong>${place.name}</strong><br>
-          출처: ${getSource(place)}
-        </div>
-      `
-    });
+      filtered.forEach((p) => {
+        const lat = parseFloat(getLat(p));
+        const lng = parseFloat(getLng(p));
+        if (Number.isNaN(lat) || Number.isNaN(lng)) return;
 
-    naver.maps.Event.addListener(marker, "click", function() {
-      infoWindow.open(map, marker);
-    });
+        const name = norm(getName(p)) || "(이름 없음)";
+        const marker = new naver.maps.Marker({
+          position: new naver.maps.LatLng(lat, lng),
+          map,
+          title: name,
+        });
 
-    markers.push(marker);
-  });
+        naver.maps.Event.addListener(marker, "click", () => {
+          infoWindow.setContent(`
+            <div style="padding:10px; max-width:240px;">
+              <strong>${escapeHtml(name)}</strong><br>
+              출처: ${escapeHtml(norm(getSource(p)))}
+            </div>
+          `);
+          infoWindow.open(map, marker);
+        });
 
-  if (!filtered.length) {
-    console.warn("필터 결과 없음. 시트 컬럼명 확인 필요.");
-  }
-}
-</script>
+        markers.push(marker);
+      });
 
+      statusEl.textContent = `${type}: ${filtered.length}건 표시`;
+
+      if (!filtered.length) {
+        console.warn("필터 결과 없음: 시트의 출처 값(공백/표기) 또는 컬럼명 확인 필요");
+      }
+    }
+
+    // 간단한 XSS 방지(시트 값이 들어오므로 안전하게)
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+  </script>
 </body>
 </html>
