@@ -1,33 +1,30 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html>
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>모두의맛집 지도</title>
 
   <style>
-    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    body { margin: 0; }
     #map { height: 80vh; width: 100%; }
-    .buttons { padding: 10px; display: flex; gap: 10px; align-items: center; }
-    button { padding: 8px 12px; cursor: pointer; }
-    button:disabled { cursor: not-allowed; opacity: 0.5; }
-    .status { padding: 0 10px; font-size: 14px; color: #444; }
+    .buttons { padding: 10px; }
+    button { padding: 8px 12px; margin-right: 10px; cursor: pointer; }
   </style>
 
-  <!-- ✅ callback으로 로드 완료 후 initMap 호출 -->
+  <!-- ✅ SDK가 로드된 다음에 window.initMap을 자동 호출 -->
   <script
-    src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=7AHb6VOQ1uXCsgYEkh3jmdtvVv18Cikg717AkrTO&callback=initMap"
+    src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=0a2uj6ehjv&callback=initMap"
     defer
   ></script>
 </head>
 
 <body>
-  <h2 style="padding:10px; margin:0;">모두의맛집! 지도</h2>
+  <h2>모두의맛집! 지도</h2>
 
   <div class="buttons">
-    <button id="btn-michelin" disabled>미슐랭</button>
-    <button id="btn-tasty" disabled>맛있는녀석들</button>
-    <span class="status" id="status">데이터 로딩 중…</span>
+    <button id="btn1" disabled>미슐랭</button>
+    <button id="btn2" disabled>맛있는녀석들</button>
+    <span id="status">지도 SDK 로딩 중…</span>
   </div>
 
   <div id="map"></div>
@@ -39,12 +36,7 @@
     let infoWindow;
 
     const SHEET_URL = "https://opensheet.elk.sh/1zNSdIdZeJuUrD56NbYCdby7QGfoRMC-WzGsLHjpKLlo/시트1";
-
     const $ = (id) => document.getElementById(id);
-    const btnMichelin = $("btn-michelin");
-    const btnTasty = $("btn-tasty");
-    const statusEl = $("status");
-
     const norm = (v) => (v ?? "").toString().trim();
 
     const getSource = (p) => p.source ?? p.Source ?? p["출처"];
@@ -52,45 +44,8 @@
     const getLng    = (p) => p.lng ?? p.Lng ?? p["경도"];
     const getName   = (p) => p.name ?? p.Name ?? p["가게명"] ?? p["상호명"] ?? "";
 
-    // ✅ maps.js가 로드된 뒤 callback으로 호출됨
-    async function initMap() {
-      map = new naver.maps.Map("map", {
-        center: new naver.maps.LatLng(37.5665, 126.9780),
-        zoom: 12,
-      });
-
-      infoWindow = new naver.maps.InfoWindow({ content: "" });
-
-      btnMichelin.addEventListener("click", () => showBySource("미슐랭"));
-      btnTasty.addEventListener("click", () => showBySource("맛있는녀석들"));
-
-      await loadData();
-
-      // 데이터 로드 완료 후 버튼 활성화
-      btnMichelin.disabled = false;
-      btnTasty.disabled = false;
-      statusEl.textContent = `데이터 ${allData.length}건 로드 완료`;
-
-      // 원하면 최초 자동 표시
-      // showBySource("미슐랭");
-    }
-
-    async function loadData() {
-      try {
-        const res = await fetch(SHEET_URL, { cache: "no-store" });
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        const data = await res.json();
-        allData = Array.isArray(data) ? data : [];
-        console.log("데이터 로드 완료", allData);
-      } catch (err) {
-        console.error("시트 로드 실패:", err);
-        statusEl.textContent = "데이터 로드 실패 (시트 공개/URL/CORS 확인)";
-        alert("데이터를 불러오지 못했습니다. 시트 공개 설정과 URL을 확인해주세요.");
-      }
-    }
-
     function clearMarkers() {
-      markers.forEach((m) => m.setMap(null));
+      markers.forEach(m => m.setMap(null));
       markers = [];
       if (infoWindow) infoWindow.close();
     }
@@ -100,12 +55,11 @@
         alert("데이터 로딩 중입니다. 잠시 후 다시 눌러주세요.");
         return;
       }
-
       clearMarkers();
 
-      const filtered = allData.filter((p) => norm(getSource(p)) === type);
+      const filtered = allData.filter(p => norm(getSource(p)) === type);
 
-      filtered.forEach((p) => {
+      filtered.forEach(p => {
         const lat = parseFloat(getLat(p));
         const lng = parseFloat(getLng(p));
         if (Number.isNaN(lat) || Number.isNaN(lng)) return;
@@ -114,12 +68,12 @@
         const marker = new naver.maps.Marker({
           position: new naver.maps.LatLng(lat, lng),
           map,
-          title: name,
+          title: name
         });
 
         naver.maps.Event.addListener(marker, "click", () => {
           infoWindow.setContent(`
-            <div style="padding:10px; max-width:240px;">
+            <div style="padding:10px;max-width:240px;">
               <strong>${escapeHtml(name)}</strong><br>
               출처: ${escapeHtml(norm(getSource(p)))}
             </div>
@@ -130,14 +84,16 @@
         markers.push(marker);
       });
 
-      statusEl.textContent = `${type}: ${filtered.length}건 표시`;
-
-      if (!filtered.length) {
-        console.warn("필터 결과 없음: 시트의 출처 값(공백/표기) 또는 컬럼명 확인 필요");
-      }
+      $("status").textContent = `${type}: ${filtered.length}건 표시`;
     }
 
-    // 간단한 XSS 방지(시트 값이 들어오므로 안전하게)
+    async function loadData() {
+      const res = await fetch(SHEET_URL, { cache: "no-store" });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      allData = Array.isArray(data) ? data : [];
+    }
+
     function escapeHtml(str) {
       return String(str)
         .replaceAll("&", "&amp;")
@@ -146,6 +102,32 @@
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
     }
+
+    // ✅ 중요: callback이 찾을 수 있게 전역(window)에 붙여야 함
+    window.initMap = async function initMap() {
+      // 여기서부터는 naver가 무조건 존재해야 정상
+      $("status").textContent = "지도 초기화 중…";
+
+      map = new naver.maps.Map("map", {
+        center: new naver.maps.LatLng(37.5665, 126.9780),
+        zoom: 12
+      });
+
+      infoWindow = new naver.maps.InfoWindow({ content: "" });
+
+      try {
+        await loadData();
+        $("status").textContent = `데이터 ${allData.length}건 로드 완료`;
+        $("btn1").disabled = false;
+        $("btn2").disabled = false;
+
+        $("btn1").onclick = () => showBySource("미슐랭");
+        $("btn2").onclick = () => showBySource("맛있는녀석들");
+      } catch (e) {
+        console.error(e);
+        $("status").textContent = "데이터 로드 실패(시트 공개/URL 확인)";
+      }
+    };
   </script>
 </body>
 </html>
