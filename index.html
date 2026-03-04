@@ -3,39 +3,400 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Google Map 최소 테스트</title>
+  <title>맛집 지도 블로그</title>
   <style>
-    html, body { height: 100%; margin: 0; }
-    #map { height: 100vh; width: 100%; }
+    :root { --bd:#e5e7eb; --tx:#111827; --mut:#6b7280; }
+    body { margin: 0; color: var(--tx); font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", sans-serif; }
+    .wrap { display: grid; grid-template-columns: 360px 1fr; height: 100vh; }
+    .sidebar { border-right: 1px solid var(--bd); padding: 14px; overflow: auto; }
+    .map { width: 100%; height: 100%; background: #f3f4f6; }
+    h1 { font-size: 18px; margin: 0 0 8px; }
+    .muted { color: var(--mut); font-size: 12px; }
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 10px; }
+    button { padding: 8px 10px; border-radius: 999px; border: 1px solid var(--bd); background: white; cursor: pointer; font-size: 13px; }
+    button.active { border-color: #111827; font-weight: 700; }
+    input { width: 100%; padding: 10px; border-radius: 12px; border: 1px solid var(--bd); margin: 10px 0 8px; font-size: 14px; }
+    .status { font-size: 12px; color: #374151; margin-top: 4px; }
+    .row { padding: 10px; border: 1px solid var(--bd); border-radius: 12px; margin: 10px 0; cursor: pointer; background: white; }
+    .row:hover { background: #fafafa; }
+    .row .title { font-weight: 800; font-size: 14px; }
+    .row .meta { margin-top: 4px; font-size: 12px; color: var(--mut); }
+    .row .addr { margin-top: 6px; font-size: 13px; }
+    .row .note { margin-top: 6px; font-size: 12px; color: var(--mut); }
+    .footer { margin-top: 12px; font-size: 11px; color: var(--mut); line-height: 1.5; }
+
+    @media (max-width: 920px) {
+      .wrap { grid-template-columns: 1fr; grid-template-rows: 45vh 55vh; }
+      .sidebar { border-right: none; border-bottom: 1px solid var(--bd); }
+    }
   </style>
-
-  <script>
-    // ✅ 구글이 호출하는 전역 콜백
-    window.initMap = function () {
-      const el = document.getElementById("map");
-      const center = { lat: 37.5665, lng: 126.9780 };
-
-      new google.maps.Map(el, {
-        center,
-        zoom: 12,
-      });
-
-      document.title = "GOOGLE MAP OK";
-    };
-
-    window.gm_authFailure = function () {
-      alert("Google Maps 인증 실패(API 키/도메인 제한/결제 설정 확인)");
-    };
-  </script>
-
-  <!-- ✅ async + defer + callback -->
-  <script
-    async
-    defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCrVIUiTbbvJzzoj4W5agk26Dy-eTHz05w"
-  ></script>
 </head>
 <body>
-  <div id="map"></div>
+  <div class="wrap">
+    <div class="sidebar">
+      <h1>맛집 지도</h1>
+      <div class="muted">구글시트(lat/lng) 기반 핀 표시 · GitHub Pages용</div>
+
+      <input id="search" placeholder="검색 (가게명/주소/카테고리/출처)" />
+
+      <div class="toolbar" id="filters"></div>
+      <div class="status" id="status">초기화 중...</div>
+
+      <div id="list"></div>
+
+      <div class="footer">
+        <div>• 시트 헤더 권장: <b>category, name, address, lat, lng, source, link, note</b></div>
+        <div>• 탭을 나눴다면 각 탭은 헤더/컬럼을 동일하게 유지하세요.</div>
+      </div>
+    </div>
+
+    <div id="map" class="map"></div>
+  </div>
+
+  <script>
+    /***********************
+     * ✅ 설정 (여기만 수정)
+     ***********************/
+    const MAPS_API_KEY   = "AIzaSyCrVIUiTbbvJzzoj4W5agk26Dy-eTHz05w";   // Maps JavaScript API
+    const SHEETS_API_KEY = "YOUR_SHEETS_API_KEY"; // Google Sheets API
+    const SPREADSHEET_ID = "1zNSdIdZeJuUrD56NbYCdby7QGfoRMC-WzGsLHjpKLlo";
+
+    // ✅ 1) 탭 1개(DB)만 쓰면: ["DB"]
+    // ✅ 2) 소스별로 탭 분리하면: ["미쉐린","또간집","먹을텐데","맛있는녀석들"]
+    const SHEET_TABS = ["DB"];
+
+    // 각 탭에서 읽을 범위(넉넉히). 헤더 포함
+    const RANGE_TEMPLATE = (tab) => `${tab}!A1:H5000`;
+
+    // localStorage 캐시 TTL (ms): 10분
+    const CACHE_TTL = 10 * 60 * 1000;
+
+    /***********************
+     * 내부 상태
+     ***********************/
+    let map;
+    let infoWindow;
+    let allRows = [];
+    let markers = [];
+    let activeCategory = "전체";
+
+    /***********************
+     * Google Maps Loader (importLibrary)
+     ***********************/
+    (g => {
+      var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window;
+      b = b[c] || (b[c] = {});
+      var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams;
+      var u = () => h || (h = new Promise(async (f, n) => {
+        await (a = m.createElement("script"));
+        e.set("libraries", [...r] + "");
+        for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]);
+        e.set("callback", c + ".maps." + q);
+        a.src = `https://maps.${c}apis.com/maps/api/js?` + e;
+        d[q] = f;
+        a.onerror = () => h = n(Error(p + " could not load."));
+        a.nonce = m.querySelector("script[nonce]")?.nonce || "";
+        m.head.append(a);
+      }));
+      d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => (r.add(f), u().then(() => d[l](f, ...n)));
+    })({ key: MAPS_API_KEY, v: "weekly" });
+
+    /***********************
+     * Sheets API (batchGet) + 캐시
+     ***********************/
+    const cacheKey = () => `sheetCache:${SPREADSHEET_ID}:${SHEET_TABS.join("|")}`;
+
+    function getCache() {
+      try {
+        const raw = localStorage.getItem(cacheKey());
+        if (!raw) return null;
+        const obj = JSON.parse(raw);
+        if (!obj || !obj.t || !obj.data) return null;
+        if (Date.now() - obj.t > CACHE_TTL) return null;
+        return obj.data;
+      } catch { return null; }
+    }
+
+    function setCache(data) {
+      try {
+        localStorage.setItem(cacheKey(), JSON.stringify({ t: Date.now(), data }));
+      } catch {}
+    }
+
+    async function fetchAllTabsValues() {
+      const cached = getCache();
+      if (cached) return cached;
+
+      const ranges = SHEET_TABS.map(RANGE_TEMPLATE);
+      const params = new URLSearchParams();
+      for (const r of ranges) params.append("ranges", r);
+      params.set("key", SHEETS_API_KEY);
+
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values:batchGet?` + params.toString();
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Sheets API error: ${res.status} ${res.statusText}`);
+      const json = await res.json();
+
+      // json.valueRanges: [{range, values}]
+      setCache(json);
+      return json;
+    }
+
+    /***********************
+     * 데이터 파싱
+     ***********************/
+    function parseOneTab(values, tabName) {
+      if (!values || values.length === 0) return [];
+      const header = (values[0] || []).map(s => (s || "").trim().toLowerCase());
+
+      const idx = (name, fallbackIndex) => {
+        const i = header.indexOf(name);
+        return i >= 0 ? i : fallbackIndex;
+      };
+
+      // 권장 헤더
+      const iCategory = idx("category", 0);
+      const iName     = idx("name", 1);
+      const iAddress  = idx("address", 2);
+      const iLat      = idx("lat", 3);
+      const iLng      = idx("lng", 4);
+      const iSource   = idx("source", 5);
+      const iLink     = idx("link", 6);
+      const iNote     = idx("note", 7);
+
+      const rows = [];
+      for (let r = 1; r < values.length; r++) {
+        const row = values[r] || [];
+        const name = (row[iName] || "").trim();
+        const address = (row[iAddress] || "").trim();
+        const lat = Number(row[iLat]);
+        const lng = Number(row[iLng]);
+
+        // ✅ 좌표 없으면 스킵(핀 못 찍음)
+        if (!name || !Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+
+        const categoryCell = (row[iCategory] || "").trim();
+        rows.push({
+          category: categoryCell || tabName || "기타",
+          name,
+          address,
+          lat, lng,
+          source: (row[iSource] || "").trim(),
+          link: (row[iLink] || "").trim(),
+          note: (row[iNote] || "").trim(),
+        });
+      }
+      return rows;
+    }
+
+    function mergeAllTabs(batchJson) {
+      const valueRanges = batchJson.valueRanges || [];
+      const merged = [];
+      for (let i = 0; i < valueRanges.length; i++) {
+        const tab = SHEET_TABS[i] || "";
+        const values = valueRanges[i]?.values || [];
+        merged.push(...parseOneTab(values, tab));
+      }
+      return merged;
+    }
+
+    /***********************
+     * UI/지도
+     ***********************/
+    function escapeHtml(s) {
+      return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+    }
+    function safeUrl(url) {
+      const u = String(url || "").trim();
+      if (!u) return "";
+      // http/https만 허용 (XSS 방지)
+      if (/^https?:\/\//i.test(u)) return u;
+      return "";
+    }
+
+    function buildFilters(rows) {
+      const filtersEl = document.getElementById("filters");
+      filtersEl.innerHTML = "";
+
+      const categories = Array.from(new Set(rows.map(r => r.category))).sort((a,b)=>a.localeCompare(b,"ko"));
+      const all = ["전체", ...categories];
+
+      for (const cat of all) {
+        const btn = document.createElement("button");
+        btn.textContent = cat;
+        if (cat === activeCategory) btn.classList.add("active");
+        btn.addEventListener("click", async () => {
+          [...filtersEl.querySelectorAll("button")].forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          activeCategory = cat;
+          await render(cat, document.getElementById("search").value.trim());
+        });
+        filtersEl.appendChild(btn);
+      }
+    }
+
+    function clearMarkers() {
+      for (const m of markers) m.setMap(null);
+      markers = [];
+    }
+
+    function makeInfoContent(item) {
+      const link = safeUrl(item.link);
+      return `
+        <div style="font-family:system-ui;max-width:280px;">
+          <div style="font-weight:800;font-size:14px;">${escapeHtml(item.name)}</div>
+          <div style="font-size:12px;color:#6b7280;margin-top:4px;">
+            ${escapeHtml(item.category)}${item.source ? " · " + escapeHtml(item.source) : ""}
+          </div>
+          ${item.address ? `<div style="margin-top:6px;">${escapeHtml(item.address)}</div>` : ""}
+          ${item.note ? `<div style="margin-top:6px;font-size:12px;color:#6b7280;">${escapeHtml(item.note)}</div>` : ""}
+          ${link ? `<div style="margin-top:8px;"><a href="${escapeHtml(link)}" target="_blank" rel="noopener">관련 링크</a></div>` : ""}
+        </div>
+      `;
+    }
+
+    function debounce(fn, ms) {
+      let t;
+      return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), ms);
+      };
+    }
+
+    async function render(category, keyword) {
+      const statusEl = document.getElementById("status");
+      const listEl = document.getElementById("list");
+      listEl.innerHTML = "";
+
+      clearMarkers();
+
+      const kw = (keyword || "").toLowerCase();
+      const filtered = allRows.filter(r => {
+        const okCat = (category === "전체") || (r.category === category);
+        if (!okCat) return false;
+        if (!kw) return true;
+        const text = `${r.category} ${r.name} ${r.address} ${r.source} ${r.note}`.toLowerCase();
+        return text.includes(kw);
+      });
+
+      statusEl.textContent = `표시: ${filtered.length}개 (카테고리: ${category}${kw ? `, 검색: "${keyword}"` : ""})`;
+
+      if (!filtered.length) return;
+
+      const bounds = new google.maps.LatLngBounds();
+
+      // 리스트 먼저 그림(빠른 반응)
+      for (const item of filtered) {
+        const row = document.createElement("div");
+        row.className = "row";
+        row.innerHTML = `
+          <div class="title">${escapeHtml(item.name)}</div>
+          <div class="meta">${escapeHtml(item.category)}${item.source ? " · " + escapeHtml(item.source) : ""}</div>
+          ${item.address ? `<div class="addr">${escapeHtml(item.address)}</div>` : ""}
+          ${item.note ? `<div class="note">${escapeHtml(item.note)}</div>` : ""}
+        `;
+        row.addEventListener("click", () => {
+          const pos = { lat: item.lat, lng: item.lng };
+          map.panTo(pos);
+          map.setZoom(Math.max(map.getZoom(), 16));
+          infoWindow.setContent(makeInfoContent(item));
+          infoWindow.setPosition(pos);
+          infoWindow.open({ map });
+        });
+        listEl.appendChild(row);
+      }
+
+      // 마커는 청크로 찍어서 렌더링 부담 감소
+      const chunkSize = 80;
+      let i = 0;
+
+      const drawChunk = () => {
+        const end = Math.min(i + chunkSize, filtered.length);
+        for (; i < end; i++) {
+          const item = filtered[i];
+          const pos = { lat: item.lat, lng: item.lng };
+
+          const marker = new google.maps.Marker({
+            map,
+            position: pos,
+            title: item.name,
+          });
+
+          marker.addListener("click", () => {
+            infoWindow.setContent(makeInfoContent(item));
+            infoWindow.open({ anchor: marker, map });
+          });
+
+          markers.push(marker);
+          bounds.extend(pos);
+        }
+
+        if (i < filtered.length) {
+          requestAnimationFrame(drawChunk);
+        } else {
+          // 다 찍은 뒤 화면 맞추기(마커 1개면 과도한 zoom 방지)
+          if (markers.length === 1) {
+            map.panTo(bounds.getCenter());
+            map.setZoom(16);
+          } else {
+            map.fitBounds(bounds, 60);
+          }
+        }
+      };
+
+      requestAnimationFrame(drawChunk);
+    }
+
+    async function init() {
+      const statusEl = document.getElementById("status");
+      statusEl.textContent = "지도 로딩 중...";
+
+      const { Map } = await google.maps.importLibrary("maps");
+      infoWindow = new google.maps.InfoWindow();
+
+      map = new Map(document.getElementById("map"), {
+        center: { lat: 37.5665, lng: 126.9780 }, // 기본: 서울
+        zoom: 12,
+        clickableIcons: false,
+        gestureHandling: "greedy",
+      });
+
+      statusEl.textContent = "시트 데이터 로딩 중...";
+
+      const batchJson = await fetchAllTabsValues();
+      allRows = mergeAllTabs(batchJson);
+
+      // 최소한의 품질 체크: 좌표/가게명 없는 행은 이미 제거됨
+      statusEl.textContent = `로드 완료: ${allRows.length}개`;
+
+      buildFilters(allRows);
+
+      const searchEl = document.getElementById("search");
+      searchEl.addEventListener("input", debounce(async () => {
+        await render(activeCategory, searchEl.value.trim());
+      }, 200));
+
+      await render("전체", "");
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      init().catch(err => {
+        console.error(err);
+        const s = document.getElementById("status");
+        s.textContent = "에러: " + (err?.message || err);
+        // 흔한 원인 안내(콘솔도 같이 보게)
+        const list = document.getElementById("list");
+        list.innerHTML = `
+          <div class="row">
+            <div class="title">자주 터지는 원인</div>
+            <div class="note">1) Maps JavaScript API 미활성화 / Billing 미연결</div>
+            <div class="note">2) API 키 Referrer 제한에 GitHub Pages 도메인 누락</div>
+            <div class="note">3) Sheets API 미활성화 또는 시트 공유(뷰어) 미설정</div>
+            <div class="note">F12 콘솔의 에러 메시지를 같이 확인하세요.</div>
+          </div>
+        `;
+      });
+    });
+  </script>
 </body>
 </html>
