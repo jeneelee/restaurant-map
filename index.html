@@ -3,38 +3,167 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>맛집 지도 (Google Sheets DB)</title>
+  <title>맛집 지도</title>
   <style>
-    :root { --border:#e5e7eb; --text:#111827; --muted:#6b7280; --bg:#fff; }
-    body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Noto Sans KR,sans-serif; color:var(--text); background:var(--bg); }
-    .wrap { display:grid; grid-template-columns: 380px 1fr; height:100vh; }
-    .side { border-right:1px solid var(--border); padding:14px; overflow:auto; }
-    .title { font-weight:800; font-size:18px; margin:0 0 6px; }
-    .sub { color:var(--muted); font-size:12px; margin:0 0 10px; }
-    .row { display:flex; gap:8px; margin:10px 0; align-items:center; }
-    input, select { width:100%; padding:10px 10px; border:1px solid var(--border); border-radius:10px; outline:none; }
-    button {
-      padding:10px 12px; border:1px solid var(--border); border-radius:10px;
-      background:#f9fafb; cursor:pointer; white-space:nowrap;
+    :root{
+      --border:#e5e7eb; --text:#111827; --muted:#6b7280;
+      --panel-bg:#ffffff; --panel-shadow: 0 -10px 30px rgba(0,0,0,.12);
+      --radius:16px;
     }
-    button:hover { background:#f3f4f6; }
-    button:disabled { opacity:.6; cursor:not-allowed; }
-    .status { font-size:12px; color:var(--muted); margin:8px 0 12px; white-space:pre-line; }
-    .list { display:flex; flex-direction:column; gap:10px; }
-    .card { border:1px solid var(--border); border-radius:14px; padding:10px; cursor:pointer; }
-    .card:hover { background:#f9fafb; }
-    .name { font-weight:800; }
-    .meta { color:var(--muted); font-size:12px; margin-top:4px; }
-    .tag { display:inline-block; font-size:11px; padding:2px 8px; border:1px solid var(--border); border-radius:999px; margin-right:6px; }
-    #map { width:100%; height:100%; }
-    .hint { font-size:12px; color:var(--muted); line-height:1.45; }
-    code { background:#f3f4f6; padding:2px 6px; border-radius:6px; }
-    .warn { color:#b45309; }
-    .tiny { font-size:11px; color:var(--muted); }
+    *{ box-sizing:border-box; }
+    body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Noto Sans KR,sans-serif; color:var(--text); }
+    a{ color:inherit; }
+
+    /* ===== Layout: Desktop 기본 ===== */
+    .wrap{
+      display:grid;
+      grid-template-columns: 380px 1fr;
+      height:100vh;
+    }
+    .side{
+      border-right:1px solid var(--border);
+      padding:14px;
+      overflow:auto;
+      background:var(--panel-bg);
+    }
+    #map{ width:100%; height:100%; }
+
+    .title{ font-weight:800; font-size:18px; margin:0 0 6px; }
+    .sub{ color:var(--muted); font-size:12px; margin:0 0 10px; }
+
+    .row{ display:flex; gap:8px; margin:10px 0; align-items:center; }
+    input, select{
+      width:100%; padding:10px 10px;
+      border:1px solid var(--border);
+      border-radius:12px; outline:none;
+      background:#fff;
+    }
+    button{
+      padding:10px 12px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#f9fafb;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    button:hover{ background:#f3f4f6; }
+    button:disabled{ opacity:.6; cursor:not-allowed; }
+
+    .status{ font-size:12px; color:var(--muted); margin:8px 0 12px; white-space:pre-line; }
+    .list{ display:flex; flex-direction:column; gap:10px; }
+    .card{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:10px;
+      cursor:pointer;
+      background:#fff;
+    }
+    .card:hover{ background:#f9fafb; }
+    .name{ font-weight:800; }
+    .meta{ color:var(--muted); font-size:12px; margin-top:4px; }
+    .tag{
+      display:inline-block;
+      font-size:11px;
+      padding:2px 8px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      margin-right:6px;
+      background:#fff;
+    }
+    .hint{ font-size:12px; color:var(--muted); line-height:1.45; }
+    code{ background:#f3f4f6; padding:2px 6px; border-radius:6px; }
+    .warn{ color:#b45309; }
+    .tiny{ font-size:11px; color:var(--muted); }
+
+    /* ===== Mobile UI: 바텀시트 ===== */
+    .mobile-topbar{
+      display:none; /* 데스크탑에서는 숨김 */
+    }
+
+    .sheet{
+      display:none; /* 데스크탑에서는 좌측패널을 쓰므로 숨김 */
+    }
+
+    @media (max-width: 900px){
+      .wrap{ grid-template-columns: 1fr; }
+      .side{ display:none; }          /* 모바일에서 좌측패널 숨김 */
+      #map{ height:100vh; }           /* 지도 풀스크린 */
+
+      .mobile-topbar{
+        display:flex;
+        position:fixed;
+        top:12px; left:12px; right:12px;
+        z-index:5;
+        gap:8px;
+        pointer-events:none; /* 지도 드래그 방해 안 하게 */
+      }
+      .mobile-topbar .pill{
+        pointer-events:auto;
+        display:flex; align-items:center; gap:8px;
+        background:rgba(255,255,255,.92);
+        border:1px solid rgba(229,231,235,.9);
+        backdrop-filter: blur(8px);
+        border-radius:999px;
+        padding:10px 12px;
+        box-shadow:0 10px 30px rgba(0,0,0,.12);
+        width:100%;
+      }
+      .mobile-topbar .brand{
+        font-weight:800;
+        white-space:nowrap;
+      }
+      .mobile-topbar .openBtn{
+        width:auto;
+        border-radius:999px;
+      }
+
+      .sheet{
+        display:block;
+        position:fixed;
+        left:0; right:0; bottom:0;
+        z-index:6;
+        background:var(--panel-bg);
+        border-top-left-radius: var(--radius);
+        border-top-right-radius: var(--radius);
+        box-shadow: var(--panel-shadow);
+        transform: translateY(calc(100% - var(--sheet-peek, 96px)));
+        transition: transform .22s ease;
+        max-height: 85vh;
+        overflow:hidden;
+      }
+      .sheet.open{
+        transform: translateY(0);
+      }
+      .sheet .handle{
+        height:22px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        cursor:pointer;
+      }
+      .sheet .handle:before{
+        content:"";
+        width:44px; height:5px;
+        border-radius:999px;
+        background:#d1d5db;
+      }
+      .sheet .content{
+        padding: 0 14px 14px;
+        overflow:auto;
+        max-height: calc(85vh - 22px);
+      }
+      .sheet .titleRow{
+        display:flex; align-items:flex-end; justify-content:space-between;
+        margin: 6px 0 2px;
+      }
+      .sheet .titleRow .t{ font-weight:800; font-size:16px; }
+      .sheet .titleRow .s{ color:var(--muted); font-size:11px; }
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
+    <!-- Desktop 사이드 패널 -->
     <aside class="side">
       <h1 class="title">맛집 지도</h1>
       <p class="sub">구글시트(DB 탭 1개) 기반 핀 표시 · GitHub Pages</p>
@@ -57,12 +186,51 @@
       <div class="hint">
         <b>시트 헤더(1행) 권장:</b><br/>
         <code>category,name,address,lat,lng,source,link,note</code><br/>
-        <span class="tiny">※ lat/lng는 숫자만. (좌표가 이상하면 자동 제외됩니다)</span>
+        <span class="tiny">※ lat/lng는 숫자만. (좌표가 이상하면 자동 제외)</span>
       </div>
     </aside>
 
     <main id="map"></main>
   </div>
+
+  <!-- Mobile Top Bar -->
+  <div class="mobile-topbar">
+    <div class="pill">
+      <div class="brand">맛집 지도</div>
+      <div style="flex:1"></div>
+      <button class="openBtn" id="openSheetBtn">목록</button>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Sheet -->
+  <section class="sheet" id="sheet" aria-label="목록 패널">
+    <div class="handle" id="sheetHandle" title="드래그/탭으로 열고 닫기"></div>
+    <div class="content">
+      <div class="titleRow">
+        <div class="t">목록</div>
+        <div class="s" id="sheetSub">DB 기반</div>
+      </div>
+
+      <div class="row" style="margin-top:8px;">
+        <input id="q_m" placeholder="검색 (가게명/주소/카테고리/출처/메모)" />
+      </div>
+
+      <div class="row">
+        <select id="category_m">
+          <option value="">카테고리 전체</option>
+        </select>
+        <button id="reloadBtn_m">새로고침</button>
+      </div>
+
+      <div id="status_m" class="status">로딩 준비 중…</div>
+      <div class="list" id="list_m"></div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:14px 0;">
+      <div class="hint">
+        <b>헤더:</b> <code>category,name,address,lat,lng,source,link,note</code>
+      </div>
+    </div>
+  </section>
 
   <script>
     /********************
@@ -76,7 +244,7 @@
      * 2) 시트 설정(탭 1개)
      ********************/
     const SHEET_NAME = "DB";
-    const RANGE_A1 = `${SHEET_NAME}!A1:H`; // A~H: category~note
+    const RANGE_A1 = `${SHEET_NAME}!A1:H`;
 
     /********************
      * 3) 캐시 설정
@@ -85,166 +253,181 @@
     const CACHE_TTL_MS = 5 * 60 * 1000; // 5분
 
     /********************
-     * 4) 좌표 검증(한국 기준 대략 범위)
-     *    - 너무 빡빡하면 제주/강원 등에서 빠질 수 있으니 여유 있게.
+     * 4) 좌표 검증(한국 대략 범위)
      ********************/
-    const KOREA_BOUNDS = {
-      latMin: 33.0, latMax: 39.8,
-      lngMin: 124.0, lngMax: 132.5
-    };
+    const KOREA_BOUNDS = { latMin: 33.0, latMax: 39.8, lngMin: 124.0, lngMax: 132.5 };
 
-    /********************
-     * 앱 상태
-     ********************/
     let map, infoWindow;
     let allRows = [];
     let markers = [];
 
-    const $status = document.getElementById("status");
-    const $list = document.getElementById("list");
+    // Desktop DOM
     const $q = document.getElementById("q");
     const $cat = document.getElementById("category");
     const $reloadBtn = document.getElementById("reloadBtn");
+    const $status = document.getElementById("status");
+    const $list = document.getElementById("list");
 
-    function setStatus(msg) { $status.textContent = msg; }
+    // Mobile DOM
+    const $q_m = document.getElementById("q_m");
+    const $cat_m = document.getElementById("category_m");
+    const $reloadBtn_m = document.getElementById("reloadBtn_m");
+    const $status_m = document.getElementById("status_m");
+    const $list_m = document.getElementById("list_m");
+    const $sheet = document.getElementById("sheet");
+    const $sheetHandle = document.getElementById("sheetHandle");
+    const $openSheetBtn = document.getElementById("openSheetBtn");
 
-    /********************
-     * 유틸
-     ********************/
-    function escapeHtml(s) {
+    function isMobile() { return window.matchMedia("(max-width: 900px)").matches; }
+
+    function setStatus(msg){
+      $status.textContent = msg;
+      $status_m.textContent = msg;
+    }
+
+    function escapeHtml(s){
       return String(s ?? "").replace(/[&<>"']/g, m => ({
         "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
       }[m]));
     }
 
-    function toNumber(v) {
+    function toNumber(v){
       const n = Number(String(v ?? "").trim());
       return Number.isFinite(n) ? n : null;
     }
 
-    function normalizeHeader(h) {
-      // 헤더가 " Lng " 처럼 들어가도 견디게
+    function normalizeHeader(h){
       return String(h ?? "").trim().toLowerCase();
     }
 
-    function safeJsonParse(text) {
-      try { return JSON.parse(text); } catch { return null; }
+    function safeJsonParse(text){
+      try{ return JSON.parse(text); }catch{ return null; }
     }
 
-    function formatSheetsError(status, bodyText) {
+    function formatSheetsError(status, bodyText){
       const j = safeJsonParse(bodyText);
-      if (!j?.error) return `Sheets API error: ${status}\n${bodyText}`;
+      if(!j?.error) return `Sheets API error: ${status}\n${bodyText}`;
 
       const msg = j.error.message || bodyText;
-      const reason =
-        j.error?.details?.[0]?.reason ||
-        j.error?.errors?.[0]?.reason ||
-        "";
-
+      const reason = j.error?.details?.[0]?.reason || j.error?.errors?.[0]?.reason || "";
       let hint = "";
-      if (reason === "SERVICE_DISABLED") {
-        hint = "\n\n[해결]\nGoogle Cloud Console에서 'Google Sheets API'를 Enable 하세요.\n(이 키가 속한 프로젝트에서!)";
-      } else if (status === 403) {
-        hint = "\n\n[가능 원인]\n- API Key referrer 제한이 누락됨\n- 시트가 비공개인데 API Key로 접근 중";
+      if(reason === "SERVICE_DISABLED"){
+        hint = "\n\n[해결]\nGoogle Cloud Console에서 'Google Sheets API'를 Enable 하세요. (이 키가 속한 프로젝트)";
+      }else if(status === 403){
+        hint = "\n\n[가능 원인]\n- API Key referrer 제한 누락\n- 시트 비공개인데 API Key로 접근";
       }
-
       return `Sheets API error: ${status}\n${msg}${hint}`;
     }
 
-    function readCache() {
+    function readCache(){
       const raw = localStorage.getItem(CACHE_KEY);
-      if (!raw) return null;
+      if(!raw) return null;
       const parsed = safeJsonParse(raw);
-      if (!parsed?.ts || !Array.isArray(parsed?.rows)) return null;
-      if (Date.now() - parsed.ts > CACHE_TTL_MS) return null;
+      if(!parsed?.ts || !Array.isArray(parsed?.rows)) return null;
+      if(Date.now() - parsed.ts > CACHE_TTL_MS) return null;
       return parsed.rows;
     }
 
-    function writeCache(rows) {
+    function writeCache(rows){
       localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), rows }));
     }
 
-    function clearCache() {
-      localStorage.removeItem(CACHE_KEY);
-    }
+    function clearCache(){ localStorage.removeItem(CACHE_KEY); }
 
-    function isValidKoreaLatLng(lat, lng) {
+    function isValidKoreaLatLng(lat,lng){
       return (
         lat >= KOREA_BOUNDS.latMin && lat <= KOREA_BOUNDS.latMax &&
         lng >= KOREA_BOUNDS.lngMin && lng <= KOREA_BOUNDS.lngMax
       );
     }
 
-    /********************
-     * Google Maps 로드
-     ********************/
-    function loadGoogleMaps() {
-      return new Promise((resolve, reject) => {
-        window.__initMap = () => resolve();
-        const s = document.createElement("script");
-        s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(MAPS_API_KEY)}&callback=__initMap`;
-        s.async = true;
-        s.onerror = () => reject(new Error("Google Maps JS 로딩 실패 (키/제한/네트워크 확인)"));
+    /* ===== Mobile Bottom Sheet behavior ===== */
+    function openSheet(){ $sheet.classList.add("open"); }
+    function closeSheet(){ $sheet.classList.remove("open"); }
+    function toggleSheet(){ $sheet.classList.toggle("open"); }
+
+    // 간단한 드래그(정교한 제스처는 나중에)
+    (function bindSheet(){
+      let startY = 0;
+      let moved = false;
+
+      const onStart = (y) => { startY = y; moved = false; };
+      const onMove = (y) => {
+        if(Math.abs(y - startY) > 12) moved = true;
+      };
+      const onEnd = (y) => {
+        if(!moved){ toggleSheet(); return; }
+        const dy = y - startY;
+        // 아래로 많이 드래그하면 닫기, 위로 드래그하면 열기
+        if(dy > 60) closeSheet();
+        else if(dy < -60) openSheet();
+      };
+
+      $sheetHandle.addEventListener("click", toggleSheet);
+      $openSheetBtn.addEventListener("click", () => openSheet());
+
+      $sheetHandle.addEventListener("touchstart", (e) => onStart(e.touches[0].clientY), {passive:true});
+      $sheetHandle.addEventListener("touchmove",  (e) => onMove(e.touches[0].clientY),  {passive:true});
+      $sheetHandle.addEventListener("touchend",   (e) => onEnd((e.changedTouches[0]||e.touches[0]).clientY), {passive:true});
+    })();
+
+    /* ===== Google Maps ===== */
+    function loadGoogleMaps(){
+      return new Promise((resolve,reject)=>{
+        window.__initMap = ()=>resolve();
+        const s=document.createElement("script");
+        s.src=`https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(MAPS_API_KEY)}&callback=__initMap`;
+        s.async=true;
+        s.onerror=()=>reject(new Error("Google Maps JS 로딩 실패 (키/제한/네트워크 확인)"));
         document.head.appendChild(s);
       });
     }
 
-    function initMap() {
+    function initMap(){
       map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: 37.5665, lng: 126.9780 },
-        zoom: 11,
-        mapTypeControl: true,
-        streetViewControl: false,
-        fullscreenControl: true,
+        center:{ lat:37.5665, lng:126.9780 },
+        zoom:11,
+        mapTypeControl:true,
+        streetViewControl:false,
+        fullscreenControl:true,
       });
       infoWindow = new google.maps.InfoWindow();
     }
 
-    /********************
-     * Sheets API로 데이터 가져오기
-     ********************/
-    async function fetchSheetRows({ force = false } = {}) {
-      if (!force) {
+    /* ===== Sheets fetch ===== */
+    async function fetchSheetRows({force=false}={}){
+      if(!force){
         const cached = readCache();
-        if (cached) return cached;
+        if(cached) return cached;
       }
 
       const encodedRange = encodeURIComponent(RANGE_A1);
       const url =
-        `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(SPREADSHEET_ID)}` +
+        `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(SPREADSHEET_ID)}`+
         `/values/${encodedRange}?key=${encodeURIComponent(SHEETS_API_KEY)}`;
 
       const res = await fetch(url);
       const bodyText = await res.text();
-
-      if (!res.ok) {
-        throw new Error(formatSheetsError(res.status, bodyText));
-      }
+      if(!res.ok) throw new Error(formatSheetsError(res.status, bodyText));
 
       const json = safeJsonParse(bodyText) || {};
       const values = json.values || [];
-      if (values.length < 2) {
-        writeCache([]);
-        return [];
-      }
+      if(values.length < 2){ writeCache([]); return []; }
 
-      const headersRaw = values[0];
-      const headers = headersRaw.map(normalizeHeader);
+      const headers = (values[0]||[]).map(normalizeHeader);
       const rows = values.slice(1);
 
-      // 필수 헤더 체크
       const required = ["category","name","lat","lng"];
-      for (const k of required) {
-        if (!headers.includes(k)) {
+      for(const k of required){
+        if(!headers.includes(k)){
           throw new Error(`시트 헤더에 "${k}"가 없습니다.\n현재 헤더: ${headers.join(", ")}`);
         }
       }
 
-      // row -> object
       const out = rows
-        .map(r => {
-          const obj = {};
-          headers.forEach((h, i) => obj[h] = (r[i] ?? "").toString().trim());
+        .map(r=>{
+          const obj={};
+          headers.forEach((h,i)=> obj[h]=(r[i]??"").toString().trim());
           return obj;
         })
         .filter(o => o.name && o.lat && o.lng);
@@ -253,30 +436,53 @@
       return out;
     }
 
-    /********************
-     * 렌더링
-     ********************/
-    function clearMarkers() {
-      markers.forEach(m => m.setMap(null));
-      markers = [];
+    /* ===== Render ===== */
+    function clearMarkers(){
+      markers.forEach(m=>m.setMap(null));
+      markers=[];
     }
 
-    function buildCategoryOptions(rows) {
+    function buildCategoryOptions(rows){
       const set = new Set();
-      rows.forEach(r => { if (r.category) set.add(r.category); });
+      rows.forEach(r=>{ if(r.category) set.add(r.category); });
       const cats = Array.from(set).sort((a,b)=>a.localeCompare(b,"ko"));
-      $cat.innerHTML =
+
+      const html =
         `<option value="">카테고리 전체</option>` +
-        cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+        cats.map(c=> `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+
+      $cat.innerHTML = html;
+      $cat_m.innerHTML = html;
     }
 
-    function applyFilter() {
-      const q = $q.value.trim().toLowerCase();
-      const cat = $cat.value;
+    function getFilters(){
+      // 현재 화면 기준 입력을 사용
+      if(isMobile()){
+        return { q: $q_m.value.trim().toLowerCase(), cat: $cat_m.value };
+      }
+      return { q: $q.value.trim().toLowerCase(), cat: $cat.value };
+    }
 
-      const filtered = allRows.filter(r => {
-        if (cat && r.category !== cat) return false;
-        if (!q) return true;
+    function syncInputsIfNeeded(){
+      // 데스크탑<->모바일 전환 시 입력값이 어긋나지 않도록 동기화
+      // (모바일에서 입력하면 데스크탑 값도 같이 바뀌어야 필터 로직이 안정적)
+      // 현재 화면이 모바일이면 모바일값을 데스크탑에 복사, 반대도 동일.
+      if(isMobile()){
+        $q.value = $q_m.value;
+        $cat.value = $cat_m.value;
+      }else{
+        $q_m.value = $q.value;
+        $cat_m.value = $cat.value;
+      }
+    }
+
+    function applyFilter(){
+      syncInputsIfNeeded();
+      const {q, cat} = getFilters();
+
+      const filtered = allRows.filter(r=>{
+        if(cat && r.category !== cat) return false;
+        if(!q) return true;
         const blob = [r.category, r.name, r.address, r.source, r.note].join(" ").toLowerCase();
         return blob.includes(q);
       });
@@ -284,44 +490,18 @@
       render(filtered);
     }
 
-    function render(rows) {
+    function render(rows){
       clearMarkers();
       $list.innerHTML = "";
+      $list_m.innerHTML = "";
 
-      let validCount = 0;
-      let invalidCoordCount = 0;
-
+      let validCount=0, invalidCoordCount=0;
       const bounds = new google.maps.LatLngBounds();
 
-      rows.forEach(r => {
-        const lat = toNumber(r.lat);
-        const lng = toNumber(r.lng);
-
-        if (lat == null || lng == null) return;
-
-        // 좌표 범위 검증(이상값 자동 제외)
-        if (!isValidKoreaLatLng(lat, lng)) {
-          invalidCoordCount++;
-          return;
-        }
-
-        validCount++;
-
-        const pos = { lat, lng };
-        bounds.extend(pos);
-
-        const marker = new google.maps.Marker({
-          map,
-          position: pos,
-          title: r.name || "",
-        });
-
-        marker.addListener("click", () => openInfo(r, marker));
-        markers.push(marker);
-
-        const div = document.createElement("div");
-        div.className = "card";
-        div.innerHTML = `
+      const addCard = (container, r, pos, marker) => {
+        const div=document.createElement("div");
+        div.className="card";
+        div.innerHTML=`
           <div class="name">${escapeHtml(r.name || "(이름없음)")}</div>
           <div class="meta">
             ${r.category ? `<span class="tag">${escapeHtml(r.category)}</span>` : ""}
@@ -330,39 +510,60 @@
           <div class="meta">${escapeHtml(r.address || "")}</div>
           <div class="meta">${escapeHtml(r.note || "")}</div>
         `;
-
-        div.addEventListener("click", () => {
+        div.addEventListener("click", ()=>{
           map.panTo(pos);
           map.setZoom(Math.max(map.getZoom(), 15));
           openInfo(r, marker);
-        });
 
-        $list.appendChild(div);
+          // 모바일에서는 카드 클릭하면 시트를 살짝 닫아서 지도 보이게
+          if(isMobile()) closeSheet();
+        });
+        container.appendChild(div);
+      };
+
+      rows.forEach(r=>{
+        const lat=toNumber(r.lat), lng=toNumber(r.lng);
+        if(lat==null || lng==null) return;
+
+        if(!isValidKoreaLatLng(lat,lng)){
+          invalidCoordCount++;
+          return;
+        }
+
+        validCount++;
+        const pos={lat,lng};
+        bounds.extend(pos);
+
+        const marker = new google.maps.Marker({ map, position:pos, title:r.name||"" });
+        marker.addListener("click", ()=>{
+          openInfo(r, marker);
+          if(isMobile()) openSheet();
+        });
+        markers.push(marker);
+
+        addCard($list, r, pos, marker);
+        addCard($list_m, r, pos, marker);
       });
 
-      if (validCount === 0) {
-        $list.innerHTML = `<div class="status">표시 가능한 좌표 데이터가 없습니다.<br/><span class="warn">lat/lng 값이 숫자이고 한국 범위인지 확인하세요.</span></div>`;
-      } else {
-        // 지도 화면 맞추기
-        if (validCount >= 2) map.fitBounds(bounds);
-        if (validCount === 1) {
-          const only = rows.find(r => {
-            const lat = toNumber(r.lat); const lng = toNumber(r.lng);
-            return lat != null && lng != null && isValidKoreaLatLng(lat, lng);
-          });
-          if (only) {
-            map.setCenter({ lat: Number(only.lat), lng: Number(only.lng) });
-            map.setZoom(16);
-          }
+      if(validCount >= 2) map.fitBounds(bounds);
+      if(validCount === 1){
+        const only = rows.find(rr=>{
+          const la=toNumber(rr.lat), ln=toNumber(rr.lng);
+          return la!=null && ln!=null && isValidKoreaLatLng(la,ln);
+        });
+        if(only){
+          map.setCenter({lat:Number(only.lat), lng:Number(only.lng)});
+          map.setZoom(16);
         }
       }
 
       let msg = `총 ${validCount}개 표시 중`;
-      if (invalidCoordCount > 0) msg += `\n(좌표 이상값 ${invalidCoordCount}개 자동 제외)`;
+      if(invalidCoordCount>0) msg += `\n(좌표 이상값 ${invalidCoordCount}개 자동 제외)`;
+      if(validCount===0) msg = `표시 가능한 데이터가 없습니다.\nlat/lng 숫자 및 범위(한국)를 확인하세요.`;
       setStatus(msg);
     }
 
-    function openInfo(r, marker) {
+    function openInfo(r, marker){
       const link = (r.link || "").trim();
       const linkHtml = link
         ? `<div style="margin-top:8px;"><a href="${escapeHtml(link)}" target="_blank" rel="noopener">링크 열기</a></div>`
@@ -383,46 +584,60 @@
       infoWindow.open({ map, anchor: marker });
     }
 
-    /********************
-     * 부팅 & 새로고침
-     ********************/
-    async function loadAndRender({ force = false } = {}) {
-      try {
+    /* ===== Load & Refresh ===== */
+    async function loadAndRender({force=false}={}){
+      try{
         $reloadBtn.disabled = true;
+        $reloadBtn_m.disabled = true;
         setStatus(force ? "강제 새로고침 중…" : "시트 데이터 로딩 중…");
 
-        const rows = await fetchSheetRows({ force });
+        const rows = await fetchSheetRows({force});
         allRows = rows;
 
         buildCategoryOptions(allRows);
         applyFilter();
-      } catch (err) {
+      }catch(err){
         console.error(err);
         setStatus(String(err.message || err));
-      } finally {
+      }finally{
         $reloadBtn.disabled = false;
+        $reloadBtn_m.disabled = false;
       }
     }
 
-    async function boot() {
-      try {
+    function bindUI(){
+      const onInput = ()=>applyFilter();
+
+      $q.addEventListener("input", onInput);
+      $cat.addEventListener("change", onInput);
+      $q_m.addEventListener("input", onInput);
+      $cat_m.addEventListener("change", onInput);
+
+      const onReload = async ()=>{
+        clearCache();
+        await loadAndRender({force:true});
+      };
+      $reloadBtn.addEventListener("click", onReload);
+      $reloadBtn_m.addEventListener("click", onReload);
+
+      // 화면 회전/리사이즈 시 입력 동기화 + UI 안전
+      window.addEventListener("resize", ()=>{
+        syncInputsIfNeeded();
+      });
+
+      // 모바일 첫 진입 시 바텀시트는 "살짝만" 보이게
+      if(isMobile()) closeSheet();
+    }
+
+    async function boot(){
+      try{
         setStatus("지도 로딩 중…");
         await loadGoogleMaps();
         initMap();
 
-        // 이벤트
-        $q.addEventListener("input", applyFilter);
-        $cat.addEventListener("change", applyFilter);
-
-        $reloadBtn.addEventListener("click", async () => {
-          clearCache();
-          await loadAndRender({ force: true });
-        });
-
-        // 최초 로드(캐시 우선)
-        await loadAndRender({ force: false });
-
-      } catch (err) {
+        bindUI();
+        await loadAndRender({force:false});
+      }catch(err){
         console.error(err);
         setStatus(String(err.message || err));
       }
