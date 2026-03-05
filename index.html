@@ -54,247 +54,298 @@
     <main id="map"></main>
   </div>
 
-  <script>
-    /********************
-     * 1) 여기 3개만 수정
-     ********************/
-    const MAPS_API_KEY   = "AIzaSyCrVIUiTbbvJzzoj4W5agk26Dy-eTHz05w";
-    const SHEETS_API_KEY = "AIzaSyCrVIUiTbbvJzzoj4W5agk26Dy-eTHz05w"; // Maps 키와 같아도 됩니다(같은 프로젝트/권한이면).
-    const SPREADSHEET_ID = "1zNSdIdZeJuUrD56NbYCdby7QGfoRMC-WzGsLHjpKLlo";
 
-    // 탭 1개로 통합: 탭 이름은 영어 추천 (DB)
-    const SHEET_NAME = "DB";
-    const RANGE_A1 = `${SHEET_NAME}!A1:H`; // A~H: category~note
 
-    /********************
-     * 2) 앱 상태
-     ********************/
-    let map, infoWindow;
-    let allRows = [];
-    let markers = [];
 
-    const $status = document.getElementById("status");
-    const $list = document.getElementById("list");
-    const $q = document.getElementById("q");
-    const $cat = document.getElementById("category");
 
-    function setStatus(msg) { $status.textContent = msg; }
 
-    /********************
-     * 3) Google Maps 로드
-     ********************/
-    function loadGoogleMaps() {
-      return new Promise((resolve, reject) => {
-        window.__initMap = () => resolve();
-        const s = document.createElement("script");
-        s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(MAPS_API_KEY)}&callback=__initMap`;
-        s.async = true;
-        s.onerror = () => reject(new Error("Google Maps JS 로딩 실패 (키/제한/네트워크 확인)"));
-        document.head.appendChild(s);
-      });
-    }
 
-    function initMap() {
-      map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: 37.5665, lng: 126.9780 },
-        zoom: 11,
-        mapTypeControl: true,
-        streetViewControl: false,
-        fullscreenControl: true,
-      });
-      infoWindow = new google.maps.InfoWindow();
-    }
 
-    /********************
-     * 4) Sheets API로 데이터 가져오기
-     ********************/
-    async function fetchSheetRows() {
-      // ★ 한글/공백 탭명일 때 400 뜨는 원인 1순위가 여기라서 encodeURIComponent 필수
-      const encodedRange = encodeURIComponent(RANGE_A1);
-      const url =
-        `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(SPREADSHEET_ID)}` +
-        `/values/${encodedRange}?key=${encodeURIComponent(SHEETS_API_KEY)}`;
+  
 
-      const res = await fetch(url);
-      const bodyText = await res.text();
+<script>
+  const MAPS_API_KEY   = "AIzaSyCrVIUiTbbvJzzoj4W5agk26Dy-eTHz05w";
+  const SHEETS_API_KEY = "AIzaSyCrVIUiTbbvJzzoj4W5agk26Dy-eTHz05w";
+  const SPREADSHEET_ID = "1zNSdIdZeJuUrD56NbYCdby7QGfoRMC-WzGsLHjpKLlo";
 
-      if (!res.ok) {
-        // 400/403 등 원인 메시지 그대로 보여주는 게 가장 빠릅니다.
-        throw new Error(`Sheets API error: ${res.status}\n${bodyText}`);
-      }
+  const SHEET_NAME = "DB";
+  const RANGE_A1 = `${SHEET_NAME}!A1:H`;
 
-      const json = JSON.parse(bodyText);
-      const values = json.values || [];
-      if (values.length < 2) return [];
+  const CACHE_KEY = `sheet_cache_${SPREADSHEET_ID}_${SHEET_NAME}`;
+  const CACHE_TTL_MS = 5 * 60 * 1000; // 5분
 
-      const headers = values[0].map(h => (h || "").trim());
-      const rows = values.slice(1);
+  let map, infoWindow;
+  let allRows = [];
+  let markers = [];
 
-      // 헤더 검증(필수 컬럼만 강제)
-      const required = ["category","name","lat","lng"];
-      for (const k of required) {
-        if (!headers.includes(k)) {
-          throw new Error(`시트 헤더에 "${k}"가 없습니다.\n현재 헤더: ${headers.join(", ")}`);
-        }
-      }
+  const $status = document.getElementById("status");
+  const $list = document.getElementById("list");
+  const $q = document.getElementById("q");
+  const $cat = document.getElementById("category");
 
-      // row -> object
-      return rows
-        .map(r => {
-          const obj = {};
-          headers.forEach((h, i) => obj[h] = (r[i] ?? "").toString().trim());
-          return obj;
-        })
-        .filter(o => o.name && o.lat && o.lng);
-    }
+  function setStatus(msg) { $status.textContent = msg; }
 
-    /********************
-     * 5) 렌더링(마커/리스트)
-     ********************/
-    function clearMarkers() {
-      markers.forEach(m => m.setMap(null));
-      markers = [];
-    }
+  function loadGoogleMaps() {
+    return new Promise((resolve, reject) => {
+      window.__initMap = () => resolve();
+      const s = document.createElement("script");
+      s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(MAPS_API_KEY)}&callback=__initMap`;
+      s.async = true;
+      s.onerror = () => reject(new Error("Google Maps JS 로딩 실패 (키/제한/네트워크 확인)"));
+      document.head.appendChild(s);
+    });
+  }
 
-    function toNumber(v) {
-      const n = Number(v);
-      return Number.isFinite(n) ? n : null;
-    }
+  function initMap() {
+    map = new google.maps.Map(document.getElementById("map"), {
+      center: { lat: 37.5665, lng: 126.9780 },
+      zoom: 11,
+      mapTypeControl: true,
+      streetViewControl: false,
+      fullscreenControl: true,
+    });
+    infoWindow = new google.maps.InfoWindow();
+  }
 
-    function buildCategoryOptions(rows) {
-      const set = new Set();
-      rows.forEach(r => { if (r.category) set.add(r.category); });
-      const cats = Array.from(set).sort((a,b)=>a.localeCompare(b,"ko"));
-      $cat.innerHTML = `<option value="">카테고리 전체</option>` + cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
-    }
+  function normalizeHeader(h) {
+    return String(h ?? "").trim().toLowerCase();
+  }
 
-    function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, m => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-      }[m]));
-    }
+  function safeJsonParse(text) {
+    try { return JSON.parse(text); } catch { return null; }
+  }
 
-    function applyFilter() {
-      const q = $q.value.trim().toLowerCase();
-      const cat = $cat.value;
+  function formatSheetsError(status, bodyText) {
+    const j = safeJsonParse(bodyText);
+    if (!j?.error) return `Sheets API error: ${status}\n${bodyText}`;
 
-      const filtered = allRows.filter(r => {
-        if (cat && r.category !== cat) return false;
-        if (!q) return true;
-        const blob = [
-          r.category, r.name, r.address, r.source, r.note
-        ].join(" ").toLowerCase();
-        return blob.includes(q);
-      });
-
-      render(filtered);
-    }
-
-    function render(rows) {
-      clearMarkers();
-      $list.innerHTML = "";
-
-      if (rows.length === 0) {
-        $list.innerHTML = `<div class="status">검색 결과가 없습니다.</div>`;
-        return;
-      }
-
-      const bounds = new google.maps.LatLngBounds();
-
-      rows.forEach((r, idx) => {
-        const lat = toNumber(r.lat);
-        const lng = toNumber(r.lng);
-        if (lat == null || lng == null) return;
-
-        const pos = { lat, lng };
-        bounds.extend(pos);
-
-        const marker = new google.maps.Marker({
-          map,
-          position: pos,
-          title: r.name || "",
-        });
-
-        marker.addListener("click", () => openInfo(r, marker));
-        markers.push(marker);
-
-        // 리스트 카드
-        const div = document.createElement("div");
-        div.className = "card";
-        div.innerHTML = `
-          <div class="name">${escapeHtml(r.name || "(이름없음)")}</div>
-          <div class="meta">
-            ${r.category ? `<span class="tag">${escapeHtml(r.category)}</span>` : ""}
-            ${r.source ? `<span class="tag">${escapeHtml(r.source)}</span>` : ""}
-          </div>
-          <div class="meta">${escapeHtml(r.address || "")}</div>
-          <div class="meta">${escapeHtml(r.note || "")}</div>
-        `;
-        div.addEventListener("click", () => {
-          map.panTo(pos);
-          map.setZoom(Math.max(map.getZoom(), 15));
-          openInfo(r, marker);
-        });
-        $list.appendChild(div);
-      });
-
-      // 결과가 여러 개면 적당히 맞추기
-      if (rows.length >= 2) map.fitBounds(bounds);
-      if (rows.length === 1) {
-        const only = rows[0];
-        map.setCenter({ lat: Number(only.lat), lng: Number(only.lng) });
-        map.setZoom(16);
-      }
-
-      setStatus(`총 ${rows.length}개 표시 중`);
-    }
-
-    function openInfo(r, marker) {
-      const linkHtml = r.link
-        ? `<div style="margin-top:8px;"><a href="${escapeHtml(r.link)}" target="_blank" rel="noopener">링크 열기</a></div>`
+    const msg = j.error.message || bodyText;
+    const reason = j.error?.details?.[0]?.reason || j.error?.errors?.[0]?.reason || "";
+    const hint =
+      (reason === "SERVICE_DISABLED")
+        ? "\n\n해결: Google Cloud Console에서 'Google Sheets API'를 Enable 하세요. (키가 속한 프로젝트에서!)"
         : "";
 
-      const html = `
-        <div style="min-width:220px;max-width:280px;">
-          <div style="font-weight:800;font-size:15px;">${escapeHtml(r.name || "")}</div>
-          <div style="color:#6b7280;font-size:12px;margin-top:4px;">
-            ${escapeHtml(r.category || "")}${r.source ? " · " + escapeHtml(r.source) : ""}
-          </div>
-          ${r.address ? `<div style="margin-top:6px;">${escapeHtml(r.address)}</div>` : ""}
-          ${r.note ? `<div style="margin-top:6px;color:#374151;">${escapeHtml(r.note)}</div>` : ""}
-          ${linkHtml}
-        </div>
-      `;
-      infoWindow.setContent(html);
-      infoWindow.open({ map, anchor: marker });
+    return `Sheets API error: ${status}\n${msg}${hint}`;
+  }
+
+  function readCache() {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed = safeJsonParse(raw);
+    if (!parsed?.ts || !Array.isArray(parsed?.rows)) return null;
+    if (Date.now() - parsed.ts > CACHE_TTL_MS) return null;
+    return parsed.rows;
+  }
+
+  function writeCache(rows) {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), rows }));
+  }
+
+  async function fetchSheetRows() {
+    // 캐시 먼저
+    const cached = readCache();
+    if (cached) return cached;
+
+    const encodedRange = encodeURIComponent(RANGE_A1);
+    const url =
+      `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(SPREADSHEET_ID)}` +
+      `/values/${encodedRange}?key=${encodeURIComponent(SHEETS_API_KEY)}`;
+
+    const res = await fetch(url);
+    const bodyText = await res.text();
+
+    if (!res.ok) {
+      throw new Error(formatSheetsError(res.status, bodyText));
     }
 
-    /********************
-     * 6) 부팅
-     ********************/
-    async function boot() {
-      try {
-        setStatus("지도 로딩 중…");
-        await loadGoogleMaps();
-        initMap();
+    const json = safeJsonParse(bodyText) || {};
+    const values = json.values || [];
+    if (values.length < 2) return [];
 
-        setStatus("시트 데이터 로딩 중…");
-        allRows = await fetchSheetRows();
+    const headersRaw = values[0];
+    const headers = headersRaw.map(normalizeHeader);
+    const rows = values.slice(1);
 
-        buildCategoryOptions(allRows);
-        applyFilter();
-
-        // 이벤트
-        $q.addEventListener("input", applyFilter);
-        $cat.addEventListener("change", applyFilter);
-
-      } catch (err) {
-        console.error(err);
-        setStatus(String(err.message || err));
+    // 필수 헤더 체크
+    const required = ["category","name","lat","lng"];
+    for (const k of required) {
+      if (!headers.includes(k)) {
+        throw new Error(`시트 헤더에 "${k}"가 없습니다.\n현재 헤더: ${headers.join(", ")}`);
       }
     }
 
-    boot();
-  </script>
+    const out = rows
+      .map(r => {
+        const obj = {};
+        headers.forEach((h, i) => obj[h] = (r[i] ?? "").toString().trim());
+        return obj;
+      })
+      .filter(o => o.name && o.lat && o.lng);
+
+    writeCache(out);
+    return out;
+  }
+
+  function clearMarkers() {
+    markers.forEach(m => m.setMap(null));
+    markers = [];
+  }
+
+  function toNumber(v) {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, m => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[m]));
+  }
+
+  function buildCategoryOptions(rows) {
+    const set = new Set();
+    rows.forEach(r => { if (r.category) set.add(r.category); });
+    const cats = Array.from(set).sort((a,b)=>a.localeCompare(b,"ko"));
+    $cat.innerHTML =
+      `<option value="">카테고리 전체</option>` +
+      cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+  }
+
+  function applyFilter() {
+    const q = $q.value.trim().toLowerCase();
+    const cat = $cat.value;
+
+    const filtered = allRows.filter(r => {
+      if (cat && r.category !== cat) return false;
+      if (!q) return true;
+      const blob = [r.category, r.name, r.address, r.source, r.note].join(" ").toLowerCase();
+      return blob.includes(q);
+    });
+
+    render(filtered);
+  }
+
+  function render(rows) {
+    clearMarkers();
+    $list.innerHTML = "";
+
+    if (rows.length === 0) {
+      $list.innerHTML = `<div class="status">검색 결과가 없습니다.</div>`;
+      setStatus("표시할 데이터가 없습니다.");
+      return;
+    }
+
+    const bounds = new google.maps.LatLngBounds();
+
+    rows.forEach(r => {
+      const lat = toNumber(r.lat);
+      const lng = toNumber(r.lng);
+      if (lat == null || lng == null) return;
+
+      const pos = { lat, lng };
+      bounds.extend(pos);
+
+      const marker = new google.maps.Marker({ map, position: pos, title: r.name || "" });
+      marker.addListener("click", () => openInfo(r, marker));
+      markers.push(marker);
+
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `
+        <div class="name">${escapeHtml(r.name || "(이름없음)")}</div>
+        <div class="meta">
+          ${r.category ? `<span class="tag">${escapeHtml(r.category)}</span>` : ""}
+          ${r.source ? `<span class="tag">${escapeHtml(r.source)}</span>` : ""}
+        </div>
+        <div class="meta">${escapeHtml(r.address || "")}</div>
+        <div class="meta">${escapeHtml(r.note || "")}</div>
+      `;
+      div.addEventListener("click", () => {
+        map.panTo(pos);
+        map.setZoom(Math.max(map.getZoom(), 15));
+        openInfo(r, marker);
+      });
+      $list.appendChild(div);
+    });
+
+    if (rows.length >= 2) map.fitBounds(bounds);
+    if (rows.length === 1) {
+      map.setCenter({ lat: Number(rows[0].lat), lng: Number(rows[0].lng) });
+      map.setZoom(16);
+    }
+
+    setStatus(`총 ${rows.length}개 표시 중`);
+  }
+
+  function openInfo(r, marker) {
+    const linkHtml = r.link
+      ? `<div style="margin-top:8px;"><a href="${escapeHtml(r.link)}" target="_blank" rel="noopener">링크 열기</a></div>`
+      : "";
+
+    const html = `
+      <div style="min-width:220px;max-width:280px;">
+        <div style="font-weight:800;font-size:15px;">${escapeHtml(r.name || "")}</div>
+        <div style="color:#6b7280;font-size:12px;margin-top:4px;">
+          ${escapeHtml(r.category || "")}${r.source ? " · " + escapeHtml(r.source) : ""}
+        </div>
+        ${r.address ? `<div style="margin-top:6px;">${escapeHtml(r.address)}</div>` : ""}
+        ${r.note ? `<div style="margin-top:6px;color:#374151;">${escapeHtml(r.note)}</div>` : ""}
+        ${linkHtml}
+      </div>
+    `;
+    infoWindow.setContent(html);
+    infoWindow.open({ map, anchor: marker });
+  }
+
+  async function boot() {
+    try {
+      setStatus("지도 로딩 중…");
+      await loadGoogleMaps();
+      initMap();
+
+      setStatus("시트 데이터 로딩 중…");
+      allRows = await fetchSheetRows();
+
+      buildCategoryOptions(allRows);
+      applyFilter();
+
+      $q.addEventListener("input", applyFilter);
+      $cat.addEventListener("change", applyFilter);
+
+    } catch (err) {
+      console.error(err);
+      setStatus(String(err.message || err));
+    }
+  }
+
+  boot();
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
 </body>
 </html>
