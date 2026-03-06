@@ -40,10 +40,10 @@
     }
     .card:hover{ background:#f9fafb; }
 
-    /* ✅ 카드 표시 순서: name -> program -> year */
-    .cardTitle{ font-weight:900; font-size:15px; } /* name */
-    .cardSub{ color:var(--muted); font-size:12px; margin-top:6px; } /* program */
-    .cardYear{ color:var(--muted); font-size:12px; margin-top:2px; } /* year */
+    /* 카드: name -> program -> year */
+    .cardTitle{ font-weight:900; font-size:15px; }
+    .cardSub{ color:var(--muted); font-size:12px; margin-top:6px; }
+    .cardYear{ color:var(--muted); font-size:12px; margin-top:2px; }
     .meta{ color:var(--muted); font-size:12px; margin-top:6px; line-height:1.35; }
 
     .chipsRow{ display:flex; gap:6px; overflow:auto; padding-bottom:2px; }
@@ -140,7 +140,6 @@
         <input id="q" placeholder="검색 (가게명/프로그램/주소/메모)" />
       </div>
 
-      <!-- ✅ program만 필터 -->
       <div class="row"><div class="chipsRow" id="programChips"></div></div>
 
       <div class="row">
@@ -171,7 +170,6 @@
         <input id="q_m" placeholder="검색 (가게명/프로그램/주소/메모)" />
       </div>
 
-      <!-- ✅ program만 필터 -->
       <div class="row"><div class="chipsRow" id="programChips_m"></div></div>
 
       <div class="row">
@@ -186,15 +184,15 @@
   </section>
 
   <script>
-    // === 키 3개만 수정 ===
-    const MAPS_API_KEY   = "AIzaSyCvTRT_Q498fX8wKOFqWUDzNol-Qq8-aUI";
-    const SHEETS_API_KEY = "AIzaSyCvTRT_Q498fX8wKOFqWUDzNol-Qq8-aUI";
-    const SPREADSHEET_ID = "1zNSdIdZeJuUrD56NbYCdby7QGfoRMC-WzGsLHjpKLlo";
+    const MAPS_API_KEY   = "YOUR_MAPS_API_KEY";
+    const SHEETS_API_KEY = "YOUR_SHEETS_API_KEY";
+    const SPREADSHEET_ID = "YOUR_SPREADSHEET_ID";
 
     const SHEET_NAME = "DB";
-    const RANGE_A1 = `${SHEET_NAME}!A1:H`; // program,year,name,address,lat,lng,link,note
+    // ✅ note까지 9열 => A~I
+    const RANGE_A1 = `${SHEET_NAME}!A1:I`;
 
-    const CACHE_KEY = `restaurant_map_cache_v3__${SPREADSHEET_ID}__${SHEET_NAME}`;
+    const CACHE_KEY = `restaurant_map_cache_v4__${SPREADSHEET_ID}__${SHEET_NAME}`;
     const CACHE_TTL_MS = 2 * 60 * 1000;
 
     const KOREA_BOUNDS = { latMin: 33.0, latMax: 39.8, lngMin: 124.0, lngMax: 132.5 };
@@ -202,8 +200,6 @@
     let map, infoWindow;
     let allRows = [];
     let markers = [];
-
-    // ✅ program만 필터
     let selectedProgram = "";
 
     const $q = document.getElementById("q");
@@ -253,7 +249,6 @@
       return lat>=KOREA_BOUNDS.latMin && lat<=KOREA_BOUNDS.latMax && lng>=KOREA_BOUNDS.lngMin && lng<=KOREA_BOUNDS.lngMax;
     }
 
-    // Mobile sheet
     function openSheet(){ $sheet.classList.add("open"); }
     function closeSheet(){ $sheet.classList.remove("open"); }
     function toggleSheet(){ $sheet.classList.toggle("open"); }
@@ -274,7 +269,6 @@
       $sheetHandle.addEventListener("touchend",   e=>onEnd((e.changedTouches[0]||e.touches[0]).clientY), {passive:true});
     })();
 
-    // Maps
     function loadGoogleMaps(){
       return new Promise((resolve,reject)=>{
         window.__initMap = ()=>resolve();
@@ -319,7 +313,7 @@
       if(values.length < 2){ writeCache([]); return []; }
 
       const headers = (values[0]||[]).map(h => String(h||"").trim().toLowerCase());
-      const required = ["program","year","name","address","lat","lng","link","note"];
+      const required = ["no","program","year","name","address","lat","lng","link","note"];
       for(const k of required){
         if(!headers.includes(k)){
           throw new Error(`시트 헤더에 "${k}"가 없습니다.\n현재 헤더: ${headers.join(", ")}`);
@@ -340,7 +334,6 @@
       return Array.from(new Set(arr.filter(Boolean).map(v=>String(v).trim()).filter(Boolean)));
     }
 
-    // ✅ program 칩만 구성
     function renderProgramChips(){
       const programs = uniq(allRows.map(r=>r.program)).sort((a,b)=>a.localeCompare(b,"ko"));
       const makeChip=(label, active, onClick)=>{
@@ -382,7 +375,7 @@
       const link=(r.link||"").trim();
       const linkHtml = link ? `<div style="margin-top:8px;"><a href="${escapeHtml(link)}" target="_blank" rel="noopener">링크 열기</a></div>` : "";
       const html = `
-        <div style="min-width:220px;max-width:320px;">
+        <div style="min-width:220px;max-width:340px;">
           <div style="font-weight:900;font-size:15px;">${escapeHtml(r.name||"")}</div>
           <div style="color:#6b7280;font-size:12px;margin-top:4px;">${escapeHtml(r.program||"")}${r.year ? " · " + escapeHtml(r.year) : ""}</div>
           ${r.address?`<div style="margin-top:6px;">${escapeHtml(r.address)}</div>`:""}
@@ -397,16 +390,13 @@
     function applyFilter(){
       syncQuery();
       const q=getQuery();
-
       const filtered = allRows.filter(r=>{
         if(selectedProgram && r.program!==selectedProgram) return false;
-
         if(!q) return true;
-        // ✅ 표시/필터 기준도 program 중심 + name/address/note
+        // ✅ note까지 검색 대상에 포함
         const blob=[r.name, r.program, r.address, r.note].join(" ").toLowerCase();
         return blob.includes(q);
       });
-
       render(filtered);
     }
 
@@ -420,13 +410,12 @@
       const addCard=(container,r,pos,marker)=>{
         const div=document.createElement("div");
         div.className="card";
-        // ✅ 카드: name -> program -> year
         div.innerHTML=`
           <div class="cardTitle">${escapeHtml(r.name||"(가게명없음)")}</div>
           <div class="cardSub">${escapeHtml(r.program||"")}</div>
           <div class="cardYear">${r.year ? escapeHtml(r.year) : ""}</div>
           <div class="meta">${escapeHtml(r.address||"")}</div>
-          <div class="meta">${escapeHtml(r.note||"")}</div>
+          ${r.note ? `<div class="meta">${escapeHtml(r.note)}</div>` : ""}
         `;
         div.addEventListener("click", ()=>{
           map.panTo(pos);
@@ -476,8 +465,6 @@
         setStatus(force?"강제 새로고침 중…":"시트 데이터 로딩 중…");
 
         allRows = await fetchSheetRows({force});
-
-        // 선택된 program이 데이터에서 사라졌으면 해제
         const pSet = new Set(allRows.map(r=>r.program));
         if(selectedProgram && !pSet.has(selectedProgram)) selectedProgram="";
 
