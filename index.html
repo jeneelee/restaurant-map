@@ -15,6 +15,8 @@
       --radius:16px;
       --btn-bg:#f9fafb;
       --btn-hover:#f3f4f6;
+      --danger:#ef4444;
+      --primary:#2563eb;
     }
 
     *{ box-sizing:border-box; }
@@ -33,7 +35,7 @@
 
     .wrap{
       display:grid;
-      grid-template-columns: 380px 1fr;
+      grid-template-columns:380px 1fr;
       height:100vh;
       width:100%;
     }
@@ -121,9 +123,29 @@
       background:#f9fafb;
     }
 
+    .cardTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+
     .cardTitle{
       font-weight:900;
       font-size:15px;
+      line-height:1.35;
+    }
+
+    .distanceBadge{
+      flex:0 0 auto;
+      font-size:11px;
+      font-weight:800;
+      color:var(--danger);
+      background:#fef2f2;
+      border:1px solid #fecaca;
+      border-radius:999px;
+      padding:4px 8px;
+      white-space:nowrap;
     }
 
     .cardSub{
@@ -179,8 +201,9 @@
     }
 
     .chip.active{
-      background:#f3f4f6;
-      border-color:#9ca3af;
+      background:#eff6ff;
+      border-color:#93c5fd;
+      color:#1d4ed8;
       font-weight:900;
     }
 
@@ -194,33 +217,57 @@
       background:#0b1220;
     }
 
+    .chip.sort{
+      background:#fff;
+    }
+
+    .chip.sort.active{
+      background:#fef2f2;
+      border-color:#fca5a5;
+      color:#b91c1c;
+    }
+
     .mapControls{
       position:absolute;
-      top:14px;
-      right:14px;
+      right:16px;
+      bottom:24px;
       z-index:10;
       display:flex;
       flex-direction:column;
       gap:8px;
     }
 
-    .mapControlBtn{
+    .mapIconBtn{
+      width:52px;
+      height:52px;
+      border-radius:999px;
+      border:1px solid rgba(229,231,235,.95);
       background:rgba(255,255,255,.96);
       backdrop-filter:blur(8px);
-      box-shadow:0 8px 20px rgba(0,0,0,.12);
+      box-shadow:0 8px 20px rgba(0,0,0,.18);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:0;
     }
 
-    .mobile-topbar{
-      display:none;
+    .mapIconBtn:hover{
+      background:#fff;
     }
 
-    .sheet{
-      display:none;
+    .mapIconBtn svg{
+      width:24px;
+      height:24px;
+      display:block;
+      fill:#111827;
     }
+
+    .mobile-topbar{ display:none; }
+    .sheet{ display:none; }
 
     @media (max-width: 900px){
       .wrap{
-        grid-template-columns: 1fr;
+        grid-template-columns:1fr;
       }
 
       .side{
@@ -275,17 +322,17 @@
         bottom:0;
         z-index:12;
         background:var(--panel-bg);
-        border-top-left-radius: var(--radius);
-        border-top-right-radius: var(--radius);
-        box-shadow: var(--panel-shadow);
-        transform: translateY(calc(100% - 96px));
-        transition: transform .22s ease;
+        border-top-left-radius:var(--radius);
+        border-top-right-radius:var(--radius);
+        box-shadow:var(--panel-shadow);
+        transform:translateY(calc(100% - 96px));
+        transition:transform .22s ease;
         max-height:85vh;
         overflow:hidden;
       }
 
       .sheet.open{
-        transform: translateY(0);
+        transform:translateY(0);
       }
 
       .sheet .handle{
@@ -311,8 +358,8 @@
       }
 
       .mapControls{
-        top:74px;
         right:12px;
+        bottom:110px;
       }
     }
   </style>
@@ -332,6 +379,7 @@
 
       <div class="row">
         <button id="allBtn" class="chip clear" type="button">전체</button>
+        <button id="nearbyBtn" class="chip sort" type="button">가까운 순</button>
         <div style="flex:1"></div>
         <button id="reloadBtn" type="button">새로고침</button>
       </div>
@@ -342,7 +390,11 @@
 
     <main class="mapArea">
       <div class="mapControls">
-        <button id="myLocationBtn" class="mapControlBtn" type="button">내 위치</button>
+        <button id="myLocationBtn" class="mapIconBtn" type="button" aria-label="내 위치" title="내 위치">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M11 2h2v3.07A7.002 7.002 0 0 1 18.93 11H22v2h-3.07A7.002 7.002 0 0 1 13 18.93V22h-2v-3.07A7.002 7.002 0 0 1 5.07 13H2v-2h3.07A7.002 7.002 0 0 1 11 5.07V2zm1 5a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2.2A2.8 2.8 0 1 1 12 14.8a2.8 2.8 0 0 1 0-5.6z"/>
+          </svg>
+        </button>
       </div>
       <div id="map"></div>
     </main>
@@ -369,6 +421,7 @@
 
       <div class="row">
         <button id="allBtn_m" class="chip clear" type="button">전체</button>
+        <button id="nearbyBtn_m" class="chip sort" type="button">가까운 순</button>
         <div style="flex:1"></div>
         <button id="reloadBtn_m" type="button">새로고침</button>
       </div>
@@ -380,7 +433,7 @@
 
   <script>
     /* =========================================================
-       1) 설정값 - 제일 위에서 쉽게 찾고 수정할 수 있게 배치
+       1) 설정값 - 여기만 수정하면 됨
        ========================================================= */
     const CONFIG = {
       MAPS_API_KEY: "AIzaSyCvTRT_Q498fX8wKOFqWUDzNol-Qq8-aUI",
@@ -402,29 +455,39 @@
     };
 
     const RANGE_A1 = `${CONFIG.SHEET_NAME}!A1:I`;
-    const CACHE_KEY = `restaurant_map_cache_v5__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
+    const CACHE_KEY = `restaurant_map_cache_v7__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
 
     let map = null;
     let infoWindow = null;
     let myLocationMarker = null;
+    let myLocationCircle = null;
+    let currentLocation = null;
 
     let allRows = [];
     let markers = [];
     let selectedProgram = "";
+    let sortByNearby = false;
 
     const els = {
       q: document.getElementById("q"),
-      programChips: document.getElementById("programChips"),
-      reloadBtn: document.getElementById("reloadBtn"),
-      allBtn: document.getElementById("allBtn"),
-      status: document.getElementById("status"),
-      list: document.getElementById("list"),
-
       q_m: document.getElementById("q_m"),
+
+      programChips: document.getElementById("programChips"),
       programChips_m: document.getElementById("programChips_m"),
+
+      reloadBtn: document.getElementById("reloadBtn"),
       reloadBtn_m: document.getElementById("reloadBtn_m"),
+
+      allBtn: document.getElementById("allBtn"),
       allBtn_m: document.getElementById("allBtn_m"),
+
+      nearbyBtn: document.getElementById("nearbyBtn"),
+      nearbyBtn_m: document.getElementById("nearbyBtn_m"),
+
+      status: document.getElementById("status"),
       status_m: document.getElementById("status_m"),
+
+      list: document.getElementById("list"),
       list_m: document.getElementById("list_m"),
 
       sheet: document.getElementById("sheet"),
@@ -467,19 +530,36 @@
     }
 
     function uniq(values) {
-      return Array.from(
-        new Set(
-          values
-            .filter(Boolean)
-            .map(v => String(v).trim())
-            .filter(Boolean)
-        )
-      );
+      return Array.from(new Set(
+        values
+          .filter(Boolean)
+          .map(v => String(v).trim())
+          .filter(Boolean)
+      ));
     }
 
     function isValidKoreaLatLng(lat, lng) {
       const b = CONFIG.KOREA_BOUNDS;
       return lat >= b.latMin && lat <= b.latMax && lng >= b.lngMin && lng <= b.lngMax;
+    }
+
+    function formatDistance(meters) {
+      if (!Number.isFinite(meters)) return "";
+      if (meters < 1000) return `${Math.round(meters)}m`;
+      return `${(meters / 1000).toFixed(1)}km`;
+    }
+
+    function haversineDistanceMeters(lat1, lng1, lat2, lng2) {
+      const toRad = deg => deg * Math.PI / 180;
+      const R = 6371000;
+      const dLat = toRad(lat2 - lat1);
+      const dLng = toRad(lng2 - lng1);
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+        Math.sin(dLng / 2) ** 2;
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
     }
 
     function openSheet() {
@@ -569,8 +649,7 @@
         window.__initMap = () => resolve();
 
         const script = document.createElement("script");
-        script.src =
-          `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(CONFIG.MAPS_API_KEY)}&callback=__initMap`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(CONFIG.MAPS_API_KEY)}&callback=__initMap`;
         script.async = true;
         script.onerror = () => reject(new Error("Google Maps JS 로딩 실패 (키/제한/네트워크 확인)"));
 
@@ -628,9 +707,7 @@
 
       for (const key of required) {
         if (!headers.includes(key)) {
-          throw new Error(
-            `시트 헤더에 "${key}"가 없습니다.\n현재 헤더: ${headers.join(", ")}`
-          );
+          throw new Error(`시트 헤더에 "${key}"가 없습니다.\n현재 헤더: ${headers.join(", ")}`);
         }
       }
 
@@ -665,10 +742,31 @@
       markers = [];
     }
 
+    function updateNearbyButtons() {
+      els.nearbyBtn.classList.toggle("active", sortByNearby);
+      els.nearbyBtn_m.classList.toggle("active", sortByNearby);
+
+      const disabled = !currentLocation;
+      els.nearbyBtn.disabled = disabled;
+      els.nearbyBtn_m.disabled = disabled;
+
+      if (disabled) {
+        els.nearbyBtn.title = "먼저 내 위치를 찾아야 합니다.";
+        els.nearbyBtn_m.title = "먼저 내 위치를 찾아야 합니다.";
+      } else {
+        els.nearbyBtn.title = "내 위치 기준 가까운 순 정렬";
+        els.nearbyBtn_m.title = "내 위치 기준 가까운 순 정렬";
+      }
+    }
+
     function openInfo(row, marker) {
       const link = (row.link || "").trim();
       const linkHtml = link
         ? `<div style="margin-top:8px;"><a href="${escapeHtml(link)}" target="_blank" rel="noopener">링크 열기</a></div>`
+        : "";
+
+      const distanceHtml = Number.isFinite(row._distance)
+        ? `<div style="margin-top:6px;color:#dc2626;font-weight:700;">현재 위치에서 ${escapeHtml(formatDistance(row._distance))}</div>`
         : "";
 
       const html = `
@@ -679,6 +777,7 @@
           </div>
           ${row.address ? `<div style="margin-top:6px;">${escapeHtml(row.address)}</div>` : ""}
           ${row.note ? `<div style="margin-top:6px;color:#374151;">${escapeHtml(row.note)}</div>` : ""}
+          ${distanceHtml}
           ${linkHtml}
         </div>
       `;
@@ -691,8 +790,15 @@
       const div = document.createElement("div");
       div.className = "card";
 
+      const distanceHtml = Number.isFinite(row._distance)
+        ? `<div class="distanceBadge">${escapeHtml(formatDistance(row._distance))}</div>`
+        : "";
+
       div.innerHTML = `
-        <div class="cardTitle">${escapeHtml(row.name || "(가게명없음)")}</div>
+        <div class="cardTop">
+          <div class="cardTitle">${escapeHtml(row.name || "(가게명없음)")}</div>
+          ${distanceHtml}
+        </div>
         <div class="cardSub">${escapeHtml(row.program || "")}</div>
         <div class="cardYear">${row.year ? escapeHtml(row.year) : ""}</div>
         <div class="meta">${escapeHtml(row.address || "")}</div>
@@ -704,9 +810,7 @@
         map.setZoom(Math.max(map.getZoom(), 15));
         openInfo(row, marker);
 
-        if (isMobile()) {
-          closeSheet();
-        }
+        if (isMobile()) closeSheet();
       });
 
       return div;
@@ -742,17 +846,58 @@
       applyFilter();
     }
 
+    function toggleNearbySort() {
+      if (!currentLocation) {
+        alert("먼저 오른쪽 아래 내 위치 버튼을 눌러주세요.");
+        return;
+      }
+      sortByNearby = !sortByNearby;
+      updateNearbyButtons();
+      applyFilter();
+    }
+
     function applyFilter() {
       syncQuery();
 
       const q = getQuery();
-      const filtered = allRows.filter(row => {
+      let filtered = allRows.filter(row => {
         if (selectedProgram && row.program !== selectedProgram) return false;
         if (!q) return true;
 
         const blob = [row.name, row.program, row.address, row.note].join(" ").toLowerCase();
         return blob.includes(q);
       });
+
+      filtered = filtered.map(row => {
+        const next = { ...row };
+        const lat = toNumber(row.lat);
+        const lng = toNumber(row.lng);
+
+        if (
+          currentLocation &&
+          lat != null &&
+          lng != null &&
+          isValidKoreaLatLng(lat, lng)
+        ) {
+          next._distance = haversineDistanceMeters(
+            currentLocation.lat,
+            currentLocation.lng,
+            lat,
+            lng
+          );
+        } else {
+          next._distance = null;
+        }
+        return next;
+      });
+
+      if (sortByNearby && currentLocation) {
+        filtered.sort((a, b) => {
+          const da = Number.isFinite(a._distance) ? a._distance : Number.POSITIVE_INFINITY;
+          const db = Number.isFinite(b._distance) ? b._distance : Number.POSITIVE_INFINITY;
+          return da - db;
+        });
+      }
 
       render(filtered);
     }
@@ -805,8 +950,11 @@
       els.list.appendChild(fragDesktop);
       els.list_m.appendChild(fragMobile);
 
-      if (validCount >= 2) {
+      if (validCount >= 2 && !sortByNearby) {
         map.fitBounds(bounds);
+      } else if (validCount >= 1 && sortByNearby && currentLocation) {
+        map.panTo(currentLocation);
+        map.setZoom(14);
       } else if (validCount === 1) {
         const only = rows.find(item => {
           const lat = toNumber(item.lat);
@@ -825,6 +973,7 @@
 
       let message = `총 ${validCount}개 표시 중`;
       if (selectedProgram) message += `\n필터: [${selectedProgram}]`;
+      if (sortByNearby && currentLocation) message += `\n정렬: 내 위치 기준 가까운 순`;
       if (invalidCount > 0) message += `\n(좌표 이상값 ${invalidCount}개 제외)`;
       if (validCount === 0) {
         message = "표시 가능한 데이터가 없습니다.\n필터/검색어 또는 좌표(lat/lng)를 확인하세요.";
@@ -840,11 +989,11 @@
       }
 
       const btn = els.myLocationBtn;
-      const originalText = btn.textContent;
+      const originalTitle = btn.title;
 
       try {
         btn.disabled = true;
-        btn.textContent = "위치 찾는 중…";
+        btn.title = "위치 찾는 중...";
 
         const position = await new Promise((resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject, {
@@ -856,28 +1005,46 @@
 
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
-        const current = { lat, lng };
+        const accuracy = Number(position.coords.accuracy || 0);
 
-        map.panTo(current);
+        currentLocation = { lat, lng };
+        sortByNearby = true;
+
+        map.panTo(currentLocation);
         map.setZoom(16);
 
-        if (myLocationMarker) {
-          myLocationMarker.setMap(null);
-        }
+        if (myLocationMarker) myLocationMarker.setMap(null);
+        if (myLocationCircle) myLocationCircle.setMap(null);
 
         myLocationMarker = new google.maps.Marker({
           map,
-          position: current,
+          position: currentLocation,
           title: "내 위치",
           icon: {
             path: google.maps.SymbolPath.CIRCLE,
-            scale: 8,
-            fillColor: "#4285F4",
+            scale: 9,
+            fillColor: "#ef4444",
             fillOpacity: 1,
             strokeColor: "#ffffff",
-            strokeWeight: 2
+            strokeWeight: 3
           }
         });
+
+        if (accuracy > 0) {
+          myLocationCircle = new google.maps.Circle({
+            map,
+            center: currentLocation,
+            radius: accuracy,
+            fillColor: "#ef4444",
+            fillOpacity: 0.12,
+            strokeColor: "#ef4444",
+            strokeOpacity: 0.4,
+            strokeWeight: 1
+          });
+        }
+
+        updateNearbyButtons();
+        applyFilter();
       } catch (error) {
         console.error(error);
 
@@ -892,7 +1059,7 @@
         }
       } finally {
         btn.disabled = false;
-        btn.textContent = originalText;
+        btn.title = originalTitle;
       }
     }
 
@@ -911,6 +1078,7 @@
         }
 
         renderProgramChips();
+        updateNearbyButtons();
         applyFilter();
       } catch (error) {
         console.error(error);
@@ -941,13 +1109,14 @@
       els.allBtn.addEventListener("click", clearAll);
       els.allBtn_m.addEventListener("click", clearAll);
 
+      els.nearbyBtn.addEventListener("click", toggleNearbySort);
+      els.nearbyBtn_m.addEventListener("click", toggleNearbySort);
+
       els.myLocationBtn.addEventListener("click", moveToMyLocation);
 
       window.addEventListener("resize", syncQuery);
 
-      if (isMobile()) {
-        closeSheet();
-      }
+      if (isMobile()) closeSheet();
     }
 
     async function boot() {
@@ -959,6 +1128,7 @@
         await loadGoogleMaps();
         initMap();
         bindUI();
+        updateNearbyButtons();
         await loadAndRender({ force: false });
       } catch (error) {
         console.error(error);
