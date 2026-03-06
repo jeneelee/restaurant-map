@@ -432,13 +432,10 @@
   </section>
 
   <script>
-    /* =========================================================
-       1) 설정값 - 여기만 수정하면 됨
-       ========================================================= */
     const CONFIG = {
       MAPS_API_KEY: "AIzaSyCvTRT_Q498fX8wKOFqWUDzNol-Qq8-aUI",
       SHEETS_API_KEY: "AIzaSyCvTRT_Q498fX8wKOFqWUDzNol-Qq8-aUI",
-      SPREADSHEET_ID: "1zNSdIdZeJuUrD56NbYCdby7QGfoRMC-WzGsLHjpKLlo",
+      SPREADSHEET_ID: "AIzaSyCvTRT_Q498fX8wKOFqWUDzNol-Qq8-aUI",
 
       SHEET_NAME: "DB",
       CACHE_TTL_MS: 2 * 60 * 1000,
@@ -455,7 +452,7 @@
     };
 
     const RANGE_A1 = `${CONFIG.SHEET_NAME}!A1:I`;
-    const CACHE_KEY = `restaurant_map_cache_v7__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
+    const CACHE_KEY = `restaurant_map_cache_v8__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
 
     let map = null;
     let infoWindow = null;
@@ -661,9 +658,16 @@
       map = new google.maps.Map(document.getElementById("map"), {
         center: CONFIG.DEFAULT_CENTER,
         zoom: CONFIG.DEFAULT_ZOOM,
-        mapTypeControl: true,
+
+        mapTypeControl: false,
         streetViewControl: false,
-        fullscreenControl: true
+        fullscreenControl: false,
+        zoomControl: false,
+        cameraControl: false,
+        rotateControl: false,
+        scaleControl: false,
+
+        gestureHandling: "greedy"
       });
 
       infoWindow = new google.maps.InfoWindow();
