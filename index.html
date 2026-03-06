@@ -12,19 +12,15 @@
     }
     *{ box-sizing:border-box; }
     body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Noto Sans KR,sans-serif; color:var(--text); }
-    a{ color:inherit; }
     .wrap{ display:grid; grid-template-columns: 380px 1fr; height:100vh; }
     .side{ border-right:1px solid var(--border); padding:14px; overflow:auto; background:var(--panel-bg); }
     #map{ width:100%; height:100%; }
 
-    .title{ font-weight:800; font-size:18px; margin:0 0 6px; }
-    .sub{ color:var(--muted); font-size:12px; margin:0 0 10px; }
-
+    .title{ font-weight:900; font-size:18px; margin:0 0 10px; }
     .row{ display:flex; gap:8px; margin:10px 0; align-items:center; }
     input{
       width:100%; padding:10px 10px;
-      border:1px solid var(--border);
-      border-radius:12px; outline:none; background:#fff;
+      border:1px solid var(--border); border-radius:12px; outline:none; background:#fff;
     }
     button{
       padding:10px 12px; border:1px solid var(--border);
@@ -44,15 +40,15 @@
     }
     .card:hover{ background:#f9fafb; }
 
-    .cardTitle{ font-weight:900; font-size:15px; }
-    .cardSub{ color:var(--muted); font-size:12px; margin-top:2px; }
-    .storeName{ margin-top:8px; font-weight:800; }
+    /* ✅ 카드 표시 순서: name -> program -> year */
+    .cardTitle{ font-weight:900; font-size:15px; } /* name */
+    .cardSub{ color:var(--muted); font-size:12px; margin-top:6px; } /* program */
+    .cardYear{ color:var(--muted); font-size:12px; margin-top:2px; } /* year */
     .meta{ color:var(--muted); font-size:12px; margin-top:6px; line-height:1.35; }
 
     .chipsRow{ display:flex; gap:6px; overflow:auto; padding-bottom:2px; }
     .chipsRow::-webkit-scrollbar{ height:6px; }
     .chipsRow::-webkit-scrollbar-thumb{ background:#e5e7eb; border-radius:999px; }
-
     .chip{
       display:inline-flex; align-items:center;
       font-size:12px; padding:6px 10px;
@@ -64,21 +60,11 @@
       white-space:nowrap;
     }
     .chip:hover{ background:#f9fafb; }
-    .chip.active{
-      background:#f3f4f6;
-      border-color:#9ca3af;
-      font-weight:800;
-    }
-    .chip.clear{
-      background:#111827; color:#fff; border-color:#111827;
-    }
+    .chip.active{ background:#f3f4f6; border-color:#9ca3af; font-weight:900; }
+    .chip.clear{ background:#111827; color:#fff; border-color:#111827; }
     .chip.clear:hover{ background:#0b1220; }
 
-    .hint{ font-size:12px; color:var(--muted); line-height:1.45; }
-    code{ background:#f3f4f6; padding:2px 6px; border-radius:6px; }
-    .warn{ color:#b45309; }
-
-    /* ===== Mobile ===== */
+    /* Mobile */
     .mobile-topbar{ display:none; }
     .sheet{ display:none; }
 
@@ -124,7 +110,6 @@
         overflow:hidden;
       }
       .sheet.open{ transform: translateY(0); }
-
       .sheet .handle{
         height:22px;
         display:flex;
@@ -143,33 +128,20 @@
         overflow:auto;
         max-height: calc(85vh - 22px);
       }
-      .sheet .titleRow{
-        display:flex; align-items:flex-end; justify-content:space-between;
-        margin: 6px 0 2px;
-      }
-      .sheet .titleRow .t{ font-weight:900; font-size:16px; }
-      .sheet .titleRow .s{ color:var(--muted); font-size:11px; }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <!-- Desktop Panel -->
     <aside class="side">
       <h1 class="title">맛집 지도</h1>
-      <p class="sub">Google Sheets(DB 탭 1개) → 지도 핀 표시 · GitHub Pages</p>
 
       <div class="row">
-        <input id="q" placeholder="검색 (프로그램/년도/가게명/주소/메모)" />
+        <input id="q" placeholder="검색 (가게명/프로그램/주소/메모)" />
       </div>
 
-      <div class="row" style="justify-content:space-between;">
-        <div class="chipsRow" id="programChips" aria-label="프로그램 필터"></div>
-      </div>
-
-      <div class="row" style="justify-content:space-between;">
-        <div class="chipsRow" id="yearChips" aria-label="년도 필터"></div>
-      </div>
+      <!-- ✅ program만 필터 -->
+      <div class="row"><div class="chipsRow" id="programChips"></div></div>
 
       <div class="row">
         <button id="allBtn" class="chip clear" type="button">전체</button>
@@ -179,19 +151,11 @@
 
       <div id="status" class="status">로딩 준비 중…</div>
       <div class="list" id="list"></div>
-
-      <hr style="border:none;border-top:1px solid var(--border);margin:14px 0;">
-      <div class="hint">
-        <b>시트 헤더(1행):</b><br/>
-        <code>program,year,name,address,lat,lng,link,note</code><br/>
-        <span class="hint">※ lat/lng는 숫자만. 좌표 이상값은 자동 제외됩니다.</span>
-      </div>
     </aside>
 
     <main id="map"></main>
   </div>
 
-  <!-- Mobile Top Bar -->
   <div class="mobile-topbar">
     <div class="pill">
       <div class="brand">맛집 지도</div>
@@ -200,25 +164,15 @@
     </div>
   </div>
 
-  <!-- Mobile Bottom Sheet -->
   <section class="sheet" id="sheet" aria-label="목록 패널">
-    <div class="handle" id="sheetHandle" title="탭/드래그로 열고 닫기"></div>
+    <div class="handle" id="sheetHandle"></div>
     <div class="content">
-      <div class="titleRow">
-        <div class="t">목록</div>
-        <div class="s">프로그램/년도 필터</div>
-      </div>
-
       <div class="row" style="margin-top:8px;">
-        <input id="q_m" placeholder="검색 (프로그램/년도/가게명/주소/메모)" />
+        <input id="q_m" placeholder="검색 (가게명/프로그램/주소/메모)" />
       </div>
 
-      <div class="row">
-        <div class="chipsRow" id="programChips_m"></div>
-      </div>
-      <div class="row">
-        <div class="chipsRow" id="yearChips_m"></div>
-      </div>
+      <!-- ✅ program만 필터 -->
+      <div class="row"><div class="chipsRow" id="programChips_m"></div></div>
 
       <div class="row">
         <button id="allBtn_m" class="chip clear" type="button">전체</button>
@@ -232,53 +186,35 @@
   </section>
 
   <script>
-    /********************
-     * 1) 여기 3개만 수정
-     ********************/
-    const MAPS_API_KEY   = "AIzaSyCvTRT_Q498fX8wKOFqWUDzNol-Qq8-aUI";
-    const SHEETS_API_KEY = "AIzaSyCvTRT_Q498fX8wKOFqWUDzNol-Qq8-aUI";
-    const SPREADSHEET_ID = "1zNSdIdZeJuUrD56NbYCdby7QGfoRMC-WzGsLHjpKLlo";
+    // === 키 3개만 수정 ===
+    const MAPS_API_KEY   = "1zNSdIdZeJuUrD56NbYCdby7QGfoRMC-WzGsLHjpKLlo";
+    const SHEETS_API_KEY = "1zNSdIdZeJuUrD56NbYCdby7QGfoRMC-WzGsLHjpKLlo";
+    const SPREADSHEET_ID = "AIzaSyCvTRT_Q498fX8wKOFqWUDzNol-Qq8-aUI";
 
-    /********************
-     * 2) 시트 설정
-     ********************/
     const SHEET_NAME = "DB";
-    // program,year,name,address,lat,lng,link,note = 8열 => A~H
-    const RANGE_A1 = `${SHEET_NAME}!A1:H`;
+    const RANGE_A1 = `${SHEET_NAME}!A1:H`; // program,year,name,address,lat,lng,link,note
 
-    /********************
-     * 3) 캐시/검증
-     ********************/
-    const CACHE_KEY = `restaurant_map_cache__${SPREADSHEET_ID}__${SHEET_NAME}`;
-    const CACHE_TTL_MS = 5 * 60 * 1000; // 5분
+    const CACHE_KEY = `restaurant_map_cache_v3__${SPREADSHEET_ID}__${SHEET_NAME}`;
+    const CACHE_TTL_MS = 2 * 60 * 1000;
 
-    // 한국 대략 범위(여유있게)
     const KOREA_BOUNDS = { latMin: 33.0, latMax: 39.8, lngMin: 124.0, lngMax: 132.5 };
 
-    /********************
-     * 상태
-     ********************/
     let map, infoWindow;
     let allRows = [];
     let markers = [];
 
-    // 필터 상태
+    // ✅ program만 필터
     let selectedProgram = "";
-    let selectedYear = "";
 
-    // Desktop DOM
     const $q = document.getElementById("q");
     const $programChips = document.getElementById("programChips");
-    const $yearChips = document.getElementById("yearChips");
     const $reloadBtn = document.getElementById("reloadBtn");
     const $allBtn = document.getElementById("allBtn");
     const $status = document.getElementById("status");
     const $list = document.getElementById("list");
 
-    // Mobile DOM
     const $q_m = document.getElementById("q_m");
     const $programChips_m = document.getElementById("programChips_m");
-    const $yearChips_m = document.getElementById("yearChips_m");
     const $reloadBtn_m = document.getElementById("reloadBtn_m");
     const $allBtn_m = document.getElementById("allBtn_m");
     const $status_m = document.getElementById("status_m");
@@ -289,27 +225,18 @@
     const $openSheetBtn = document.getElementById("openSheetBtn");
 
     function isMobile(){ return window.matchMedia("(max-width: 900px)").matches; }
+    function setStatus(msg){ $status.textContent = msg; $status_m.textContent = msg; }
 
-    function setStatus(msg){
-      $status.textContent = msg;
-      $status_m.textContent = msg;
-    }
-
-    /********************
-     * 유틸
-     ********************/
     function escapeHtml(s){
       return String(s ?? "").replace(/[&<>"']/g, m => ({
         "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
       }[m]));
     }
-
     function toNumber(v){
       const n = Number(String(v ?? "").trim());
       return Number.isFinite(n) ? n : null;
     }
-
-    function safeJsonParse(text){ try{ return JSON.parse(text); }catch{ return null; } }
+    function safeJsonParse(t){ try{ return JSON.parse(t); } catch { return null; } }
 
     function readCache(){
       const raw = localStorage.getItem(CACHE_KEY);
@@ -323,44 +250,23 @@
     function clearCache(){ localStorage.removeItem(CACHE_KEY); }
 
     function isValidKoreaLatLng(lat,lng){
-      return (
-        lat >= KOREA_BOUNDS.latMin && lat <= KOREA_BOUNDS.latMax &&
-        lng >= KOREA_BOUNDS.lngMin && lng <= KOREA_BOUNDS.lngMax
-      );
+      return lat>=KOREA_BOUNDS.latMin && lat<=KOREA_BOUNDS.latMax && lng>=KOREA_BOUNDS.lngMin && lng<=KOREA_BOUNDS.lngMax;
     }
 
-    function formatSheetsError(status, bodyText){
-      const j = safeJsonParse(bodyText);
-      if(!j?.error) return `Sheets API error: ${status}\n${bodyText}`;
-      const msg = j.error.message || bodyText;
-      const reason = j.error?.details?.[0]?.reason || j.error?.errors?.[0]?.reason || "";
-      let hint = "";
-      if(reason === "SERVICE_DISABLED"){
-        hint = "\n\n[해결]\nGoogle Cloud Console에서 'Google Sheets API'를 Enable 하세요.";
-      } else if(status === 403){
-        hint = "\n\n[가능 원인]\n- API Key referrer 제한 누락\n- 시트 비공개인데 API Key로 접근";
-      }
-      return `Sheets API error: ${status}\n${msg}${hint}`;
-    }
-
-    /********************
-     * 모바일 바텀시트
-     ********************/
+    // Mobile sheet
     function openSheet(){ $sheet.classList.add("open"); }
     function closeSheet(){ $sheet.classList.remove("open"); }
     function toggleSheet(){ $sheet.classList.toggle("open"); }
-
-    (function bindSheet(){
-      let startY = 0, moved = false;
-      const onStart = (y)=>{ startY=y; moved=false; };
-      const onMove  = (y)=>{ if(Math.abs(y-startY)>12) moved=true; };
-      const onEnd   = (y)=>{
+    (function(){
+      let startY=0, moved=false;
+      const onStart=y=>{ startY=y; moved=false; };
+      const onMove=y=>{ if(Math.abs(y-startY)>12) moved=true; };
+      const onEnd=y=>{
         if(!moved){ toggleSheet(); return; }
-        const dy = y-startY;
+        const dy=y-startY;
         if(dy>60) closeSheet();
         else if(dy<-60) openSheet();
       };
-
       $sheetHandle.addEventListener("click", toggleSheet);
       $openSheetBtn.addEventListener("click", openSheet);
       $sheetHandle.addEventListener("touchstart", e=>onStart(e.touches[0].clientY), {passive:true});
@@ -368,9 +274,7 @@
       $sheetHandle.addEventListener("touchend",   e=>onEnd((e.changedTouches[0]||e.touches[0]).clientY), {passive:true});
     })();
 
-    /********************
-     * Google Maps 로드
-     ********************/
+    // Maps
     function loadGoogleMaps(){
       return new Promise((resolve,reject)=>{
         window.__initMap = ()=>resolve();
@@ -381,21 +285,20 @@
         document.head.appendChild(s);
       });
     }
-
     function initMap(){
       map = new google.maps.Map(document.getElementById("map"), {
-        center:{ lat:37.5665, lng:126.9780 },
-        zoom:11,
-        mapTypeControl:true,
-        streetViewControl:false,
-        fullscreenControl:true,
+        center:{ lat:37.5665, lng:126.9780 }, zoom:11,
+        mapTypeControl:true, streetViewControl:false, fullscreenControl:true,
       });
       infoWindow = new google.maps.InfoWindow();
     }
 
-    /********************
-     * Sheets fetch (program/year 기반)
-     ********************/
+    function formatSheetsError(status, bodyText){
+      const j = safeJsonParse(bodyText);
+      if(!j?.error) return `Sheets API error: ${status}\n${bodyText}`;
+      return `Sheets API error: ${status}\n${j.error.message || bodyText}`;
+    }
+
     async function fetchSheetRows({force=false}={}){
       if(!force){
         const cached = readCache();
@@ -415,19 +318,16 @@
       const values = json.values || [];
       if(values.length < 2){ writeCache([]); return []; }
 
-      // 헤더 1행을 그대로 키로 사용(소문자/공백 제거)
       const headers = (values[0]||[]).map(h => String(h||"").trim().toLowerCase());
-      const rows = values.slice(1);
-
-      const required = ["program","name","lat","lng"]; // year는 옵션(비어도 됨)
+      const required = ["program","year","name","address","lat","lng","link","note"];
       for(const k of required){
         if(!headers.includes(k)){
           throw new Error(`시트 헤더에 "${k}"가 없습니다.\n현재 헤더: ${headers.join(", ")}`);
         }
       }
 
-      const out = rows.map(r=>{
-        const obj = {};
+      const out = values.slice(1).map(r=>{
+        const obj={};
         headers.forEach((h,i)=> obj[h]=(r[i]??"").toString().trim());
         return obj;
       }).filter(o => o.program && o.name && o.lat && o.lng);
@@ -436,80 +336,35 @@
       return out;
     }
 
-    /********************
-     * 필터 칩 구성
-     ********************/
-    function uniqSorted(arr, locale="ko"){
-      const set = new Set(arr.filter(Boolean).map(v=>String(v).trim()).filter(Boolean));
-      return Array.from(set).sort((a,b)=>a.localeCompare(b, locale));
+    function uniq(arr){
+      return Array.from(new Set(arr.filter(Boolean).map(v=>String(v).trim()).filter(Boolean)));
     }
 
-    function yearSortDesc(a,b){
-      // 숫자 우선 내림차순, 숫자 아니면 문자열
-      const na = Number(a), nb = Number(b);
-      const aNum = Number.isFinite(na);
-      const bNum = Number.isFinite(nb);
-      if(aNum && bNum) return nb - na;
-      if(aNum && !bNum) return -1;
-      if(!aNum && bNum) return 1;
-      return String(b).localeCompare(String(a), "ko");
-    }
-
-    function renderChips(){
-      const programs = uniqSorted(allRows.map(r=>r.program));
-      const years = uniqSorted(allRows.map(r=>r.year)).sort(yearSortDesc);
-
-      const makeChip = (label, active, onClick) => {
-        const span = document.createElement("span");
-        span.className = "chip" + (active ? " active" : "");
-        span.textContent = label;
-        span.addEventListener("click", onClick);
-        return span;
+    // ✅ program 칩만 구성
+    function renderProgramChips(){
+      const programs = uniq(allRows.map(r=>r.program)).sort((a,b)=>a.localeCompare(b,"ko"));
+      const makeChip=(label, active, onClick)=>{
+        const el=document.createElement("span");
+        el.className="chip"+(active?" active":"");
+        el.textContent=label;
+        el.addEventListener("click", onClick);
+        return el;
       };
 
-      // Program chips
-      $programChips.innerHTML = "";
-      $programChips_m.innerHTML = "";
+      $programChips.innerHTML="";
+      $programChips_m.innerHTML="";
       programs.forEach(p=>{
-        const chipD = makeChip(p, selectedProgram===p, ()=>toggleProgram(p));
-        const chipM = makeChip(p, selectedProgram===p, ()=>toggleProgram(p));
-        $programChips.appendChild(chipD);
-        $programChips_m.appendChild(chipM);
-      });
-
-      // Year chips
-      $yearChips.innerHTML = "";
-      $yearChips_m.innerHTML = "";
-      years.forEach(y=>{
-        const chipD = makeChip(y, selectedYear===y, ()=>toggleYear(y));
-        const chipM = makeChip(y, selectedYear===y, ()=>toggleYear(y));
-        $yearChips.appendChild(chipD);
-        $yearChips_m.appendChild(chipM);
+        $programChips.appendChild(makeChip(p, selectedProgram===p, ()=>toggleProgram(p)));
+        $programChips_m.appendChild(makeChip(p, selectedProgram===p, ()=>toggleProgram(p)));
       });
     }
 
     function toggleProgram(p){
-      selectedProgram = (selectedProgram === p) ? "" : p;
+      selectedProgram = (selectedProgram===p) ? "" : p;
+      renderProgramChips();
       applyFilter();
-      renderChips(); // active 상태 갱신
     }
 
-    function toggleYear(y){
-      selectedYear = (selectedYear === y) ? "" : y;
-      applyFilter();
-      renderChips();
-    }
-
-    function clearAllFilters(){
-      selectedProgram = "";
-      selectedYear = "";
-      applyFilter();
-      renderChips();
-    }
-
-    /********************
-     * 검색 입력 동기화
-     ********************/
     function syncQuery(){
       if(isMobile()) $q.value = $q_m.value;
       else $q_m.value = $q.value;
@@ -518,28 +373,20 @@
       return (isMobile() ? $q_m.value : $q.value).trim().toLowerCase();
     }
 
-    /********************
-     * 렌더링(마커/리스트)
-     ********************/
     function clearMarkers(){
       markers.forEach(m=>m.setMap(null));
       markers=[];
     }
 
     function openInfo(r, marker){
-      const link = (r.link || "").trim();
-      const linkHtml = link
-        ? `<div style="margin-top:8px;"><a href="${escapeHtml(link)}" target="_blank" rel="noopener">링크 열기</a></div>`
-        : "";
-
+      const link=(r.link||"").trim();
+      const linkHtml = link ? `<div style="margin-top:8px;"><a href="${escapeHtml(link)}" target="_blank" rel="noopener">링크 열기</a></div>` : "";
       const html = `
-        <div style="min-width:220px;max-width:300px;">
-          <div style="font-weight:900;font-size:15px;">${escapeHtml(r.program || "")}</div>
-          <div style="color:#6b7280;font-size:12px;margin-top:4px;">
-            ${r.year ? escapeHtml(r.year) + " · " : ""}${escapeHtml(r.name || "")}
-          </div>
-          ${r.address ? `<div style="margin-top:6px;">${escapeHtml(r.address)}</div>` : ""}
-          ${r.note ? `<div style="margin-top:6px;color:#374151;">${escapeHtml(r.note)}</div>` : ""}
+        <div style="min-width:220px;max-width:320px;">
+          <div style="font-weight:900;font-size:15px;">${escapeHtml(r.name||"")}</div>
+          <div style="color:#6b7280;font-size:12px;margin-top:4px;">${escapeHtml(r.program||"")}${r.year ? " · " + escapeHtml(r.year) : ""}</div>
+          ${r.address?`<div style="margin-top:6px;">${escapeHtml(r.address)}</div>`:""}
+          ${r.note?`<div style="margin-top:6px;color:#374151;">${escapeHtml(r.note)}</div>`:""}
           ${linkHtml}
         </div>
       `;
@@ -549,14 +396,14 @@
 
     function applyFilter(){
       syncQuery();
-      const q = getQuery();
+      const q=getQuery();
 
       const filtered = allRows.filter(r=>{
-        if(selectedProgram && r.program !== selectedProgram) return false;
-        if(selectedYear && String(r.year) !== String(selectedYear)) return false;
+        if(selectedProgram && r.program!==selectedProgram) return false;
 
         if(!q) return true;
-        const blob = [r.program, r.year, r.name, r.address, r.note].join(" ").toLowerCase();
+        // ✅ 표시/필터 기준도 program 중심 + name/address/note
+        const blob=[r.name, r.program, r.address, r.note].join(" ").toLowerCase();
         return blob.includes(q);
       });
 
@@ -565,127 +412,99 @@
 
     function render(rows){
       clearMarkers();
-      $list.innerHTML = "";
-      $list_m.innerHTML = "";
+      $list.innerHTML=""; $list_m.innerHTML="";
 
-      let validCount=0, invalidCoordCount=0;
+      let valid=0, invalid=0;
       const bounds = new google.maps.LatLngBounds();
 
-      const addCard = (container, r, pos, marker) => {
-        const div = document.createElement("div");
-        div.className = "card";
-        div.innerHTML = `
-          <div class="cardTitle">${escapeHtml(r.program || "(프로그램없음)")}</div>
-          <div class="cardSub">${r.year ? escapeHtml(r.year) : ""}</div>
-          <div class="storeName">${escapeHtml(r.name || "")}</div>
-          <div class="meta">${escapeHtml(r.address || "")}</div>
-          <div class="meta">${escapeHtml(r.note || "")}</div>
+      const addCard=(container,r,pos,marker)=>{
+        const div=document.createElement("div");
+        div.className="card";
+        // ✅ 카드: name -> program -> year
+        div.innerHTML=`
+          <div class="cardTitle">${escapeHtml(r.name||"(가게명없음)")}</div>
+          <div class="cardSub">${escapeHtml(r.program||"")}</div>
+          <div class="cardYear">${r.year ? escapeHtml(r.year) : ""}</div>
+          <div class="meta">${escapeHtml(r.address||"")}</div>
+          <div class="meta">${escapeHtml(r.note||"")}</div>
         `;
-
         div.addEventListener("click", ()=>{
           map.panTo(pos);
           map.setZoom(Math.max(map.getZoom(), 15));
           openInfo(r, marker);
           if(isMobile()) closeSheet();
         });
-
         container.appendChild(div);
       };
 
       rows.forEach(r=>{
         const lat=toNumber(r.lat), lng=toNumber(r.lng);
         if(lat==null || lng==null) return;
+        if(!isValidKoreaLatLng(lat,lng)){ invalid++; return; }
 
-        if(!isValidKoreaLatLng(lat,lng)){
-          invalidCoordCount++;
-          return;
-        }
-
-        validCount++;
+        valid++;
         const pos={lat,lng};
         bounds.extend(pos);
 
-        const marker = new google.maps.Marker({ map, position:pos, title:r.name||"" });
-        marker.addListener("click", ()=>{
-          openInfo(r, marker);
-          if(isMobile()) openSheet();
-        });
+        const marker=new google.maps.Marker({ map, position:pos, title:r.name||"" });
+        marker.addListener("click", ()=>{ openInfo(r, marker); if(isMobile()) openSheet(); });
         markers.push(marker);
 
-        addCard($list, r, pos, marker);
-        addCard($list_m, r, pos, marker);
+        addCard($list,r,pos,marker);
+        addCard($list_m,r,pos,marker);
       });
 
-      // 지도 화면 맞추기
-      if(validCount >= 2) map.fitBounds(bounds);
-      if(validCount === 1){
-        const only = rows.find(rr=>{
+      if(valid>=2) map.fitBounds(bounds);
+      if(valid===1){
+        const only=rows.find(rr=>{
           const la=toNumber(rr.lat), ln=toNumber(rr.lng);
           return la!=null && ln!=null && isValidKoreaLatLng(la,ln);
         });
-        if(only){
-          map.setCenter({lat:Number(only.lat), lng:Number(only.lng)});
-          map.setZoom(16);
-        }
+        if(only){ map.setCenter({lat:Number(only.lat), lng:Number(only.lng)}); map.setZoom(16); }
       }
 
-      // 상태 문구
-      let msg = `총 ${validCount}개 표시 중`;
-      if(selectedProgram || selectedYear){
-        msg += `\n필터: ${selectedProgram ? "["+selectedProgram+"] " : ""}${selectedYear ? "["+selectedYear+"]" : ""}`;
-      }
-      if(invalidCoordCount>0) msg += `\n(좌표 이상값 ${invalidCoordCount}개 자동 제외)`;
-      if(validCount===0) msg = `표시 가능한 데이터가 없습니다.\n필터/검색어 또는 lat/lng 값을 확인하세요.`;
+      let msg=`총 ${valid}개 표시 중`;
+      if(selectedProgram) msg+=`\n필터: [${selectedProgram}]`;
+      if(invalid>0) msg+=`\n(좌표 이상값 ${invalid}개 제외)`;
+      if(valid===0) msg=`표시 가능한 데이터가 없습니다.\n필터/검색어 또는 좌표(lat/lng)를 확인하세요.`;
       setStatus(msg);
     }
 
-    /********************
-     * 로드/새로고침
-     ********************/
     async function loadAndRender({force=false}={}){
       try{
-        $reloadBtn.disabled = true;
-        $reloadBtn_m.disabled = true;
-        setStatus(force ? "강제 새로고침 중…" : "시트 데이터 로딩 중…");
+        $reloadBtn.disabled=true; $reloadBtn_m.disabled=true;
+        setStatus(force?"강제 새로고침 중…":"시트 데이터 로딩 중…");
 
         allRows = await fetchSheetRows({force});
 
-        // 새 데이터 로드 후, 칩 다시 구성
-        renderChips();
-
-        // 필터가 기존에 선택되어 있는데 그 값이 데이터에 없으면 해제(불필요한 '0개' 방지)
+        // 선택된 program이 데이터에서 사라졌으면 해제
         const pSet = new Set(allRows.map(r=>r.program));
-        const ySet = new Set(allRows.map(r=>String(r.year||"")).filter(Boolean));
-        if(selectedProgram && !pSet.has(selectedProgram)) selectedProgram = "";
-        if(selectedYear && !ySet.has(String(selectedYear))) selectedYear = "";
+        if(selectedProgram && !pSet.has(selectedProgram)) selectedProgram="";
 
-        renderChips();
+        renderProgramChips();
         applyFilter();
       } catch(err){
         console.error(err);
-        setStatus(String(err.message || err));
+        setStatus(String(err.message||err));
       } finally{
-        $reloadBtn.disabled = false;
-        $reloadBtn_m.disabled = false;
+        $reloadBtn.disabled=false; $reloadBtn_m.disabled=false;
       }
     }
 
     function bindUI(){
-      const onInput = ()=>applyFilter();
+      const onInput=()=>applyFilter();
       $q.addEventListener("input", onInput);
       $q_m.addEventListener("input", onInput);
 
-      const onReload = async ()=>{
-        clearCache();
-        await loadAndRender({force:true});
-      };
+      const onReload=async()=>{ clearCache(); await loadAndRender({force:true}); };
       $reloadBtn.addEventListener("click", onReload);
       $reloadBtn_m.addEventListener("click", onReload);
 
-      $allBtn.addEventListener("click", clearAllFilters);
-      $allBtn_m.addEventListener("click", clearAllFilters);
+      const clearAll=()=>{ selectedProgram=""; renderProgramChips(); applyFilter(); };
+      $allBtn.addEventListener("click", clearAll);
+      $allBtn_m.addEventListener("click", clearAll);
 
-      window.addEventListener("resize", ()=>syncQuery());
+      window.addEventListener("resize", syncQuery);
       if(isMobile()) closeSheet();
     }
 
@@ -694,15 +513,13 @@
         setStatus("지도 로딩 중…");
         await loadGoogleMaps();
         initMap();
-
         bindUI();
         await loadAndRender({force:false});
       } catch(err){
         console.error(err);
-        setStatus(String(err.message || err));
+        setStatus(String(err.message||err));
       }
     }
-
     boot();
   </script>
 </body>
