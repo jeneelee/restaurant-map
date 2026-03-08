@@ -16,7 +16,6 @@
       --btn-bg:#f9fafb;
       --btn-hover:#f3f4f6;
       --danger:#ef4444;
-      --primary:#2563eb;
     }
 
     *{ box-sizing:border-box; }
@@ -174,15 +173,6 @@
       padding-bottom:2px;
     }
 
-    .chipsRow::-webkit-scrollbar{
-      height:6px;
-    }
-
-    .chipsRow::-webkit-scrollbar-thumb{
-      background:#e5e7eb;
-      border-radius:999px;
-    }
-
     .chip{
       display:inline-flex;
       align-items:center;
@@ -196,10 +186,6 @@
       white-space:nowrap;
     }
 
-    .chip:hover{
-      background:#f9fafb;
-    }
-
     .chip.active{
       background:#eff6ff;
       border-color:#93c5fd;
@@ -211,14 +197,6 @@
       background:#111827;
       color:#fff;
       border-color:#111827;
-    }
-
-    .chip.clear:hover{
-      background:#0b1220;
-    }
-
-    .chip.sort{
-      background:#fff;
     }
 
     .chip.sort.active{
@@ -251,10 +229,6 @@
       padding:0;
     }
 
-    .mapIconBtn:hover{
-      background:#fff;
-    }
-
     .mapIconBtn svg{
       width:24px;
       height:24px;
@@ -262,22 +236,38 @@
       fill:#111827;
     }
 
+    .infoLinks{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+
+    .infoLinkBtn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:8px 10px;
+      border:1px solid #d1d5db;
+      border-radius:10px;
+      background:#f9fafb;
+      color:#111827;
+      text-decoration:none;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .infoLinkBtn:hover{
+      background:#f3f4f6;
+    }
+
     .mobile-topbar{ display:none; }
     .sheet{ display:none; }
 
     @media (max-width: 900px){
-      .wrap{
-        grid-template-columns:1fr;
-      }
-
-      .side{
-        display:none;
-      }
-
-      .mapArea,
-      #map{
-        height:100vh;
-      }
+      .wrap{ grid-template-columns:1fr; }
+      .side{ display:none; }
+      .mapArea, #map{ height:100vh; }
 
       .mobile-topbar{
         display:flex;
@@ -451,8 +441,9 @@
       }
     };
 
-    const RANGE_A1 = `${CONFIG.SHEET_NAME}!A1:I`;
-    const CACHE_KEY = `restaurant_map_cache_v8__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
+    // A~J
+    const RANGE_A1 = `${CONFIG.SHEET_NAME}!A1:J`;
+    const CACHE_KEY = `restaurant_map_cache_v9__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
 
     let map = null;
     let infoWindow = null;
@@ -468,29 +459,21 @@
     const els = {
       q: document.getElementById("q"),
       q_m: document.getElementById("q_m"),
-
       programChips: document.getElementById("programChips"),
       programChips_m: document.getElementById("programChips_m"),
-
       reloadBtn: document.getElementById("reloadBtn"),
       reloadBtn_m: document.getElementById("reloadBtn_m"),
-
       allBtn: document.getElementById("allBtn"),
       allBtn_m: document.getElementById("allBtn_m"),
-
       nearbyBtn: document.getElementById("nearbyBtn"),
       nearbyBtn_m: document.getElementById("nearbyBtn_m"),
-
       status: document.getElementById("status"),
       status_m: document.getElementById("status_m"),
-
       list: document.getElementById("list"),
       list_m: document.getElementById("list_m"),
-
       sheet: document.getElementById("sheet"),
       sheetHandle: document.getElementById("sheetHandle"),
       openSheetBtn: document.getElementById("openSheetBtn"),
-
       myLocationBtn: document.getElementById("myLocationBtn")
     };
 
@@ -519,19 +502,12 @@
     }
 
     function safeJsonParse(text) {
-      try {
-        return JSON.parse(text);
-      } catch {
-        return null;
-      }
+      try { return JSON.parse(text); } catch { return null; }
     }
 
     function uniq(values) {
       return Array.from(new Set(
-        values
-          .filter(Boolean)
-          .map(v => String(v).trim())
-          .filter(Boolean)
+        values.filter(Boolean).map(v => String(v).trim()).filter(Boolean)
       ));
     }
 
@@ -553,42 +529,23 @@
       const dLng = toRad(lng2 - lng1);
       const a =
         Math.sin(dLat / 2) ** 2 +
-        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-        Math.sin(dLng / 2) ** 2;
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       return R * c;
     }
 
-    function openSheet() {
-      els.sheet.classList.add("open");
-    }
-
-    function closeSheet() {
-      els.sheet.classList.remove("open");
-    }
-
-    function toggleSheet() {
-      els.sheet.classList.toggle("open");
-    }
+    function openSheet() { els.sheet.classList.add("open"); }
+    function closeSheet() { els.sheet.classList.remove("open"); }
+    function toggleSheet() { els.sheet.classList.toggle("open"); }
 
     function bindSheetGesture() {
       let startY = 0;
       let moved = false;
 
-      const onStart = y => {
-        startY = y;
-        moved = false;
-      };
-
-      const onMove = y => {
-        if (Math.abs(y - startY) > 12) moved = true;
-      };
-
+      const onStart = y => { startY = y; moved = false; };
+      const onMove = y => { if (Math.abs(y - startY) > 12) moved = true; };
       const onEnd = y => {
-        if (!moved) {
-          toggleSheet();
-          return;
-        }
+        if (!moved) return toggleSheet();
         const dy = y - startY;
         if (dy > 60) closeSheet();
         else if (dy < -60) openSheet();
@@ -596,31 +553,25 @@
 
       els.sheetHandle.addEventListener("click", toggleSheet);
       els.openSheetBtn.addEventListener("click", openSheet);
-
-      els.sheetHandle.addEventListener("touchstart", e => onStart(e.touches[0].clientY), { passive: true });
-      els.sheetHandle.addEventListener("touchmove", e => onMove(e.touches[0].clientY), { passive: true });
+      els.sheetHandle.addEventListener("touchstart", e => onStart(e.touches[0].clientY), { passive:true });
+      els.sheetHandle.addEventListener("touchmove", e => onMove(e.touches[0].clientY), { passive:true });
       els.sheetHandle.addEventListener("touchend", e => {
         const touch = e.changedTouches[0] || e.touches[0];
         if (touch) onEnd(touch.clientY);
-      }, { passive: true });
+      }, { passive:true });
     }
 
     function readCache() {
       const raw = localStorage.getItem(CACHE_KEY);
       if (!raw) return null;
-
       const parsed = safeJsonParse(raw);
       if (!parsed?.ts || !Array.isArray(parsed?.rows)) return null;
       if (Date.now() - parsed.ts > CONFIG.CACHE_TTL_MS) return null;
-
       return parsed.rows;
     }
 
     function writeCache(rows) {
-      localStorage.setItem(CACHE_KEY, JSON.stringify({
-        ts: Date.now(),
-        rows
-      }));
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), rows }));
     }
 
     function clearCache() {
@@ -632,24 +583,18 @@
       if (!CONFIG.MAPS_API_KEY) missing.push("MAPS_API_KEY");
       if (!CONFIG.SHEETS_API_KEY) missing.push("SHEETS_API_KEY");
       if (!CONFIG.SPREADSHEET_ID) missing.push("SPREADSHEET_ID");
-
       if (missing.length) {
-        throw new Error(
-          "설정값이 비어 있습니다.\n" +
-          `채워야 하는 항목: ${missing.join(", ")}`
-        );
+        throw new Error("설정값이 비어 있습니다.\n채워야 하는 항목: " + missing.join(", "));
       }
     }
 
     function loadGoogleMaps() {
       return new Promise((resolve, reject) => {
         window.__initMap = () => resolve();
-
         const script = document.createElement("script");
         script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(CONFIG.MAPS_API_KEY)}&callback=__initMap`;
         script.async = true;
         script.onerror = () => reject(new Error("Google Maps JS 로딩 실패 (키/제한/네트워크 확인)"));
-
         document.head.appendChild(script);
       });
     }
@@ -658,7 +603,6 @@
       map = new google.maps.Map(document.getElementById("map"), {
         center: CONFIG.DEFAULT_CENTER,
         zoom: CONFIG.DEFAULT_ZOOM,
-
         mapTypeControl: false,
         streetViewControl: false,
         fullscreenControl: false,
@@ -666,7 +610,6 @@
         cameraControl: false,
         rotateControl: false,
         scaleControl: false,
-
         gestureHandling: "greedy"
       });
 
@@ -675,9 +618,7 @@
 
     function formatSheetsError(status, bodyText) {
       const json = safeJsonParse(bodyText);
-      if (!json?.error) {
-        return `Sheets API error: ${status}\n${bodyText}`;
-      }
+      if (!json?.error) return `Sheets API error: ${status}\n${bodyText}`;
       return `Sheets API error: ${status}\n${json.error.message || bodyText}`;
     }
 
@@ -694,9 +635,7 @@
       const res = await fetch(url);
       const bodyText = await res.text();
 
-      if (!res.ok) {
-        throw new Error(formatSheetsError(res.status, bodyText));
-      }
+      if (!res.ok) throw new Error(formatSheetsError(res.status, bodyText));
 
       const json = safeJsonParse(bodyText) || {};
       const values = json.values || [];
@@ -707,7 +646,7 @@
       }
 
       const headers = (values[0] || []).map(h => String(h || "").trim().toLowerCase());
-      const required = ["no","program","year","name","address","lat","lng","link","note"];
+      const required = ["no","program","year","name","address","lat","lng","naver_link","google_link","note"];
 
       for (const key of required) {
         if (!headers.includes(key)) {
@@ -728,11 +667,8 @@
     }
 
     function syncQuery() {
-      if (isMobile()) {
-        els.q.value = els.q_m.value;
-      } else {
-        els.q_m.value = els.q.value;
-      }
+      if (isMobile()) els.q.value = els.q_m.value;
+      else els.q_m.value = els.q.value;
     }
 
     function getQuery() {
@@ -740,9 +676,7 @@
     }
 
     function clearMarkers() {
-      for (const marker of markers) {
-        marker.setMap(null);
-      }
+      for (const marker of markers) marker.setMap(null);
       markers = [];
     }
 
@@ -753,28 +687,35 @@
       const disabled = !currentLocation;
       els.nearbyBtn.disabled = disabled;
       els.nearbyBtn_m.disabled = disabled;
+    }
 
-      if (disabled) {
-        els.nearbyBtn.title = "먼저 내 위치를 찾아야 합니다.";
-        els.nearbyBtn_m.title = "먼저 내 위치를 찾아야 합니다.";
-      } else {
-        els.nearbyBtn.title = "내 위치 기준 가까운 순 정렬";
-        els.nearbyBtn_m.title = "내 위치 기준 가까운 순 정렬";
+    function buildMapLinks(row) {
+      const naver = (row.naver_link || "").trim();
+      const google = (row.google_link || "").trim();
+
+      let html = `<div class="infoLinks">`;
+
+      if (naver) {
+        html += `<a class="infoLinkBtn" href="${escapeHtml(naver)}" target="_blank" rel="noopener">네이버지도 열기</a>`;
       }
+
+      if (google) {
+        html += `<a class="infoLinkBtn" href="${escapeHtml(google)}" target="_blank" rel="noopener">구글지도 열기</a>`;
+      }
+
+      html += `</div>`;
+      return html;
     }
 
     function openInfo(row, marker) {
-      const link = (row.link || "").trim();
-      const linkHtml = link
-        ? `<div style="margin-top:8px;"><a href="${escapeHtml(link)}" target="_blank" rel="noopener">링크 열기</a></div>`
-        : "";
-
       const distanceHtml = Number.isFinite(row._distance)
         ? `<div style="margin-top:6px;color:#dc2626;font-weight:700;">현재 위치에서 ${escapeHtml(formatDistance(row._distance))}</div>`
         : "";
 
+      const linkHtml = buildMapLinks(row);
+
       const html = `
-        <div style="min-width:220px;max-width:340px;">
+        <div style="min-width:240px;max-width:360px;">
           <div style="font-weight:900;font-size:15px;">${escapeHtml(row.name || "")}</div>
           <div style="color:#6b7280;font-size:12px;margin-top:4px;">
             ${escapeHtml(row.program || "")}${row.year ? " · " + escapeHtml(row.year) : ""}
@@ -813,7 +754,6 @@
         map.panTo(position);
         map.setZoom(Math.max(map.getZoom(), 15));
         openInfo(row, marker);
-
         if (isMobile()) closeSheet();
       });
 
@@ -835,12 +775,8 @@
       els.programChips_m.innerHTML = "";
 
       for (const program of programs) {
-        els.programChips.appendChild(
-          buildChip(program, selectedProgram === program, () => toggleProgram(program))
-        );
-        els.programChips_m.appendChild(
-          buildChip(program, selectedProgram === program, () => toggleProgram(program))
-        );
+        els.programChips.appendChild(buildChip(program, selectedProgram === program, () => toggleProgram(program)));
+        els.programChips_m.appendChild(buildChip(program, selectedProgram === program, () => toggleProgram(program)));
       }
     }
 
@@ -867,7 +803,6 @@
       let filtered = allRows.filter(row => {
         if (selectedProgram && row.program !== selectedProgram) return false;
         if (!q) return true;
-
         const blob = [row.name, row.program, row.address, row.note].join(" ").toLowerCase();
         return blob.includes(q);
       });
@@ -877,21 +812,12 @@
         const lat = toNumber(row.lat);
         const lng = toNumber(row.lng);
 
-        if (
-          currentLocation &&
-          lat != null &&
-          lng != null &&
-          isValidKoreaLatLng(lat, lng)
-        ) {
-          next._distance = haversineDistanceMeters(
-            currentLocation.lat,
-            currentLocation.lng,
-            lat,
-            lng
-          );
+        if (currentLocation && lat != null && lng != null && isValidKoreaLatLng(lat, lng)) {
+          next._distance = haversineDistanceMeters(currentLocation.lat, currentLocation.lng, lat, lng);
         } else {
           next._distance = null;
         }
+
         return next;
       });
 
@@ -908,7 +834,6 @@
 
     function render(rows) {
       clearMarkers();
-
       els.list.innerHTML = "";
       els.list_m.innerHTML = "";
 
@@ -930,7 +855,6 @@
         }
 
         validCount++;
-
         const position = { lat, lng };
         bounds.extend(position);
 
@@ -965,7 +889,6 @@
           const lng = toNumber(item.lng);
           return lat != null && lng != null && isValidKoreaLatLng(lat, lng);
         });
-
         if (only) {
           map.setCenter({ lat: Number(only.lat), lng: Number(only.lng) });
           map.setZoom(16);
@@ -1071,15 +994,12 @@
       try {
         els.reloadBtn.disabled = true;
         els.reloadBtn_m.disabled = true;
-
         setStatus(force ? "강제 새로고침 중…" : "시트 데이터 로딩 중…");
 
         allRows = await fetchSheetRows({ force });
 
         const programSet = new Set(allRows.map(row => row.program));
-        if (selectedProgram && !programSet.has(selectedProgram)) {
-          selectedProgram = "";
-        }
+        if (selectedProgram && !programSet.has(selectedProgram)) selectedProgram = "";
 
         renderProgramChips();
         updateNearbyButtons();
