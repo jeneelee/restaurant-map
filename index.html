@@ -339,7 +339,7 @@
         border-top-left-radius:var(--radius);
         border-top-right-radius:var(--radius);
         box-shadow:var(--panel-shadow);
-        transform:translateY(calc(100% - 72px));
+        transform:translateY(calc(100% - 56px));
         transition:transform .22s ease;
         max-height:82vh;
         overflow:hidden;
@@ -366,7 +366,7 @@
       }
 
       .sheet .content{
-        padding:8px 12px 12px;
+        padding:6px 12px 10px;
         overflow:auto;
         max-height:calc(82vh - 22px);
       }
@@ -747,12 +747,17 @@
         ${row.note ? `<div class="meta">${escapeHtml(row.note)}</div>` : ""}
       `;
 
-      div.addEventListener("click", () => {
-        map.panTo(position);
-        map.setZoom(Math.max(map.getZoom(), 15));
-        openInfo(row, marker);
-        if (isMobile()) closeSheet();
-      });
+
+    div.addEventListener("click", () => {
+    map.panTo(position);
+    map.setZoom(Math.max(map.getZoom(), 15));
+    openInfo(row, marker);
+    });
+
+
+
+
+      
 
       return div;
     }
@@ -845,9 +850,8 @@
         bounds.extend(pos);
 
         const marker = new google.maps.Marker({ map, position: pos, title: row.name || "" });
-        marker.addListener("click", () => {
-          openInfo(row, marker);
-          if (isMobile()) openSheet();
+       marker.addListener("click", () => {
+        openInfo(row, marker);
         });
 
         markers.push(marker);
