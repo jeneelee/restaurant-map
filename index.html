@@ -4,10 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
 
-  <!-- 네이버 사이트 소유 확인 -->
   <meta name="naver-site-verification" content="5d9f78119630f2fdd68e64edcfc1860d23df390e" />
 
-  <!-- SEO -->
   <title>전국 맛집 지도 | 미쉐린 · 빕구르망 · 방송 맛집 지도</title>
   <meta name="description" content="전국 맛집 지도 서비스. 미쉐린 스타, 미쉐린 빕구르망, 성시경 먹을텐데, 또간집 등 방송 맛집을 지도에서 한눈에 확인하세요." />
   <meta name="keywords" content="전국 맛집 지도, 미쉐린 맛집 지도, 빕구르망 맛집, 방송 맛집 지도, 전국 맛집 찾기" />
@@ -246,7 +244,6 @@
 
     .infoLinkBtn:hover{background:#f3f4f6}
 
-    /* SEO 텍스트 숨김 */
     .seo-hidden{
       position:absolute;
       width:1px;
@@ -407,7 +404,6 @@
     </main>
   </div>
 
-  <!-- 모바일 상단: 검색 + 카테고리만 -->
   <div class="mobile-topbar">
     <div class="mobile-search-wrap">
       <input id="q_top_m" placeholder="검색 (가게명/프로그램/주소/메모)" />
@@ -418,7 +414,6 @@
     </div>
   </div>
 
-  <!-- 모바일 하단 시트: 전체/가까운순/새로고침 + 상태 + 리스트 -->
   <section class="sheet" id="sheet" aria-label="목록 패널">
     <div class="handle" id="sheetHandle"></div>
     <div class="content">
@@ -434,16 +429,12 @@
     </div>
   </section>
 
-  <!-- SEO용 텍스트(숨김) -->
   <section class="seo-hidden">
     <h2>전국 맛집 지도</h2>
     <p>전국 지역의 미쉐린 스타, 빕구르망, 방송 맛집을 지도에서 찾을 수 있습니다.</p>
   </section>
 
   <script>
-    // =========================
-    // 여기 3개만 채우세요
-    // =========================
     const CONFIG = {
       MAPS_API_KEY: "AIzaSyCvTRT_Q498fX8wKOFqWUDzNol-Qq8-aUI",
       SHEETS_API_KEY: "AIzaSyCvTRT_Q498fX8wKOFqWUDzNol-Qq8-aUI",
@@ -456,7 +447,7 @@
     };
 
     const RANGE_A1 = `${CONFIG.SHEET_NAME}!A1:J`;
-    const CACHE_KEY = `restaurant_map_cache_v11__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
+    const CACHE_KEY = `restaurant_map_cache_v12__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
 
     let map = null;
     let infoWindow = null;
@@ -471,11 +462,9 @@
 
     const els = {
       q: document.getElementById("q"),
-      q_m: document.getElementById("q_m"),
       q_top_m: document.getElementById("q_top_m"),
 
       programChips: document.getElementById("programChips"),
-      programChips_m: document.getElementById("programChips_m"),
       programChips_top_m: document.getElementById("programChips_top_m"),
 
       reloadBtn: document.getElementById("reloadBtn"),
@@ -499,10 +488,13 @@
       myLocationBtn: document.getElementById("myLocationBtn")
     };
 
-    function isMobile(){ return window.matchMedia("(max-width: 900px)").matches; }
+    function isMobile(){
+      return window.matchMedia("(max-width: 900px)").matches;
+    }
+
     function setStatus(message){
-      els.status.textContent = message;
-      els.status_m.textContent = message;
+      if (els.status) els.status.textContent = message;
+      if (els.status_m) els.status_m.textContent = message;
     }
 
     function safeJsonParse(text){
@@ -520,7 +512,11 @@
 
     function escapeHtml(value){
       return String(value ?? "").replace(/[&<>"']/g, ch => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#39;"
       }[ch]));
     }
 
@@ -644,21 +640,16 @@
 
     function syncQuery(){
       const mobileTopValue = els.q_top_m ? els.q_top_m.value : "";
-      const mobileSheetValue = els.q_m ? els.q_m.value : "";
       const desktopValue = els.q ? els.q.value : "";
-
-      const value = isMobile()
-        ? (mobileTopValue || mobileSheetValue)
-        : desktopValue;
+      const value = isMobile() ? mobileTopValue : desktopValue;
 
       if (els.q) els.q.value = value;
-      if (els.q_m) els.q_m.value = value;
       if (els.q_top_m) els.q_top_m.value = value;
     }
 
     function getQuery(){
       if (isMobile()){
-        return (els.q_top_m?.value || els.q_m?.value || "").trim().toLowerCase();
+        return (els.q_top_m?.value || "").trim().toLowerCase();
       }
       return (els.q?.value || "").trim().toLowerCase();
     }
@@ -669,11 +660,12 @@
     }
 
     function updateNearbyButtons(){
-      els.nearbyBtn.classList.toggle("active", sortByNearby);
-      els.nearbyBtn_m.classList.toggle("active", sortByNearby);
+      if (els.nearbyBtn) els.nearbyBtn.classList.toggle("active", sortByNearby);
+      if (els.nearbyBtn_m) els.nearbyBtn_m.classList.toggle("active", sortByNearby);
+
       const disabled = !currentLocation;
-      els.nearbyBtn.disabled = disabled;
-      els.nearbyBtn_m.disabled = disabled;
+      if (els.nearbyBtn) els.nearbyBtn.disabled = disabled;
+      if (els.nearbyBtn_m) els.nearbyBtn_m.disabled = disabled;
     }
 
     function buildMapLinks(row){
@@ -751,13 +743,13 @@
         return el;
       };
 
-      els.programChips.innerHTML = "";
-      els.programChips_m.innerHTML = "";
+      if (els.programChips) els.programChips.innerHTML = "";
       if (els.programChips_top_m) els.programChips_top_m.innerHTML = "";
 
       for (const p of programs){
-        els.programChips.appendChild(buildChip(p, selectedProgram===p, () => toggleProgram(p)));
-        els.programChips_m.appendChild(buildChip(p, selectedProgram===p, () => toggleProgram(p)));
+        if (els.programChips){
+          els.programChips.appendChild(buildChip(p, selectedProgram===p, () => toggleProgram(p)));
+        }
         if (els.programChips_top_m){
           els.programChips_top_m.appendChild(buildChip(p, selectedProgram===p, () => toggleProgram(p)));
         }
@@ -807,8 +799,8 @@
 
     function render(rows){
       clearMarkers();
-      els.list.innerHTML = "";
-      els.list_m.innerHTML = "";
+      if (els.list) els.list.innerHTML = "";
+      if (els.list_m) els.list_m.innerHTML = "";
 
       let validCount = 0;
       let invalidCount = 0;
@@ -838,8 +830,8 @@
         fragMobile.appendChild(createCardElement(row, pos, marker));
       }
 
-      els.list.appendChild(fragDesktop);
-      els.list_m.appendChild(fragMobile);
+      if (els.list) els.list.appendChild(fragDesktop);
+      if (els.list_m) els.list_m.appendChild(fragMobile);
 
       if (validCount >= 2 && !sortByNearby){
         map.fitBounds(bounds);
@@ -868,12 +860,23 @@
       setStatus(message);
     }
 
-    function openSheet(){ els.sheet.classList.add("open"); }
-    function closeSheet(){ els.sheet.classList.remove("open"); }
-    function toggleSheet(){ els.sheet.classList.toggle("open"); }
+    function openSheet(){
+      if (els.sheet) els.sheet.classList.add("open");
+    }
+
+    function closeSheet(){
+      if (els.sheet) els.sheet.classList.remove("open");
+    }
+
+    function toggleSheet(){
+      if (els.sheet) els.sheet.classList.toggle("open");
+    }
 
     function bindSheetGesture(){
-      let startY = 0, moved = false;
+      if (!els.sheetHandle || !els.sheet) return;
+
+      let startY = 0;
+      let moved = false;
 
       const onStart = y => { startY = y; moved = false; };
       const onMove = y => { if (Math.abs(y - startY) > 12) moved = true; };
@@ -885,7 +888,6 @@
       };
 
       els.sheetHandle.addEventListener("click", toggleSheet);
-
       els.sheetHandle.addEventListener("touchstart", e => onStart(e.touches[0].clientY), { passive:true });
       els.sheetHandle.addEventListener("touchmove", e => onMove(e.touches[0].clientY), { passive:true });
       els.sheetHandle.addEventListener("touchend", e => {
@@ -968,8 +970,8 @@
 
     async function loadAndRender({force=false} = {}){
       try{
-        els.reloadBtn.disabled = true;
-        els.reloadBtn_m.disabled = true;
+        if (els.reloadBtn) els.reloadBtn.disabled = true;
+        if (els.reloadBtn_m) els.reloadBtn_m.disabled = true;
         setStatus(force ? "강제 새로고침 중…" : "시트 데이터 로딩 중…");
 
         allRows = await fetchSheetRows({ force });
@@ -984,8 +986,8 @@
         console.error(e);
         setStatus(String(e.message || e));
       } finally{
-        els.reloadBtn.disabled = false;
-        els.reloadBtn_m.disabled = false;
+        if (els.reloadBtn) els.reloadBtn.disabled = false;
+        if (els.reloadBtn_m) els.reloadBtn_m.disabled = false;
       }
     }
 
@@ -1002,29 +1004,30 @@
     function bindUI(){
       const onInput = () => applyFilter();
 
-      els.q.addEventListener("input", onInput);
-      els.q_m.addEventListener("input", onInput);
+      if (els.q) els.q.addEventListener("input", onInput);
       if (els.q_top_m) els.q_top_m.addEventListener("input", onInput);
 
       const onReload = async () => {
         clearCache();
         await loadAndRender({ force:true });
       };
-      els.reloadBtn.addEventListener("click", onReload);
-      els.reloadBtn_m.addEventListener("click", onReload);
+
+      if (els.reloadBtn) els.reloadBtn.addEventListener("click", onReload);
+      if (els.reloadBtn_m) els.reloadBtn_m.addEventListener("click", onReload);
 
       const clearAll = () => {
         selectedProgram = "";
         renderProgramChips();
         applyFilter();
       };
-      els.allBtn.addEventListener("click", clearAll);
-      els.allBtn_m.addEventListener("click", clearAll);
 
-      els.nearbyBtn.addEventListener("click", toggleNearbySort);
-      els.nearbyBtn_m.addEventListener("click", toggleNearbySort);
+      if (els.allBtn) els.allBtn.addEventListener("click", clearAll);
+      if (els.allBtn_m) els.allBtn_m.addEventListener("click", clearAll);
 
-      els.myLocationBtn.addEventListener("click", moveToMyLocation);
+      if (els.nearbyBtn) els.nearbyBtn.addEventListener("click", toggleNearbySort);
+      if (els.nearbyBtn_m) els.nearbyBtn_m.addEventListener("click", toggleNearbySort);
+
+      if (els.myLocationBtn) els.myLocationBtn.addEventListener("click", moveToMyLocation);
 
       window.addEventListener("resize", syncQuery);
 
