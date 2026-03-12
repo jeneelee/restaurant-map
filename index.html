@@ -341,13 +341,13 @@
         box-shadow:var(--panel-shadow);
         transform:translateY(calc(100% - 56px));
         transition:transform .22s ease;
-        height:28vh;
-        max-height:28vh;
+        height:50vh;
+        max-height:50vh;
         overflow:hidden;
       }
 
       .sheet.open{
-        transform:translateY(calc(100% - 28vh));
+        transform:translateY(calc(100% - 50vh));
       }
 
       .sheet .handle{
@@ -369,8 +369,8 @@
       .sheet .content{
         padding:6px 12px 10px;
         overflow:auto;
-        height:calc(28vh - 22px);
-        max-height:calc(28vh - 22px);
+        height:calc(50vh - 22px);
+        max-height:calc(50vh - 22px);
       }
 
       .sheet-toolbar{
@@ -795,10 +795,12 @@
       `;
 
 
-    div.addEventListener("click", () => {
+  div.addEventListener("click", () => {
   map.setZoom(Math.max(map.getZoom(), 15));
   focusMarkerWithOffset(position);
-  openInfo(row, marker);
+  setTimeout(() => {
+    openInfo(row, marker);
+  }, 120);
   if (isMobile()) openSheet();
 });
 
@@ -895,12 +897,19 @@
         const pos = { lat, lng };
         bounds.extend(pos);
 
-        const marker = new google.maps.Marker({ map, position: pos, title: row.name || "" });
-          marker.addListener("click", () => {
-          focusMarkerWithOffset(position);
-          openInfo(row, marker);
-          if (isMobile()) openSheet();
-          });
+
+const marker = new google.maps.Marker({ map, position: pos, title: row.name || "" });
+marker.addListener("click", () => {
+  focusMarkerWithOffset(pos);
+  setTimeout(() => {
+    openInfo(row, marker);
+  }, 120);
+  if (isMobile()) openSheet();
+});
+
+
+
+        
 
         markers.push(marker);
         fragDesktop.appendChild(createCardElement(row, pos, marker));
