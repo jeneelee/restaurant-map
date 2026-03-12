@@ -341,12 +341,13 @@
         box-shadow:var(--panel-shadow);
         transform:translateY(calc(100% - 56px));
         transition:transform .22s ease;
-        max-height:82vh;
+        height:28vh;
+        max-height:28vh;
         overflow:hidden;
       }
 
       .sheet.open{
-        transform:translateY(0);
+        transform:translateY(calc(100% - 28vh));
       }
 
       .sheet .handle{
@@ -368,7 +369,8 @@
       .sheet .content{
         padding:6px 12px 10px;
         overflow:auto;
-        max-height:calc(82vh - 22px);
+        height:calc(28vh - 22px);
+        max-height:calc(28vh - 22px);
       }
 
       .sheet-toolbar{
@@ -568,6 +570,51 @@
       return R * c;
     }
 
+
+
+
+    
+    function focusMarkerWithOffset(position){
+  if (!map || !window.google || !google.maps) return;
+
+  const projection = map.getProjection();
+  if (!projection) {
+    map.panTo(position);
+    return;
+  }
+
+  const zoom = map.getZoom();
+  const scale = Math.pow(2, zoom);
+
+  const worldPoint = projection.fromLatLngToPoint(
+    new google.maps.LatLng(position.lat, position.lng)
+  );
+
+  const mapDiv = map.getDiv();
+  const mapHeight = mapDiv.offsetHeight || window.innerHeight;
+
+  const verticalOffsetPx = mapHeight * 0.18;
+
+  const pixelOffset = verticalOffsetPx / scale / 256;
+
+  const newPoint = new google.maps.Point(
+    worldPoint.x,
+    worldPoint.y + pixelOffset
+  );
+
+  const newCenter = projection.fromPointToLatLng(newPoint);
+  map.panTo(newCenter);
+}
+
+
+
+
+
+
+    
+
+
+    
     function validateConfig(){
       const missing = [];
       if (!CONFIG.MAPS_API_KEY) missing.push("MAPS_API_KEY");
@@ -749,14 +796,13 @@
 
 
     div.addEventListener("click", () => {
-    map.panTo(position);
-    map.setZoom(Math.max(map.getZoom(), 15));
-    openInfo(row, marker);
-    });
+  map.setZoom(Math.max(map.getZoom(), 15));
+  focusMarkerWithOffset(position);
+  openInfo(row, marker);
+  if (isMobile()) openSheet();
+});
 
-
-
-
+  
       
 
       return div;
@@ -850,9 +896,11 @@
         bounds.extend(pos);
 
         const marker = new google.maps.Marker({ map, position: pos, title: row.name || "" });
-       marker.addListener("click", () => {
-        openInfo(row, marker);
-        });
+          marker.addListener("click", () => {
+          focusMarkerWithOffset(position);
+          openInfo(row, marker);
+          if (isMobile()) openSheet();
+          });
 
         markers.push(marker);
         fragDesktop.appendChild(createCardElement(row, pos, marker));
