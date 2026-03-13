@@ -4,29 +4,20 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
 
+  <link rel="icon" href="/favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#ffffff">
 
-<link rel="icon" href="/favicon.ico">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  
-
-<link rel="manifest" href="/site.webmanifest">
-<meta name="theme-color" content="#ffffff">
-
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXX"></script>
-<script>
-window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-
-gtag('config', 'G-51LDYE2ZRT');
-</script>
-
-
-
-
-  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-51LDYE2ZRT"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-51LDYE2ZRT');
+  </script>
 
   <meta name="naver-site-verification" content="5d9f78119630f2fdd68e64edcfc1860d23df390e" />
 
@@ -36,19 +27,12 @@ gtag('config', 'G-51LDYE2ZRT');
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://boogiee.com/" />
 
-
-
-  
   <meta property="og:title" content="모두의 맛집 통합검색" />
   <meta property="og:description" content="미쉐린 스타, 빕구르망, 방송 맛집을 지도에서 한눈에 확인하세요" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://boogiee.com/" />
-  <meta property="og:image" content="https://boogiee.com/og-image.jpg">
+  <meta property="og:image" content="https://boogiee.com/og-image.jpg" />
 
-
-
-
-  
   <style>
     :root{
       --border:#e5e7eb;
@@ -99,10 +83,37 @@ gtag('config', 'G-51LDYE2ZRT');
       height:100%;
     }
 
+    .brand-header{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom:12px;
+    }
+
+    .brand-logo{
+      width:56px;
+      height:56px;
+      object-fit:contain;
+      display:block;
+      flex-shrink:0;
+    }
+
     .title{
       font-weight:900;
       font-size:18px;
       margin:0 0 10px;
+    }
+
+    .title.brand-title{
+      margin:0;
+      line-height:1.1;
+    }
+
+    .subtitle{
+      margin:6px 0 12px;
+      font-size:13px;
+      color:#6b7280;
+      line-height:1.4;
     }
 
     .row{
@@ -309,6 +320,29 @@ gtag('config', 'G-51LDYE2ZRT');
       border:0;
     }
 
+    .install-wrap {
+      margin: 10px 0 14px;
+    }
+
+    .install-btn {
+      width: 100%;
+      padding: 12px 14px;
+      border: 0;
+      border-radius: 12px;
+      background: #111827;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .install-guide {
+      margin: 8px 2px 0;
+      font-size: 12px;
+      line-height: 1.4;
+      color: #6b7280;
+    }
+
     .mobile-topbar{display:none}
     .sheet{display:none}
 
@@ -367,69 +401,72 @@ gtag('config', 'G-51LDYE2ZRT');
         padding-bottom:2px;
       }
 
-
-
-.sheet{
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 12;
-  background: var(--panel-bg);
-  border-top-left-radius: var(--radius);
-  border-top-right-radius: var(--radius);
-  box-shadow: var(--panel-shadow);
-  display: flex;
-  flex-direction: column;
-  height: 68vh;
-  transform: translateY(calc(100% - 180px));
-  transition: transform .25s ease;
-  will-change: transform;
-  overflow: hidden;
-}
-
-
-
-      
-      .sheet.open{
-        transform:translateY(calc(100% - 50vh));
+      .sheet{
+        display:flex;
+        position:fixed;
+        left:0;
+        right:0;
+        bottom:0;
+        z-index:12;
+        background:var(--panel-bg);
+        border-top-left-radius:var(--radius);
+        border-top-right-radius:var(--radius);
+        box-shadow:var(--panel-shadow);
+        flex-direction:column;
+        height:68vh;
+        transform:translateY(calc(100% - 180px));
+        transition:transform .25s ease;
+        will-change:transform;
+        overflow:hidden;
       }
 
-      .sheet .handle{
-        height:22px;
+      .sheet-topzone{
+        flex:0 0 auto;
+        padding:0 14px 10px;
+        touch-action:none;
+        user-select:none;
+        -webkit-user-select:none;
+      }
+
+      .sheet-header{
+        height:34px;
         display:flex;
         align-items:center;
         justify-content:center;
-        cursor:pointer;
+        cursor:grab;
       }
 
-      .sheet .handle:before{
-        content:"";
-        width:44px;
-        height:5px;
+      .sheet-header:active{
+        cursor:grabbing;
+      }
+
+      .sheet-header .handle{
+        width:52px;
+        height:6px;
         border-radius:999px;
-        background:#d1d5db;
-      }
-
-      .sheet .content{
-        padding:6px 12px 10px;
-        overflow:auto;
-        height:calc(50vh - 22px);
-        max-height:calc(50vh - 22px);
+        background:#c7cbd1;
       }
 
       .sheet-toolbar{
         display:flex;
-        gap:8px;
         align-items:center;
-        margin:4px 0 10px;
+        gap:8px;
+        margin-bottom:10px;
       }
 
       .sheet-status{
-        font-size:12px;
-        color:var(--muted);
-        margin:0 0 10px;
+        margin-bottom:4px;
+        font-size:14px;
+        color:#4b5563;
         white-space:pre-line;
+      }
+
+      .sheet-content{
+        flex:1 1 auto;
+        overflow-y:auto;
+        -webkit-overflow-scrolling:touch;
+        overscroll-behavior:contain;
+        padding:0 14px 18px;
       }
 
       .mapControls{
@@ -437,190 +474,23 @@ gtag('config', 'G-51LDYE2ZRT');
         bottom:96px;
       }
     }
-
-.brand-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.brand-logo {
-  width: 56px;
-  height: 56px;
-  object-fit: contain;
-  display: block;
-  flex-shrink: 0;
-}
-
-.title.brand-title {
-  margin: 0;
-  line-height: 1.1;
-}
-
-
-.install-wrap {
-  margin: 10px 0 14px;
-}
-
-.install-btn {
-  width: 100%;
-  padding: 12px 14px;
-  border: 0;
-  border-radius: 12px;
-  background: #111827;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.install-guide {
-  margin: 8px 2px 0;
-  font-size: 12px;
-  line-height: 1.4;
-  color: #6b7280;
-}
-
-
-
-
-
-    
-
-
-.subtitle {
-  margin: 6px 0 12px;
-  font-size: 13px;
-  color: #6b7280;
-  line-height: 1.4;
-}
-
-
-
-
-.sheet-header {
-  flex: 0 0 auto;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  touch-action: none;
-  user-select: none;
-  -webkit-user-select: none;
-  cursor: grab;
-}
-
-.sheet-header .handle {
-  width: 52px;
-  height: 6px;
-  border-radius: 999px;
-  background: #c7cbd1;
-}
-
-.content {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  padding: 6px 14px 18px;
-}
-
-
-
-
-
-
-    
-
-
-.sheet-topzone {
-  flex: 0 0 auto;
-  padding: 0 14px 10px;
-  touch-action: none;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.sheet-header {
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: grab;
-}
-
-.sheet-header:active {
-  cursor: grabbing;
-}
-
-.sheet-header .handle {
-  width: 52px;
-  height: 6px;
-  border-radius: 999px;
-  background: #c7cbd1;
-}
-
-.sheet-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.sheet-status {
-  margin-bottom: 4px;
-  font-size: 14px;
-  color: #4b5563;
-}
-
-.sheet-content {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  padding: 0 14px 18px;
-}
-
-
-
-
-
-
-
-
-
-    
-    
-    
   </style>
 </head>
 
 <body>
   <div class="wrap">
     <aside class="side">
+      <div class="brand-header">
+        <img src="logo.png" alt="모두의 맛집 로고" class="brand-logo" />
+        <h1 class="title brand-title">모두의 맛집 통합검색</h1>
+      </div>
 
-    <div class="brand-header">
-  <img src="logo.png" alt="모두의 맛집 로고" class="brand-logo" />
-  <h1 class="title brand-title">모두의 맛집 통합검색</h1>
-</div>
-
-
-<div class="install-wrap">
-  <button id="installAppBtn" class="install-btn" hidden>홈화면에 추가</button>
-  <p id="installGuide" class="install-guide" hidden>
-    아이폰은 Safari 공유 버튼 → 홈 화면에 추가에서 설치할 수 있습니다.
-  </p>
-</div>
-      
-
-
-
-
-
-
-
-      
+      <div class="install-wrap">
+        <button id="installAppBtn" class="install-btn" hidden>홈화면에 추가</button>
+        <p id="installGuide" class="install-guide" hidden>
+          아이폰은 Safari 공유 버튼 → 홈 화면에 추가에서 설치할 수 있습니다.
+        </p>
+      </div>
 
       <div class="row">
         <input id="q" placeholder="검색 (가게명/프로그램/주소/메모)" />
@@ -663,34 +533,27 @@ gtag('config', 'G-51LDYE2ZRT');
     </div>
   </div>
 
+  <section class="sheet" id="sheet" aria-label="목록 패널">
+    <div class="sheet-topzone" id="sheetTopZone" aria-label="목록 패널 상단 제어 영역">
+      <div class="sheet-header" id="sheetHandle" aria-label="목록 패널 드래그 영역">
+        <div class="handle" id="sheetHandleBar"></div>
+      </div>
 
+      <div class="sheet-toolbar">
+        <button id="allBtn_m" class="chip clear" type="button">전체</button>
+        <button id="nearbyBtn_m" class="chip sort" type="button">가까운 순</button>
+        <div style="flex:1"></div>
+        <button id="reloadBtn_m" type="button">새로고침</button>
+      </div>
 
-  
-<section class="sheet" id="sheet" aria-label="목록 패널">
-  <div class="sheet-topzone" id="sheetTopZone" aria-label="목록 패널 상단 제어 영역">
-    <div class="sheet-header" id="sheetHandle" aria-label="목록 패널 드래그 영역">
-      <div class="handle" id="sheetHandleBar"></div>
+      <div id="status_m" class="sheet-status">로딩 준비 중…</div>
     </div>
 
-    <div class="sheet-toolbar">
-      <button id="allBtn_m" class="chip clear" type="button">전체</button>
-      <button id="nearbyBtn_m" class="chip sort" type="button">가까운 순</button>
-      <div style="flex:1"></div>
-      <button id="reloadBtn_m" type="button">새로고침</button>
+    <div class="sheet-content" id="sheetContent">
+      <div class="list" id="list_m"></div>
     </div>
+  </section>
 
-    <div id="status_m" class="sheet-status">로딩 준비 중…</div>
-  </div>
-
-  <div class="sheet-content" id="sheetContent">
-    <div class="list" id="list_m"></div>
-  </div>
-</section>
-
-
-
-
-  
   <section class="seo-hidden">
     <h2>전국 맛집 지도</h2>
     <p>전국 지역의 미쉐린 스타, 빕구르망, 방송 맛집을 지도에서 찾을 수 있습니다.</p>
@@ -725,6 +588,7 @@ gtag('config', 'G-51LDYE2ZRT');
     let currentFilteredRows = [];
     let selectedPlaceRow = null;
     let markerLookup = new Map();
+    let sheetController = null;
 
     const els = {
       q: document.getElementById("q"),
@@ -750,6 +614,9 @@ gtag('config', 'G-51LDYE2ZRT');
 
       sheet: document.getElementById("sheet"),
       sheetHandle: document.getElementById("sheetHandle"),
+      sheetTopZone: document.getElementById("sheetTopZone"),
+      sheetContent: document.getElementById("sheetContent"),
+      sheetHandleBar: document.getElementById("sheetHandleBar"),
 
       myLocationBtn: document.getElementById("myLocationBtn")
     };
@@ -1055,7 +922,7 @@ gtag('config', 'G-51LDYE2ZRT');
       infoWindow.open({ map, anchor: marker });
     }
 
-    function createCardElement(row, position, marker){
+    function createCardElement(row){
       const div = document.createElement("div");
       div.className = `card${row._selectedBase ? " selected" : ""}`;
 
@@ -1209,13 +1076,8 @@ gtag('config', 'G-51LDYE2ZRT');
         const found = markerLookup.get(rowKey(listRow));
         if (!found) continue;
 
-        fragDesktop.appendChild(
-          createCardElement(listRow, found.position, found.marker)
-        );
-
-        fragMobile.appendChild(
-          createCardElement(listRow, found.position, found.marker)
-        );
+        fragDesktop.appendChild(createCardElement(listRow));
+        fragMobile.appendChild(createCardElement(listRow));
       }
 
       if (els.list) els.list.appendChild(fragDesktop);
@@ -1256,39 +1118,169 @@ gtag('config', 'G-51LDYE2ZRT');
     }
 
     function openSheet(){
-      if (els.sheet) els.sheet.classList.add("open");
+      if (sheetController) sheetController.setState("half");
     }
 
     function closeSheet(){
-      if (els.sheet) els.sheet.classList.remove("open");
+      if (sheetController) sheetController.setState("collapsed");
     }
 
     function toggleSheet(){
-      if (els.sheet) els.sheet.classList.toggle("open");
+      if (sheetController) sheetController.toggle();
     }
 
     function bindSheetGesture(){
-      if (!els.sheetHandle || !els.sheet) return;
+      if (!els.sheet || !els.sheetTopZone || !els.sheetContent || !els.sheetHandleBar) return;
+
+      const sheet = els.sheet;
+      const topZone = els.sheetTopZone;
+      const content = els.sheetContent;
+      const handleBar = els.sheetHandleBar;
 
       let startY = 0;
+      let currentY = 0;
+      let startTranslate = 0;
+      let isDragging = false;
       let moved = false;
+      let currentState = "collapsed";
 
-      const onStart = y => { startY = y; moved = false; };
-      const onMove = y => { if (Math.abs(y - startY) > 12) moved = true; };
-      const onEnd = y => {
-        if (!moved) return toggleSheet();
-        const dy = y - startY;
-        if (dy > 60) closeSheet();
-        else if (dy < -60) openSheet();
+      const SHEET_HEIGHT = () => sheet.getBoundingClientRect().height;
+
+      const getTranslateY = () => {
+        const style = window.getComputedStyle(sheet);
+        const transform = style.transform;
+
+        if (!transform || transform === "none") return 0;
+
+        const matrix = new DOMMatrixReadOnly(transform);
+        return matrix.m42;
       };
 
-      els.sheetHandle.addEventListener("click", toggleSheet);
-      els.sheetHandle.addEventListener("touchstart", e => onStart(e.touches[0].clientY), { passive:true });
-      els.sheetHandle.addEventListener("touchmove", e => onMove(e.touches[0].clientY), { passive:true });
-      els.sheetHandle.addEventListener("touchend", e => {
-        const t = e.changedTouches[0] || e.touches[0];
-        if (t) onEnd(t.clientY);
-      }, { passive:true });
+      const getSnapPoints = () => {
+        const h = SHEET_HEIGHT();
+
+        return {
+          full: 0,
+          half: Math.max(0, h - window.innerHeight * 0.46),
+          collapsed: Math.max(0, h - 180)
+        };
+      };
+
+      const setState = (state) => {
+        const points = getSnapPoints();
+        currentState = state;
+        sheet.style.transition = "transform .25s ease";
+
+        if (state === "full") {
+          sheet.style.transform = `translateY(${points.full}px)`;
+          content.style.overflowY = "auto";
+        } else if (state === "half") {
+          sheet.style.transform = `translateY(${points.half}px)`;
+          content.style.overflowY = "hidden";
+        } else {
+          sheet.style.transform = `translateY(${points.collapsed}px)`;
+          content.style.overflowY = "hidden";
+        }
+      };
+
+      const findNearestState = (translateY) => {
+        const points = getSnapPoints();
+
+        const distances = [
+          { state: "full", value: Math.abs(translateY - points.full) },
+          { state: "half", value: Math.abs(translateY - points.half) },
+          { state: "collapsed", value: Math.abs(translateY - points.collapsed) }
+        ];
+
+        distances.sort((a, b) => a.value - b.value);
+        return distances[0].state;
+      };
+
+      const toggle = () => {
+        if (currentState === "collapsed") {
+          setState("half");
+        } else if (currentState === "half") {
+          setState("full");
+        } else {
+          setState("collapsed");
+        }
+      };
+
+      const onPointerDown = (e) => {
+        if (e.target.closest("button")) return;
+
+        isDragging = true;
+        moved = false;
+        startY = e.clientY;
+        currentY = e.clientY;
+        startTranslate = getTranslateY();
+        sheet.style.transition = "none";
+
+        try {
+          topZone.setPointerCapture(e.pointerId);
+        } catch (_) {}
+      };
+
+      const onPointerMove = (e) => {
+        if (!isDragging) return;
+
+        currentY = e.clientY;
+        const deltaY = currentY - startY;
+        if (Math.abs(deltaY) > 6) moved = true;
+
+        const points = getSnapPoints();
+        let next = startTranslate + deltaY;
+
+        if (next < points.full) next = points.full;
+        if (next > points.collapsed) next = points.collapsed;
+
+        sheet.style.transform = `translateY(${next}px)`;
+      };
+
+      const onPointerUp = (e) => {
+        if (!isDragging) return;
+
+        isDragging = false;
+
+        if (!moved) {
+          if (!e.target.closest("button")) {
+            toggle();
+          }
+          return;
+        }
+
+        const currentTranslate = getTranslateY();
+        const nextState = findNearestState(currentTranslate);
+        setState(nextState);
+      };
+
+      topZone.addEventListener("pointerdown", onPointerDown);
+      topZone.addEventListener("pointermove", onPointerMove);
+      topZone.addEventListener("pointerup", onPointerUp);
+      topZone.addEventListener("pointercancel", onPointerUp);
+
+      handleBar.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggle();
+      });
+
+      topZone.querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+        });
+      });
+
+      window.addEventListener("resize", () => {
+        setState(currentState);
+      });
+
+      sheetController = {
+        setState,
+        toggle,
+        getState: () => currentState
+      };
+
+      setState("collapsed");
     }
 
     async function moveToMyLocation(){
@@ -1430,8 +1422,6 @@ gtag('config', 'G-51LDYE2ZRT');
       if (els.myLocationBtn) els.myLocationBtn.addEventListener("click", moveToMyLocation);
 
       window.addEventListener("resize", syncQuery);
-
-      if (isMobile()) closeSheet();
     }
 
     async function boot(){
@@ -1444,6 +1434,8 @@ gtag('config', 'G-51LDYE2ZRT');
         bindUI();
         updateNearbyButtons();
         await loadAndRender({ force:false });
+
+        if (isMobile()) closeSheet();
       } catch(e){
         console.error(e);
         setStatus(String(e.message || e));
@@ -1453,61 +1445,48 @@ gtag('config', 'G-51LDYE2ZRT');
     boot();
   </script>
 
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js").catch(console.error);
+      });
+    }
+  </script>
 
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js").catch(console.error);
-  });
-}
-</script>
+  <script>
+    let deferredPrompt = null;
 
+    const installBtn = document.getElementById("installAppBtn");
+    const installGuide = document.getElementById("installGuide");
 
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (installBtn) installBtn.hidden = false;
+    });
 
+    if (installBtn) {
+      installBtn.addEventListener("click", async () => {
+        if (!deferredPrompt) return;
 
+        deferredPrompt.prompt();
+        const choiceResult = await deferredPrompt.userChoice;
 
+        deferredPrompt = null;
+        installBtn.hidden = true;
 
+        console.log("Install choice:", choiceResult.outcome);
+      });
+    }
 
-  
+    const isIOS = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+    const isInStandaloneMode =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone === true;
 
-<script>
-let deferredPrompt = null;
-
-const installBtn = document.getElementById("installAppBtn");
-const installGuide = document.getElementById("installGuide");
-
-window.addEventListener("beforeinstallprompt", (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  if (installBtn) installBtn.hidden = false;
-});
-
-if (installBtn) {
-  installBtn.addEventListener("click", async () => {
-    if (!deferredPrompt) return;
-
-    deferredPrompt.prompt();
-    const choiceResult = await deferredPrompt.userChoice;
-
-    deferredPrompt = null;
-    installBtn.hidden = true;
-
-    console.log("Install choice:", choiceResult.outcome);
-  });
-}
-
-const isIOS = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
-const isInStandaloneMode =
-  window.matchMedia("(display-mode: standalone)").matches ||
-  window.navigator.standalone === true;
-
-if (isIOS && !isInStandaloneMode && installGuide) {
-  installGuide.hidden = false;
-}
-</script>
-
-
-
-  
+    if (isIOS && !isInStandaloneMode && installGuide) {
+      installGuide.hidden = false;
+    }
+  </script>
 </body>
 </html>
