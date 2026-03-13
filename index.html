@@ -531,6 +531,60 @@ gtag('config', 'G-51LDYE2ZRT');
 
 
 
+    
+
+
+.sheet-topzone {
+  flex: 0 0 auto;
+  padding: 0 14px 10px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.sheet-header {
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+}
+
+.sheet-header:active {
+  cursor: grabbing;
+}
+
+.sheet-header .handle {
+  width: 52px;
+  height: 6px;
+  border-radius: 999px;
+  background: #c7cbd1;
+}
+
+.sheet-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.sheet-status {
+  margin-bottom: 4px;
+  font-size: 14px;
+  color: #4b5563;
+}
+
+.sheet-content {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 0 14px 18px;
+}
+
+
+
+
 
 
 
@@ -612,12 +666,12 @@ gtag('config', 'G-51LDYE2ZRT');
 
 
   
- <section class="sheet" id="sheet" aria-label="목록 패널">
-  <div class="sheet-header" id="sheetHandle" aria-label="목록 패널 드래그 영역">
-    <div class="handle"></div>
-  </div>
+<section class="sheet" id="sheet" aria-label="목록 패널">
+  <div class="sheet-topzone" id="sheetTopZone" aria-label="목록 패널 상단 제어 영역">
+    <div class="sheet-header" id="sheetHandle" aria-label="목록 패널 드래그 영역">
+      <div class="handle" id="sheetHandleBar"></div>
+    </div>
 
-  <div class="content" id="sheetContent">
     <div class="sheet-toolbar">
       <button id="allBtn_m" class="chip clear" type="button">전체</button>
       <button id="nearbyBtn_m" class="chip sort" type="button">가까운 순</button>
@@ -626,6 +680,9 @@ gtag('config', 'G-51LDYE2ZRT');
     </div>
 
     <div id="status_m" class="sheet-status">로딩 준비 중…</div>
+  </div>
+
+  <div class="sheet-content" id="sheetContent">
     <div class="list" id="list_m"></div>
   </div>
 </section>
