@@ -452,6 +452,48 @@ gtag('config', 'G-51LDYE2ZRT');
   line-height: 1.1;
 }
 
+
+.install-wrap {
+  margin: 10px 0 14px;
+}
+
+.install-btn {
+  width: 100%;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 12px;
+  background: #111827;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.install-guide {
+  margin: 8px 2px 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #6b7280;
+}
+
+
+
+
+
+    
+
+
+.subtitle {
+  margin: 6px 0 12px;
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+
+
+
+    
     
   </style>
 </head>
@@ -464,6 +506,21 @@ gtag('config', 'G-51LDYE2ZRT');
   <img src="logo.png" alt="모두의 맛집 로고" class="brand-logo" />
   <h1 class="title brand-title">모두의 맛집 통합검색</h1>
 </div>
+
+
+<div class="install-wrap">
+  <button id="installAppBtn" class="install-btn" hidden>홈화면에 추가</button>
+  <p id="installGuide" class="install-guide" hidden>
+    아이폰은 Safari 공유 버튼 → 홈 화면에 추가에서 설치할 수 있습니다.
+  </p>
+</div>
+
+
+
+
+
+
+
       
 
       <div class="row">
@@ -1293,5 +1350,52 @@ if ("serviceWorker" in navigator) {
 }
 </script>
 
+
+
+
+
+
+
+  
+
+<script>
+let deferredPrompt = null;
+
+const installBtn = document.getElementById("installAppBtn");
+const installGuide = document.getElementById("installGuide");
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (installBtn) installBtn.hidden = false;
+});
+
+if (installBtn) {
+  installBtn.addEventListener("click", async () => {
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+    const choiceResult = await deferredPrompt.userChoice;
+
+    deferredPrompt = null;
+    installBtn.hidden = true;
+
+    console.log("Install choice:", choiceResult.outcome);
+  });
+}
+
+const isIOS = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+const isInStandaloneMode =
+  window.matchMedia("(display-mode: standalone)").matches ||
+  window.navigator.standalone === true;
+
+if (isIOS && !isInStandaloneMode && installGuide) {
+  installGuide.hidden = false;
+}
+</script>
+
+
+
+  
 </body>
 </html>
