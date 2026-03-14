@@ -571,7 +571,7 @@
       KOREA_BOUNDS: { latMin: 33.0, latMax: 39.8, lngMin: 124.0, lngMax: 132.5 }
     };
 
-    const RANGE_A1 = `${CONFIG.SHEET_NAME}!A1:J`;
+    const RANGE_A1 = `${CONFIG.SHEET_NAME}!A1:K`;
     const CACHE_KEY = `restaurant_map_cache_v13__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
 
     let map = null;
@@ -844,7 +844,7 @@
       }
 
       const headers = (values[0] || []).map(h => String(h || "").trim().toLowerCase());
-      const required = ["no","program","year","name","address","lat","lng","naver_link","google_link","note"];
+      const required = ["no","program","year","name","address","lat","lng","naver_link","kakao_link","google_link","note"];
 
       for (const k of required){
         if (!headers.includes(k)){
@@ -892,16 +892,31 @@
       if (els.nearbyBtn_m) els.nearbyBtn_m.disabled = disabled;
     }
 
-    function buildMapLinks(row){
-      const naver = (row.naver_link || "").trim();
-      const google = (row.google_link || "").trim();
 
-      let html = `<div class="infoLinks">`;
-      if (naver) html += `<a class="infoLinkBtn" href="${escapeHtml(naver)}" target="_blank" rel="noopener">네이버지도 열기</a>`;
-      if (google) html += `<a class="infoLinkBtn" href="${escapeHtml(google)}" target="_blank" rel="noopener">구글지도 열기</a>`;
-      html += `</div>`;
-      return html;
-    }
+
+    
+function buildMapLinks(row){
+  const naver = (row.naver_link || "").trim();
+  const kakao = (row.kakao_link || "").trim();
+  const google = (row.google_link || "").trim();
+
+  let html = `<div class="infoLinks">`;
+  if (naver) {
+    html += `<a class="infoLinkBtn" href="${escapeHtml(naver)}" target="_blank" rel="noopener">네이버지도 열기</a>`;
+  }
+  if (kakao) {
+    html += `<a class="infoLinkBtn" href="${escapeHtml(kakao)}" target="_blank" rel="noopener">카카오맵 열기</a>`;
+  }
+  if (google) {
+    html += `<a class="infoLinkBtn" href="${escapeHtml(google)}" target="_blank" rel="noopener">구글지도 열기</a>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+
+
+    
 
     function openInfo(row, marker){
       const linkHtml = buildMapLinks(row);
