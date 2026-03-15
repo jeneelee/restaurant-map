@@ -645,6 +645,24 @@
       return window.matchMedia("(max-width: 900px)").matches;
     }
 
+
+function updateMapControlsPosition(){
+  if (!els.sheet || !isMobile()) {
+    document.documentElement.style.setProperty("--sheet-offset", "24px");
+    return;
+  }
+
+  const sheetRect = els.sheet.getBoundingClientRect();
+  const visibleHeight = Math.max(0, window.innerHeight - sheetRect.top);
+
+  document.documentElement.style.setProperty("--sheet-offset", `${visibleHeight}px`);
+}
+
+
+
+
+    
+
     function setStatus(message){
       if (els.status) els.status.textContent = message;
       if (els.status_m) els.status_m.textContent = message;
@@ -1216,6 +1234,12 @@ function buildMapLinks(row){
           sheet.style.transform = `translateY(${points.collapsed}px)`;
           content.style.overflowY = "hidden";
         }
+
+      requestAnimationFrame(updateMapControlsPosition);
+
+
+
+        
       };
 
       const findNearestState = (translateY) => {
@@ -1270,6 +1294,7 @@ function buildMapLinks(row){
         if (next > points.collapsed) next = points.collapsed;
 
         sheet.style.transform = `translateY(${next}px)`;
+        updateMapControlsPosition();
       };
 
       const onPointerUp = (e) => {
@@ -1305,9 +1330,19 @@ function buildMapLinks(row){
         });
       });
 
-      window.addEventListener("resize", () => {
-        setState(currentState);
-      });
+
+
+
+      
+    window.addEventListener("resize", () => {
+  setState(currentState);
+  requestAnimationFrame(updateMapControlsPosition);
+});
+
+
+
+
+      
 
       sheetController = {
         setState,
@@ -1315,7 +1350,13 @@ function buildMapLinks(row){
         getState: () => currentState
       };
 
-      setState("collapsed");
+
+
+setState("collapsed");
+updateMapControlsPosition();
+
+
+      
     }
 
     async function moveToMyLocation(){
@@ -1469,6 +1510,8 @@ function buildMapLinks(row){
         bindUI();
         updateNearbyButtons();
         await loadAndRender({ force:false });
+        updateMapControlsPosition();
+        
 
         if (isMobile()) closeSheet();
       } catch(e){
