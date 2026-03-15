@@ -1209,62 +1209,62 @@ function buildMapLinks(row){
         return matrix.m42;
       };
 
-      const getSnapPoints = () => {
-        const h = SHEET_HEIGHT();
 
-        return {
-          full: 0,
-          half: Math.max(0, h - window.innerHeight * 0.46),
-          collapsed: Math.max(0, h - 180)
-        };
-      };
+      
+     const getSnapPoints = () => {
+  const h = SHEET_HEIGHT();
 
-      const setState = (state) => {
-        const points = getSnapPoints();
-        currentState = state;
-        sheet.style.transition = "transform .25s ease";
-
-        if (state === "full") {
-          sheet.style.transform = `translateY(${points.full}px)`;
-          content.style.overflowY = "auto";
-        } else if (state === "half") {
-          sheet.style.transform = `translateY(${points.half}px)`;
-          content.style.overflowY = "hidden";
-        } else {
-          sheet.style.transform = `translateY(${points.collapsed}px)`;
-          content.style.overflowY = "hidden";
-        }
-
-      requestAnimationFrame(updateMapControlsPosition);
+  return {
+    half: Math.max(0, h - window.innerHeight * 0.5),
+    collapsed: Math.max(0, h - 180)
+  };
+};
 
 
 
-        
-      };
+  const setState = (state) => {
+  const points = getSnapPoints();
+  currentState = state;
+  sheet.style.transition = "transform .25s ease";
+
+  if (state === "half") {
+    sheet.style.transform = `translateY(${points.half}px)`;
+    content.style.overflowY = "auto";
+  } else {
+    sheet.style.transform = `translateY(${points.collapsed}px)`;
+    content.style.overflowY = "hidden";
+  }
+
+  requestAnimationFrame(updateMapControlsPosition);
+};    
+
+
+
 
       const findNearestState = (translateY) => {
-        const points = getSnapPoints();
+  const points = getSnapPoints();
 
-        const distances = [
-          { state: "full", value: Math.abs(translateY - points.full) },
-          { state: "half", value: Math.abs(translateY - points.half) },
-          { state: "collapsed", value: Math.abs(translateY - points.collapsed) }
-        ];
+  const distances = [
+    { state: "half", value: Math.abs(translateY - points.half) },
+    { state: "collapsed", value: Math.abs(translateY - points.collapsed) }
+  ];
 
-        distances.sort((a, b) => a.value - b.value);
-        return distances[0].state;
-      };
+  distances.sort((a, b) => a.value - b.value);
+  return distances[0].state;
+};
 
-      const toggle = () => {
-        if (currentState === "collapsed") {
-          setState("half");
-        } else if (currentState === "half") {
-          setState("full");
-        } else {
-          setState("collapsed");
-        }
-      };
+   
+const toggle = () => {
+  if (currentState === "collapsed") {
+    setState("half");
+  } else {
+    setState("collapsed");
+  }
+};
 
+
+
+      
       const onPointerDown = (e) => {
         if (e.target.closest("button")) return;
 
@@ -1290,9 +1290,12 @@ function buildMapLinks(row){
         const points = getSnapPoints();
         let next = startTranslate + deltaY;
 
-        if (next < points.full) next = points.full;
-        if (next > points.collapsed) next = points.collapsed;
 
+if (next < points.half) next = points.half;
+if (next > points.collapsed) next = points.collapsed;
+
+
+        
         sheet.style.transform = `translateY(${next}px)`;
         updateMapControlsPosition();
       };
