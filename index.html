@@ -844,7 +844,7 @@
       }
 
       const headers = (values[0] || []).map(h => String(h || "").trim().toLowerCase());
-      const required = ["no","program","year","name","address","lat","lng","naver_link","kakao_link","google_link","note"];
+      const required = ["no","program","year","name","address","lat","lng","naver_link","kakao_link","google_link"];
 
       for (const k of required){
         if (!headers.includes(k)){
