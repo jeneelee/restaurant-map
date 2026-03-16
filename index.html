@@ -672,11 +672,19 @@ function updateMapControlsPosition(){
       }[ch]));
     }
 
-    function isValidKoreaLatLng(lat,lng){
-      const b = CONFIG.KOREA_BOUNDS;
-      return lat >= b.latMin && lat <= b.latMax && lng >= b.lngMin && lng <= b.lngMax;
-    }
 
+    
+  function isValidLatLng(lat, lng){
+  return Number.isFinite(lat)
+    && Number.isFinite(lng)
+    && lat >= -90 && lat <= 90
+    && lng >= -180 && lng <= 180;
+}
+
+
+
+
+    
     function formatDistance(m){
       if (!Number.isFinite(m)) return "";
       if (m < 1000) return `${Math.round(m)}m`;
@@ -714,10 +722,17 @@ function updateMapControlsPosition(){
         const lng = toNumber(r.lng);
 
         let nearDistance = Number.POSITIVE_INFINITY;
-        if (lat != null && lng != null && isValidKoreaLatLng(lat, lng)) {
-          nearDistance = haversineDistanceMeters(baseLat, baseLng, lat, lng);
-        }
 
+
+        
+     if (lat != null && lng != null && isValidLatLng(lat, lng)) {
+  nearDistance = haversineDistanceMeters(baseLat, baseLng, lat, lng);
+}
+
+
+
+
+        
         return {
           ...r,
           _nearDistance: nearDistance
@@ -1034,11 +1049,17 @@ function buildMapLinks(row){
         const lat = toNumber(row.lat);
         const lng = toNumber(row.lng);
 
-        if (currentLocation && lat != null && lng != null && isValidKoreaLatLng(lat,lng)){
-          next._distance = haversineDistanceMeters(currentLocation.lat, currentLocation.lng, lat, lng);
-        } else {
-          next._distance = null;
-        }
+
+
+        
+   if (currentLocation && lat != null && lng != null && isValidLatLng(lat,lng)){
+  next._distance = haversineDistanceMeters(currentLocation.lat, currentLocation.lng, lat, lng);
+} else {
+  next._distance = null;
+}
+
+
+        
         return next;
       });
 
@@ -1081,9 +1102,15 @@ function buildMapLinks(row){
       for (const row of rows){
         const lat = toNumber(row.lat);
         const lng = toNumber(row.lng);
-        if (lat == null || lng == null) continue;
-        if (!isValidKoreaLatLng(lat,lng)){ invalidCount++; continue; }
 
+
+        
+    if (lat == null || lng == null) continue;
+if (!isValidLatLng(lat,lng)){ invalidCount++; continue; }
+
+
+
+        
         validCount++;
         const pos = { lat, lng };
         bounds.extend(pos);
@@ -1123,7 +1150,11 @@ function buildMapLinks(row){
         const only = rows.find(item => {
           const lat = toNumber(item.lat);
           const lng = toNumber(item.lng);
-          return lat != null && lng != null && isValidKoreaLatLng(lat, lng);
+
+          
+          return lat != null && lng != null && isValidLatLng(lat, lng);
+
+          
         });
         if (only){
           map.setCenter({ lat: Number(only.lat), lng: Number(only.lng) });
