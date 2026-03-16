@@ -636,24 +636,7 @@
 
 
 function updateMapControlsPosition(){
-  if (!els.sheet || !isMobile()) {
-    document.documentElement.style.setProperty("--sheet-offset", "24px");
-    return;
-  }
-
-  const sheetRect = els.sheet.getBoundingClientRect();
-  const visibleHeight = Math.max(0, window.innerHeight - sheetRect.top);
-
-  const buttonSize = 52;   // .mapIconBtn 크기
-  const gap = 10;          // 시트 위 여백
-  const minBottom = 92;    // 너무 아래로 내려가지 않도록 최소값
-
-  const offset = Math.max(
-    minBottom,
-    visibleHeight - (buttonSize / 2) + gap
-  );
-
-  document.documentElement.style.setProperty("--sheet-offset", `${offset}px`);
+  return;
 }
 
 
