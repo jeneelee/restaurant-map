@@ -1538,14 +1538,27 @@ updateMapControlsPosition();
     boot();
   </script>
 
-  <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/sw.js").catch(console.error);
-      });
-    }
-  </script>
 
+
+  
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", async () => {
+      try {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const registration of registrations) {
+          await registration.unregister();
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    });
+  }
+</script>
+
+
+
+  
   <script>
     let deferredPrompt = null;
 
