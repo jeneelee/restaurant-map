@@ -295,6 +295,21 @@
       fill:#111827;
     }
 
+
+.mapIconBtn.active{
+  background:#fee2e2;
+  border-color:#fca5a5;
+}
+
+.mapIconBtn.active svg{
+  fill:#dc2626;
+}
+
+
+
+
+    
+
     .infoLinks{
       display:flex;
       gap:8px;
@@ -917,14 +932,21 @@ function updateMapControlsPosition(){
       markers = [];
     }
 
-    function updateNearbyButtons(){
-      if (els.nearbyBtn) els.nearbyBtn.classList.toggle("active", sortByNearby);
-      if (els.nearbyBtn_m) els.nearbyBtn_m.classList.toggle("active", sortByNearby);
 
-      const disabled = !currentLocation;
-      if (els.nearbyBtn) els.nearbyBtn.disabled = disabled;
-      if (els.nearbyBtn_m) els.nearbyBtn_m.disabled = disabled;
-    }
+
+function updateNearbyButtons(){
+  if (els.nearbyBtn) els.nearbyBtn.classList.toggle("active", sortByNearby);
+  if (els.nearbyBtn_m) els.nearbyBtn_m.classList.toggle("active", sortByNearby);
+
+  const disabled = !currentLocation;
+  if (els.nearbyBtn) els.nearbyBtn.disabled = disabled;
+  if (els.nearbyBtn_m) els.nearbyBtn_m.disabled = disabled;
+
+  if (els.myLocationBtn) {
+    els.myLocationBtn.classList.toggle("active", !!currentLocation);
+  }
+}
+    
 
 
 
@@ -1370,10 +1392,70 @@ const toggle = () => {
 setState("collapsed");
 updateMapControlsPosition();
 
-
-      
     }
 
+
+
+function resetMyLocationMode(){
+  currentLocation = null;
+  sortByNearby = false;
+  selectedPlaceRow = null;
+
+  if (myLocationMarker) {
+    myLocationMarker.setMap(null);
+    myLocationMarker = null;
+  }
+
+  if (myLocationCircle) {
+    myLocationCircle.setMap(null);
+    myLocationCircle = null;
+  }
+
+  updateNearbyButtons();
+  applyFilter();
+
+  setTimeout(() => {
+    const bounds = new google.maps.LatLngBounds();
+    let count = 0;
+
+    for (const row of allRows) {
+      const lat = toNumber(row.lat);
+      const lng = toNumber(row.lng);
+
+      if (lat == null || lng == null) continue;
+      if (!isValidLatLng(lat, lng)) continue;
+
+      bounds.extend({ lat, lng });
+      count++;
+    }
+
+    if (count >= 2) {
+      map.fitBounds(bounds);
+    } else if (count === 1) {
+      map.setCenter(bounds.getCenter());
+      map.setZoom(16);
+    } else {
+      map.setCenter(CONFIG.DEFAULT_CENTER);
+      map.setZoom(CONFIG.DEFAULT_ZOOM);
+    }
+  }, 0);
+}
+
+
+
+
+
+
+
+if (currentLocation) {
+  resetMyLocationMode();
+  return;
+}
+
+
+
+
+    
     async function moveToMyLocation(){
       if (!navigator.geolocation){
         alert("이 브라우저에서는 위치 기능을 지원하지 않습니다.");
@@ -1436,6 +1518,10 @@ updateMapControlsPosition();
         }
 
         updateNearbyButtons();
+
+
+
+        
         applyFilter();
       } catch(e){
         console.error(e);
