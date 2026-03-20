@@ -762,39 +762,24 @@ function applyProgramChipStyle(el, program, active){
 }
 
     
+function createMarkerIcon(program){
+  const normalized = normalizeProgram(program);
 
+  if (normalized === "미쉐린가이드 2026") {
+    return "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
+  }
 
-    function createMarkerIcon(color){
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="44" height="64" viewBox="0 0 44 64">
-      <defs>
-        <radialGradient id="pinHead" cx="35%" cy="30%" r="70%">
-          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
-          <stop offset="18%" stop-color="${color}" stop-opacity="0.95"/>
-          <stop offset="75%" stop-color="${color}"/>
-          <stop offset="100%" stop-color="#000000" stop-opacity="0.18"/>
-        </radialGradient>
+  if (normalized === "미쉐린 빕 구르망") {
+    return "https://maps.google.com/mapfiles/ms/icons/orange-dot.png";
+  }
 
-        <linearGradient id="pinNeedle" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#d1d5db"/>
-          <stop offset="45%" stop-color="#f3f4f6"/>
-          <stop offset="100%" stop-color="#6b7280"/>
-        </linearGradient>
-      </defs>
+  if (normalized === "성시경 먹을텐데") {
+    return "https://maps.google.com/mapfiles/ms/icons/green-dot.png";
+  }
 
-      <ellipse cx="22" cy="58" rx="7" ry="2.6" fill="#000000" opacity="0.12"/>
-      <path d="M22 35 L27 57 L22 62 L17 57 Z" fill="url(#pinNeedle)"/>
-      <circle cx="22" cy="22" r="15.5" fill="url(#pinHead)" stroke="#ffffff" stroke-width="2.2"/>
-      <ellipse cx="17" cy="16" rx="6.8" ry="4.6" fill="#ffffff" opacity="0.42"/>
-    </svg>
-  `;
-
-  return {
-    url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg),
-    scaledSize: new google.maps.Size(30, 44),
-    anchor: new google.maps.Point(15, 42)
-  };
+  return "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
 }
+
 
 
 
@@ -1214,14 +1199,19 @@ function applyProgramChipStyle(el, program, active){
         const pos = { lat, lng };
         bounds.extend(pos);
 
-        const theme = getProgramTheme(row.program);
 
-        const marker = new google.maps.Marker({
-          map,
-          position: pos,
-          title: row.name || "",
-          icon: createMarkerIcon(theme.pin)
-        });
+
+        
+       const marker = new google.maps.Marker({
+  map,
+  position: pos,
+  title: row.name || "",
+  icon: createMarkerIcon(row.program)
+});
+
+
+
+        
 
         marker.addListener("click", () => {
           selectPlace(row, true);
