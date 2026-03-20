@@ -22,13 +22,13 @@
   <meta name="naver-site-verification" content="5d9f78119630f2fdd68e64edcfc1860d23df390e" />
 
   <title>전국 맛집 지도 | 미쉐린 · 빕구르망 · 유튜브 방송 맛집 지도</title>
-  <meta name="description" content="전국 맛집 지도 서비스. 미쉐린 스타, 미쉐린 빕구르망, 성시경 먹을텐데, 또간집 등 유튜브 방송 맛집을 지도에서 한눈에 확인하세요." />
+  <meta name="description" content="전국 맛집 지도 서비스. 미쉐린 가이드, 미쉐린 빕 구르망, 성시경 먹을텐데 등 유튜브 방송 맛집을 지도에서 한눈에 확인하세요." />
   <meta name="keywords" content="전국 맛집 지도, 미쉐린 맛집 지도, 빕구르망 맛집, 유튜브 방송 맛집 지도, 전국 맛집 찾기" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://boogiee.com/" />
 
   <meta property="og:title" content="모두의 맛집 통합검색" />
-  <meta property="og:description" content="미쉐린 스타, 빕구르망, 유튜브 방송 맛집을 지도에서 한눈에 확인하세요" />
+  <meta property="og:description" content="미쉐린 가이드, 빕구르망, 유튜브 방송 맛집을 지도에서 한눈에 확인하세요" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://boogiee.com/" />
   <meta property="og:image" content="https://boogiee.com/og-image.jpg" />
@@ -107,13 +107,6 @@
     .title.brand-title{
       margin:0;
       line-height:1.1;
-    }
-
-    .subtitle{
-      margin:6px 0 12px;
-      font-size:13px;
-      color:#6b7280;
-      line-height:1.4;
     }
 
     .row{
@@ -211,9 +204,21 @@
       white-space:nowrap;
     }
 
-    .cardSub{color:var(--muted);font-size:12px;margin-top:6px}
-    .cardYear{color:var(--muted);font-size:12px;margin-top:2px}
-    .meta{color:var(--muted);font-size:12px;margin-top:6px;line-height:1.35}
+    .programBadge{
+      display:inline-flex;
+      align-items:center;
+      font-size:12px;
+      font-weight:800;
+      padding:5px 9px;
+      border-radius:999px;
+      border:1px solid transparent;
+      margin-top:6px;
+      width:max-content;
+      max-width:100%;
+    }
+
+    .cardYear{color:var(--muted);font-size:12px;margin-top:6px}
+    .meta{color:var(--muted);font-size:12px;margin-top:6px;line-height:1.45}
 
     .chipsRow{
       display:flex;
@@ -236,9 +241,6 @@
     }
 
     .chip.active{
-      background:#eff6ff;
-      border-color:#93c5fd;
-      color:#1d4ed8;
       font-weight:900;
     }
 
@@ -298,7 +300,7 @@
       display:flex;
       gap:8px;
       flex-wrap:wrap;
-      margin-top:10px;
+      margin-top:12px;
     }
 
     .infoLinkBtn{
@@ -560,7 +562,7 @@
 
   <section class="seo-hidden">
     <h2>전국 맛집 지도</h2>
-    <p>전국 지역의 미쉐린 스타, 빕구르망, 유튜브 방송 맛집을 지도에서 찾을 수 있습니다.</p>
+    <p>전국 지역의 미쉐린 가이드, 빕구르망, 유튜브 방송 맛집을 지도에서 찾을 수 있습니다.</p>
   </section>
 
   <script>
@@ -574,8 +576,36 @@
       DEFAULT_ZOOM: 11
     };
 
-    const RANGE_A1 = `${CONFIG.SHEET_NAME}!A1:K`;
-    const CACHE_KEY = `restaurant_map_cache_v14__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
+    const RANGE_A1 = `${CONFIG.SHEET_NAME}!A1:Z`;
+    const CACHE_KEY = `restaurant_map_cache_v15__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
+
+    const PROGRAM_THEMES = {
+      "미쉐린가이드 2026": {
+        pin: "#ef4444",
+        bg: "#fef2f2",
+        border: "#fecaca",
+        text: "#b91c1c"
+      },
+      "미쉐린 빕 구르망": {
+        pin: "#ec4899",
+        bg: "#fdf2f8",
+        border: "#fbcfe8",
+        text: "#be185d"
+      },
+      "성시경 먹을텐데": {
+        pin: "#16a34a",
+        bg: "#f0fdf4",
+        border: "#bbf7d0",
+        text: "#15803d"
+      }
+    };
+
+    const DEFAULT_PROGRAM_THEME = {
+      pin: "#6b7280",
+      bg: "#f9fafb",
+      border: "#e5e7eb",
+      text: "#374151"
+    };
 
     let map = null;
     let infoWindow = null;
@@ -665,6 +695,69 @@
         && Number.isFinite(lng)
         && lat >= -90 && lat <= 90
         && lng >= -180 && lng <= 180;
+    }
+
+    function normalizeProgram(program){
+      const raw = String(program || "").replace(/\s+/g, " ").trim();
+      const cleaned = raw.replace(/[⭐★☆😀😋😄😁🙂🙃😉😊]/gu, "").replace(/\s+/g, " ").trim();
+
+      if (cleaned.includes("빕 구르망")) return "미쉐린 빕 구르망";
+      if (cleaned.includes("성시경 먹을텐데")) return "성시경 먹을텐데";
+      if (cleaned.includes("미쉐린")) return "미쉐린가이드 2026";
+
+      return cleaned;
+    }
+
+    function getProgramTheme(program){
+      const normalized = normalizeProgram(program);
+      return PROGRAM_THEMES[normalized] || DEFAULT_PROGRAM_THEME;
+    }
+
+    function createProgramBadgeHtml(program){
+      const theme = getProgramTheme(program);
+      return `
+        <div
+          class="programBadge"
+          style="
+            background:${theme.bg};
+            border-color:${theme.border};
+            color:${theme.text};
+          "
+        >
+          ${escapeHtml(program || "")}
+        </div>
+      `;
+    }
+
+    function applyProgramChipStyle(el, program, active){
+      const theme = getProgramTheme(program);
+
+      if (active) {
+        el.style.background = theme.bg;
+        el.style.borderColor = theme.border;
+        el.style.color = theme.text;
+        el.style.fontWeight = "900";
+      } else {
+        el.style.background = "#fff";
+        el.style.borderColor = theme.border;
+        el.style.color = theme.text;
+        el.style.fontWeight = "700";
+      }
+    }
+
+    function createMarkerIcon(color){
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="48" viewBox="0 0 36 48">
+          <path d="M18 46c0 0 13-15.072 13-26.5C31 9.835 25.18 4 18 4S5 9.835 5 19.5C5 30.928 18 46 18 46z" fill="${color}" stroke="#ffffff" stroke-width="2"/>
+          <circle cx="18" cy="19" r="6.5" fill="#ffffff" fill-opacity="0.95"/>
+        </svg>
+      `;
+
+      return {
+        url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg),
+        scaledSize: new google.maps.Size(30, 40),
+        anchor: new google.maps.Point(15, 40)
+      };
     }
 
     function formatDistance(m){
@@ -926,15 +1019,17 @@
 
     function openInfo(row, marker){
       const linkHtml = buildMapLinks(row);
+      const programBadgeHtml = createProgramBadgeHtml(row.program || "");
 
       const html = `
         <div style="min-width:240px;max-width:360px;">
           <div style="font-weight:900;font-size:15px;">${escapeHtml(row.name || "")}</div>
-          <div style="color:#6b7280;font-size:12px;margin-top:4px;">
-            ${escapeHtml(row.program || "")}${row.year ? " · " + escapeHtml(row.year) : ""}
+          ${programBadgeHtml}
+          <div style="color:#6b7280;font-size:12px;margin-top:6px;">
+            ${row.year ? escapeHtml(row.year) : ""}
           </div>
           ${row.address ? `<div style="margin-top:6px;">${escapeHtml(row.address)}</div>` : ""}
-          ${row.note ? `<div style="margin-top:6px;color:#374151;">${escapeHtml(row.note)}</div>` : ""}
+          ${row.note ? `<div style="margin-top:8px;color:#374151;font-size:12px;line-height:1.45;">${escapeHtml(row.note)}</div>` : ""}
           ${linkHtml}
         </div>
       `;
@@ -956,12 +1051,14 @@
         badgeHtml = `<div class="distanceBadge">${escapeHtml(formatDistance(row._distance))}</div>`;
       }
 
+      const programBadgeHtml = createProgramBadgeHtml(row.program || "");
+
       div.innerHTML = `
         <div class="cardTop">
           <div class="cardTitle">${escapeHtml(row.name || "(가게명없음)")}</div>
           ${badgeHtml}
         </div>
-        <div class="cardSub">${escapeHtml(row.program || "")}</div>
+        ${programBadgeHtml}
         <div class="cardYear">${row.year ? escapeHtml(row.year) : ""}</div>
         <div class="meta">${escapeHtml(row.address || "")}</div>
         ${row.note ? `<div class="meta">${escapeHtml(row.note)}</div>` : ""}
@@ -982,6 +1079,7 @@
         const el = document.createElement("span");
         el.className = `chip${active ? " active" : ""}`;
         el.textContent = label;
+        applyProgramChipStyle(el, label, active);
         el.addEventListener("click", onClick);
         return el;
       };
@@ -1077,10 +1175,13 @@
         const pos = { lat, lng };
         bounds.extend(pos);
 
+        const theme = getProgramTheme(row.program);
+
         const marker = new google.maps.Marker({
           map,
           position: pos,
-          title: row.name || ""
+          title: row.name || "",
+          icon: createMarkerIcon(theme.pin)
         });
 
         marker.addListener("click", () => {
