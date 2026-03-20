@@ -223,7 +223,6 @@
 
 
     
-    .cardYear{color:var(--muted);font-size:12px;margin-top:6px}
     .meta{color:var(--muted);font-size:12px;margin-top:6px;line-height:1.45}
 
     .chipsRow{
@@ -970,7 +969,7 @@ function createMarkerIcon(program){
       }
 
       const headers = (values[0] || []).map(h => String(h || "").trim().toLowerCase());
-      const required = ["no","program","year","name","address","lat","lng","naver_link","kakao_link","google_link"];
+      const required = ["no","program","name","address","lat","lng","naver_link","kakao_link","google_link"];
 
       for (const k of required){
         if (!headers.includes(k)){
@@ -1049,9 +1048,6 @@ function createMarkerIcon(program){
         <div style="min-width:240px;max-width:360px;">
           <div style="font-weight:900;font-size:15px;">${escapeHtml(row.name || "")}</div>
           ${programBadgeHtml}
-          <div style="color:#6b7280;font-size:12px;margin-top:6px;">
-            ${row.year ? escapeHtml(row.year) : ""}
-          </div>
           ${row.address ? `<div style="margin-top:6px;">${escapeHtml(row.address)}</div>` : ""}
           ${row.note ? `<div style="margin-top:8px;color:#374151;font-size:12px;line-height:1.45;">${escapeHtml(row.note)}</div>` : ""}
           ${linkHtml}
@@ -1083,7 +1079,6 @@ function createMarkerIcon(program){
           ${badgeHtml}
         </div>
         ${programBadgeHtml}
-        <div class="cardYear">${row.year ? escapeHtml(row.year) : ""}</div>
         <div class="meta">${escapeHtml(row.address || "")}</div>
         ${row.note ? `<div class="meta">${escapeHtml(row.note)}</div>` : ""}
       `;
