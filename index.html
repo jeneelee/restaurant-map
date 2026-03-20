@@ -204,19 +204,25 @@
       white-space:nowrap;
     }
 
-    .programBadge{
-      display:inline-flex;
-      align-items:center;
-      font-size:12px;
-      font-weight:800;
-      padding:5px 9px;
-      border-radius:999px;
-      border:1px solid transparent;
-      margin-top:6px;
-      width:max-content;
-      max-width:100%;
-    }
 
+
+
+.programBadge{
+  display:inline-flex;
+  align-items:center;
+  font-size:12px;
+  font-weight:800;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid transparent;
+  margin-top:6px;
+  width:max-content;
+  max-width:100%;
+  line-height:1;
+}
+
+
+    
     .cardYear{color:var(--muted);font-size:12px;margin-top:6px}
     .meta{color:var(--muted);font-size:12px;margin-top:6px;line-height:1.45}
 
@@ -598,7 +604,7 @@ const PROGRAM_THEMES = {
   "성시경 먹을텐데": {
     pin: "#16a34a",
     bg: "#f0fdf4",
-    border: "#bbf7d0",
+    border: "#86efac",
     text: "#15803d"
   }
 };
@@ -735,37 +741,64 @@ const PROGRAM_THEMES = {
       `;
     }
 
-    function applyProgramChipStyle(el, program, active){
-      const theme = getProgramTheme(program);
 
-      if (active) {
-        el.style.background = theme.bg;
-        el.style.borderColor = theme.border;
-        el.style.color = theme.text;
-        el.style.fontWeight = "900";
-      } else {
-        el.style.background = "#fff";
-        el.style.borderColor = theme.border;
-        el.style.color = theme.text;
-        el.style.fontWeight = "700";
-      }
-    }
+
+function applyProgramChipStyle(el, program, active){
+  const theme = getProgramTheme(program);
+
+  if (active) {
+    el.style.background = theme.pin;
+    el.style.borderColor = theme.pin;
+    el.style.color = "#ffffff";
+    el.style.fontWeight = "900";
+    el.style.boxShadow = "0 1px 2px rgba(0,0,0,.08)";
+  } else {
+    el.style.background = theme.bg;
+    el.style.borderColor = theme.border;
+    el.style.color = theme.text;
+    el.style.fontWeight = "800";
+    el.style.boxShadow = "none";
+  }
+}
+
+    
+
 
     function createMarkerIcon(color){
-      const svg = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="48" viewBox="0 0 36 48">
-          <path d="M18 46c0 0 13-15.072 13-26.5C31 9.835 25.18 4 18 4S5 9.835 5 19.5C5 30.928 18 46 18 46z" fill="${color}" stroke="#ffffff" stroke-width="2"/>
-          <circle cx="18" cy="19" r="6.5" fill="#ffffff" fill-opacity="0.95"/>
-        </svg>
-      `;
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="44" height="64" viewBox="0 0 44 64">
+      <defs>
+        <radialGradient id="pinHead" cx="35%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+          <stop offset="18%" stop-color="${color}" stop-opacity="0.95"/>
+          <stop offset="75%" stop-color="${color}"/>
+          <stop offset="100%" stop-color="#000000" stop-opacity="0.18"/>
+        </radialGradient>
 
-      return {
-        url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg),
-        scaledSize: new google.maps.Size(30, 40),
-        anchor: new google.maps.Point(15, 40)
-      };
-    }
+        <linearGradient id="pinNeedle" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#d1d5db"/>
+          <stop offset="45%" stop-color="#f3f4f6"/>
+          <stop offset="100%" stop-color="#6b7280"/>
+        </linearGradient>
+      </defs>
 
+      <ellipse cx="22" cy="58" rx="7" ry="2.6" fill="#000000" opacity="0.12"/>
+      <path d="M22 35 L27 57 L22 62 L17 57 Z" fill="url(#pinNeedle)"/>
+      <circle cx="22" cy="22" r="15.5" fill="url(#pinHead)" stroke="#ffffff" stroke-width="2.2"/>
+      <ellipse cx="17" cy="16" rx="6.8" ry="4.6" fill="#ffffff" opacity="0.42"/>
+    </svg>
+  `;
+
+  return {
+    url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg),
+    scaledSize: new google.maps.Size(30, 44),
+    anchor: new google.maps.Point(15, 42)
+  };
+}
+
+
+
+    
     function formatDistance(m){
       if (!Number.isFinite(m)) return "";
       if (m < 1000) return `${Math.round(m)}m`;
