@@ -1038,22 +1038,20 @@ function openMapAndExtra(mapUrl, extraUrl) {
 
    
 
+
 function buildMapLinks(row){
   const naver = (row.naver_link || "").trim();
   const kakao = (row.kakao_link || "").trim();
   const google = (row.google_link || "").trim();
-
-  // 여기 넣을 링크: 사용자님 쿠팡 파트너스 링크
-  const extraLink = "https://link.coupang.com/a/eaNJy4";
 
   let html = `<div class="infoLinks">`;
 
   if (naver) {
     html += `
       <a
-        class="infoLinkBtn"
+        class="infoLinkBtn js-map-link"
+        data-map-url="${escapeHtml(naver)}"
         href="${escapeHtml(naver)}"
-        onclick="return openMapAndExtra('${escapeHtml(naver)}','${escapeHtml(extraLink)}')"
         target="_blank"
         rel="noopener"
       >
@@ -1065,9 +1063,9 @@ function buildMapLinks(row){
   if (kakao) {
     html += `
       <a
-        class="infoLinkBtn"
+        class="infoLinkBtn js-map-link"
+        data-map-url="${escapeHtml(kakao)}"
         href="${escapeHtml(kakao)}"
-        onclick="return openMapAndExtra('${escapeHtml(kakao)}','${escapeHtml(extraLink)}')"
         target="_blank"
         rel="noopener"
       >
@@ -1079,9 +1077,9 @@ function buildMapLinks(row){
   if (google) {
     html += `
       <a
-        class="infoLinkBtn"
+        class="infoLinkBtn js-map-link"
+        data-map-url="${escapeHtml(google)}"
         href="${escapeHtml(google)}"
-        onclick="return openMapAndExtra('${escapeHtml(google)}','${escapeHtml(extraLink)}')"
         target="_blank"
         rel="noopener"
       >
@@ -1093,7 +1091,6 @@ function buildMapLinks(row){
   html += `</div>`;
   return html;
 }
-
 
 
 
