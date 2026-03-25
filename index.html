@@ -1070,16 +1070,7 @@ function renderCoupangBanner() {
 }
 
 
-
-
-
-
-
-
-
     
-
-
 
 function openInfo(row, marker){
   const linkHtml = buildMapLinks(row);
@@ -1092,18 +1083,22 @@ function openInfo(row, marker){
       ${row.address ? `<div style="margin-top:6px;">${escapeHtml(row.address)}</div>` : ""}
       ${row.note ? `<div style="margin-top:8px;color:#374151;font-size:12px;line-height:1.45;">${escapeHtml(row.note)}</div>` : ""}
       ${linkHtml}
+
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid #e5e7eb;">
+        <div id="coupang-banner-slot" style="width:300px;min-height:120px;"></div>
+      </div>
     </div>
   `;
 
   infoWindow.setContent(html);
   infoWindow.open({ map, anchor: marker });
+
+  google.maps.event.addListenerOnce(infoWindow, "domready", () => {
+    renderCoupangBanner();
+  });
 }
 
     
-
-
-
-
     
 
     function createCardElement(row){
