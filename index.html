@@ -1048,6 +1048,39 @@ function buildMapLinks(row){
 
 
 
+function renderCoupangBanner() {
+  const container = document.getElementById("coupang-banner-slot");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  if (!window.PartnersCoupang || !window.PartnersCoupang.G) {
+    console.warn("쿠팡 배너 스크립트가 아직 로드되지 않았습니다.");
+    return;
+  }
+
+  new PartnersCoupang.G({
+    id: 975197,
+    trackingCode: "AF2633322",
+    subId: null,
+    template: "carousel",
+    width: "300",
+    height: "120"
+  });
+}
+
+
+
+
+
+
+
+
+
+    
+
+
+
 function openInfo(row, marker){
   const linkHtml = buildMapLinks(row);
   const programBadgeHtml = createProgramBadgeHtml(row.program || "");
@@ -1721,5 +1754,12 @@ function openInfo(row, marker){
       installGuide.hidden = false;
     }
   </script>
+
+
+
+<script src="https://ads-partners.coupang.com/g.js"></script>
+
+
+  
 </body>
 </html>
