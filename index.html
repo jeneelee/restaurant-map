@@ -1121,8 +1121,7 @@ function getRandomBannerInsertIndex(listLength) {
 
 
 
-    
-  function createCoupangBannerCard() {
+ function createCoupangBannerCard() {
   const div = document.createElement("div");
   div.className = "card";
   div.style.padding = "0";
@@ -1136,12 +1135,21 @@ function getRandomBannerInsertIndex(listLength) {
       href="https://link.coupang.com/a/ea29TJ"
       target="_blank"
       referrerpolicy="unsafe-url"
-      style="display:flex;justify-content:center;align-items:center;text-decoration:none;"
+      style="
+        display:block;
+        overflow:hidden;
+        border-radius:12px;
+      "
     >
       <img
         src="https://ads-partners.coupang.com/banners/975246?subId=&traceId=V0-301-879dd1202e5c73b2-I975246&w=320&h=100"
         alt=""
-        style="display:block;width:100%;max-width:320px;height:auto;border:0;border-radius:12px;"
+        style="
+          display:block;
+          width:100%;
+          height:auto;
+          border:0;
+        "
       />
     </a>
   `;
