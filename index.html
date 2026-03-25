@@ -1120,13 +1120,16 @@ function getRandomBannerInsertIndex(listLength) {
 }
 
 
-    
 
-function createCoupangBannerCard() {
+    
+  function createCoupangBannerCard() {
   const div = document.createElement("div");
   div.className = "card";
-  div.style.padding = "8px";
+  div.style.padding = "0";
   div.style.cursor = "default";
+  div.style.border = "none";
+  div.style.background = "transparent";
+  div.style.boxShadow = "none";
 
   div.innerHTML = `
     <a 
@@ -1138,17 +1141,13 @@ function createCoupangBannerCard() {
       <img
         src="https://ads-partners.coupang.com/banners/975246?subId=&traceId=V0-301-879dd1202e5c73b2-I975246&w=320&h=100"
         alt=""
-        style="display:block;width:100%;max-width:320px;height:auto;border:0;border-radius:8px;"
+        style="display:block;width:100%;max-width:320px;height:auto;border:0;border-radius:12px;"
       />
     </a>
   `;
 
   return div;
 }
-
-
-
-
 
     
 
