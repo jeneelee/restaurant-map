@@ -1136,6 +1136,7 @@ function getRandomBannerInsertIndex(listLength) {
       <a 
         href="https://link.coupang.com/a/ea29TJ"
         target="_blank"
+        onclick="trackCoupangClick()"
         referrerpolicy="unsafe-url"
         style="
           display:block;
@@ -1806,6 +1807,21 @@ if (validCount >= 2 && !sortByNearby && !selectedPlaceRow){
     if (isIOS && !isInStandaloneMode && installGuide) {
       installGuide.hidden = false;
     }
+
+
+
+function trackCoupangClick() {
+  if (typeof gtag === "function") {
+    gtag('event', 'coupang_click', {
+      event_category: 'affiliate',
+      event_label: 'banner_click'
+    });
+  }
+}
+
+
+
+    
   </script>
 
 
