@@ -1131,27 +1131,33 @@ function getRandomBannerInsertIndex(listLength) {
   div.style.boxShadow = "none";
 
   div.innerHTML = `
-    <a 
-      href="https://link.coupang.com/a/ea29TJ"
-      target="_blank"
-      referrerpolicy="unsafe-url"
-      style="
-        display:block;
-        overflow:hidden;
-        border-radius:12px;
-      "
-    >
-      <img
-        src="https://ads-partners.coupang.com/banners/975246?subId=&traceId=V0-301-879dd1202e5c73b2-I975246&w=320&h=100"
-        alt=""
+    <div style="
+      padding: 2px 4px;
+      background: transparent;
+    ">
+      <a 
+        href="https://link.coupang.com/a/ea29TJ"
+        target="_blank"
+        referrerpolicy="unsafe-url"
         style="
           display:block;
-          width:100%;
-          height:auto;
-          border:0;
+          overflow:hidden;
+          border-radius:12px;
+          background:#fff;
         "
-      />
-    </a>
+      >
+        <img
+          src="https://ads-partners.coupang.com/banners/975246?subId=&traceId=V0-301-879dd1202e5c73b2-I975246&w=320&h=100"
+          alt=""
+          style="
+            display:block;
+            width:100%;
+            height:auto;
+            border:0;
+          "
+        />
+      </a>
+    </div>
   `;
 
   return div;
