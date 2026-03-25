@@ -1047,32 +1047,7 @@ function buildMapLinks(row){
 
 
 
-
-function renderCoupangBanner() {
-  const container = document.getElementById("coupang-banner-slot");
-  if (!container) return;
-
-  container.innerHTML = "";
-
-  if (!window.PartnersCoupang || !window.PartnersCoupang.G) {
-    console.warn("쿠팡 배너 스크립트가 아직 로드되지 않았습니다.");
-    return;
-  }
-
-  new PartnersCoupang.G({
-    id: 975197,
-    trackingCode: "AF2633322",
-    subId: null,
-    template: "carousel",
-    width: "300",
-    height: "120"
-  });
-}
-
-
-    
-
-function openInfo(row, marker){
+    function openInfo(row, marker){
   const linkHtml = buildMapLinks(row);
   const programBadgeHtml = createProgramBadgeHtml(row.program || "");
 
@@ -1083,20 +1058,14 @@ function openInfo(row, marker){
       ${row.address ? `<div style="margin-top:6px;">${escapeHtml(row.address)}</div>` : ""}
       ${row.note ? `<div style="margin-top:8px;color:#374151;font-size:12px;line-height:1.45;">${escapeHtml(row.note)}</div>` : ""}
       ${linkHtml}
-
-      <div style="margin-top:12px;padding-top:12px;border-top:1px solid #e5e7eb;">
-        <div id="coupang-banner-slot" style="width:300px;min-height:120px;"></div>
-      </div>
     </div>
   `;
 
   infoWindow.setContent(html);
   infoWindow.open({ map, anchor: marker });
-
-  google.maps.event.addListenerOnce(infoWindow, "domready", () => {
-    renderCoupangBanner();
-  });
 }
+
+
 
     
     
@@ -1750,9 +1719,6 @@ function openInfo(row, marker){
     }
   </script>
 
-
-
-<script src="https://ads-partners.coupang.com/g.js"></script>
 
 
   
