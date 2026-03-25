@@ -578,7 +578,7 @@
       SHEET_NAME: "DB",
       CACHE_TTL_MS: 2 * 60 * 1000,
       DEFAULT_CENTER: { lat: 37.5665, lng: 126.9780 },
-      DEFAULT_ZOOM: 11
+      DEFAULT_ZOOM: 12
     };
 
     const RANGE_A1 = `${CONFIG.SHEET_NAME}!A1:Z`;
@@ -633,6 +633,7 @@ const PROGRAM_THEMES = {
     let selectedPlaceRow = null;
     let markerLookup = new Map();
     let sheetController = null;
+    let hasInitialViewSet = false;
 
     const els = {
       q: document.getElementById("q"),
@@ -1316,25 +1317,38 @@ for (let i = 0; i < listRows.length; i++) {
       if (els.list_m) els.list_m.appendChild(fragMobile);
 
    
+
+
+
       
+if (validCount >= 2 && !sortByNearby && !selectedPlaceRow){
+  if (!hasInitialViewSet) {
+    map.setCenter(CONFIG.DEFAULT_CENTER);
+    map.setZoom(CONFIG.DEFAULT_ZOOM);
+    hasInitialViewSet = true;
+  } else {
+    map.fitBounds(bounds);
+  }
+} else if (validCount === 1){
+  const only = rows.find(item => {
+    const lat = toNumber(item.lat);
+    const lng = toNumber(item.lng);
+    return lat != null && lng != null && isValidLatLng(lat, lng);
+  });
+  if (only){
+    map.setCenter({ lat: Number(only.lat), lng: Number(only.lng) });
+    map.setZoom(16);
+  }
+} else if (validCount === 0){
+  map.setCenter(CONFIG.DEFAULT_CENTER);
+  map.setZoom(CONFIG.DEFAULT_ZOOM);
+}
 
-      if (validCount >= 2 && !sortByNearby && !selectedPlaceRow){
-        map.fitBounds(bounds);
-      } else if (validCount === 1){
-        const only = rows.find(item => {
-          const lat = toNumber(item.lat);
-          const lng = toNumber(item.lng);
-          return lat != null && lng != null && isValidLatLng(lat, lng);
-        });
-        if (only){
-          map.setCenter({ lat: Number(only.lat), lng: Number(only.lng) });
-          map.setZoom(16);
-        }
-      } else if (validCount === 0){
-        map.setCenter(CONFIG.DEFAULT_CENTER);
-        map.setZoom(CONFIG.DEFAULT_ZOOM);
-      }
 
+
+
+
+      
       let message = `총 ${validCount}개 표시 중`;
 
       if (selectedPlaceRow) {
