@@ -1103,6 +1103,71 @@ function buildMapLinks(row){
       return div;
     }
 
+
+
+
+function renderCoupangBanners() {
+  const slots = document.querySelectorAll(".coupang-banner-slot");
+  if (!slots.length) return;
+
+  if (!window.PartnersCoupang || !window.PartnersCoupang.G) {
+    console.warn("쿠팡 배너 스크립트가 아직 로드되지 않았습니다.");
+    return;
+  }
+
+  slots.forEach(slot => {
+    slot.innerHTML = "";
+
+    new PartnersCoupang.G({
+      id: 975197,
+      trackingCode: "AF2633322",
+      subId: null,
+      template: "carousel",
+      width: "280",
+      height: "100"
+    });
+  });
+}
+
+
+function getRandomBannerInsertIndex(listLength) {
+  if (listLength < 5) return -1;
+
+  const candidates = [2, 3, 4].filter(n => n < listLength);
+  if (!candidates.length) return -1;
+
+  const randomIndex = Math.floor(Math.random() * candidates.length);
+  return candidates[randomIndex];
+}
+
+
+
+    
+
+function createCoupangBannerCard() {
+  const div = document.createElement("div");
+  div.className = "card";
+  div.style.padding = "12px";
+  div.style.cursor = "default";
+
+  div.innerHTML = `
+    <div style="font-size:12px;color:#6b7280;font-weight:700;margin-bottom:8px;">
+      관련 상품 추천
+    </div>
+    <div class="coupang-banner-slot" style="width:100%;min-height:120px;display:flex;justify-content:center;"></div>
+  `;
+
+  return div;
+}
+
+
+
+
+
+
+
+    
+
     function renderProgramChips(){
       const programs = uniq(allRows.map(r => r.program)).sort((a,b) => a.localeCompare(b,"ko"));
 
@@ -1232,16 +1297,36 @@ function buildMapLinks(row){
         });
       }
 
-      for (const listRow of listRows){
-        const found = markerLookup.get(rowKey(listRow));
-        if (!found) continue;
 
-        fragDesktop.appendChild(createCardElement(listRow));
-        fragMobile.appendChild(createCardElement(listRow));
-      }
+const bannerInsertIndex = getRandomBannerInsertIndex(listRows.length);
+
+for (let i = 0; i < listRows.length; i++) {
+  const listRow = listRows[i];
+  const found = markerLookup.get(rowKey(listRow));
+  if (!found) continue;
+
+  fragDesktop.appendChild(createCardElement(listRow));
+  fragMobile.appendChild(createCardElement(listRow));
+
+  if (bannerInsertIndex === i + 1) {
+    fragDesktop.appendChild(createCoupangBannerCard());
+    fragMobile.appendChild(createCoupangBannerCard());
+  }
+}
+
+      
 
       if (els.list) els.list.appendChild(fragDesktop);
       if (els.list_m) els.list_m.appendChild(fragMobile);
+
+      requestAnimationFrame(() => {
+      renderCoupangBanners();
+      });
+
+
+
+
+      
 
       if (validCount >= 2 && !sortByNearby && !selectedPlaceRow){
         map.fitBounds(bounds);
@@ -1719,7 +1804,7 @@ function buildMapLinks(row){
     }
   </script>
 
-
+<script src="https://ads-partners.coupang.com/g.js"></script>
 
   
 </body>
