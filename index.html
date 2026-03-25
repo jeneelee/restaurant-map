@@ -1023,34 +1023,32 @@ function createMarkerIcon(program){
 
 
 function openMapAndExtra(mapUrl, extraUrl) {
-
-  if (mapUrl) {
-    window.open(mapUrl, "_blank", "noopener");
-  }
-
-  if (extraUrl) {
-    window.open(extraUrl, "_blank", "noopener");
-  }
+  const mapWin = window.open("", "_blank");
+  const extraWin = window.open("", "_blank");
+ 
+  mapWin.location.href = mapUrl;
+  extraWin.location.href = extraUrl;
 
   return false;
 }
 
    
 
-
 function buildMapLinks(row){
   const naver = (row.naver_link || "").trim();
   const kakao = (row.kakao_link || "").trim();
   const google = (row.google_link || "").trim();
+
+  const extraLink = "https://link.coupang.com/a/eaNJy4";
 
   let html = `<div class="infoLinks">`;
 
   if (naver) {
     html += `
       <a
-        class="infoLinkBtn js-map-link"
-        data-map-url="${escapeHtml(naver)}"
+        class="infoLinkBtn"
         href="${escapeHtml(naver)}"
+        onclick="return openMapAndExtra('${escapeHtml(naver)}','${escapeHtml(extraLink)}')"
         target="_blank"
         rel="noopener"
       >
@@ -1062,9 +1060,9 @@ function buildMapLinks(row){
   if (kakao) {
     html += `
       <a
-        class="infoLinkBtn js-map-link"
-        data-map-url="${escapeHtml(kakao)}"
+        class="infoLinkBtn"
         href="${escapeHtml(kakao)}"
+        onclick="return openMapAndExtra('${escapeHtml(kakao)}','${escapeHtml(extraLink)}')"
         target="_blank"
         rel="noopener"
       >
@@ -1076,9 +1074,9 @@ function buildMapLinks(row){
   if (google) {
     html += `
       <a
-        class="infoLinkBtn js-map-link"
-        data-map-url="${escapeHtml(google)}"
+        class="infoLinkBtn"
         href="${escapeHtml(google)}"
+        onclick="return openMapAndExtra('${escapeHtml(google)}','${escapeHtml(extraLink)}')"
         target="_blank"
         rel="noopener"
       >
