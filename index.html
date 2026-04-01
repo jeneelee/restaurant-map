@@ -34,20 +34,20 @@
   <meta property="og:image" content="https://boogiee.com/og-image.jpg" />
 
   <style>
- :root{
-  --border:rgba(229,231,235,.78);
-  --text:#111827;
-  --muted:#6b7280;
-  --panel-bg:rgba(255,255,255,.76);
-  --panel-shadow:0 10px 24px rgba(0,0,0,.08);
-  --radius:22px;
-  --btn-bg:rgba(255,255,255,.58);
-  --btn-hover:rgba(255,255,255,.74);
-  --danger:#ef4444;
-  --selected-bg:rgba(239,246,255,.88);
-  --selected-border:rgba(147,197,253,.82);
-  --selected-text:#1d4ed8;
-}
+    :root{
+      --border:rgba(229,231,235,.78);
+      --text:#111827;
+      --muted:#6b7280;
+      --panel-bg:rgba(255,255,255,.76);
+      --panel-shadow:0 10px 24px rgba(0,0,0,.08);
+      --radius:22px;
+      --btn-bg:rgba(255,255,255,.58);
+      --btn-hover:rgba(255,255,255,.74);
+      --danger:#ef4444;
+      --selected-bg:rgba(239,246,255,.88);
+      --selected-border:rgba(147,197,253,.82);
+      --selected-text:#1d4ed8;
+    }
 
     *{box-sizing:border-box}
     html,body{margin:0;width:100%;height:100%}
@@ -76,43 +76,31 @@
       height:100%;
     }
 
-
-
-
-
-    
     .side{
-  position:absolute;
-  top:14px;
-  left:14px;
-  bottom:14px;
-  width:360px;
-  z-index:20;
-  border:1px solid rgba(229,231,235,.72);
-  border-radius:var(--radius);
-  background:rgba(255,255,255,.78);
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-  box-shadow:0 10px 24px rgba(0,0,0,.10);
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
-}
+      position:absolute;
+      top:14px;
+      left:14px;
+      bottom:14px;
+      width:360px;
+      z-index:20;
+      border:1px solid rgba(229,231,235,.72);
+      border-radius:var(--radius);
+      background:rgba(255,255,255,.78);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+      box-shadow:0 10px 24px rgba(0,0,0,.10);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
 
-.side-top{
-  flex:0 0 auto;
-  padding:12px 12px 10px;
-  border-bottom:1px solid rgba(229,231,235,.65);
-  background:rgba(255,255,255,.46);
-}
+    .side-top{
+      flex:0 0 auto;
+      padding:12px 12px 10px;
+      border-bottom:1px solid rgba(229,231,235,.65);
+      background:rgba(255,255,255,.46);
+    }
 
-
-
-
-
-
-
-    
     .side-body{
       flex:1 1 auto;
       overflow:auto;
@@ -155,25 +143,25 @@
     }
 
     input{
-  width:100%;
-  padding:9px 10px;
-  border:1px solid rgba(229,231,235,.72);
-  border-radius:12px;
-  outline:none;
-  background:rgba(255,255,255,.56);
-  font-size:13px;
-}
+      width:100%;
+      padding:9px 10px;
+      border:1px solid rgba(229,231,235,.72);
+      border-radius:12px;
+      outline:none;
+      background:rgba(255,255,255,.56);
+      font-size:13px;
+    }
 
-   button{
-  padding:8px 10px;
-  border:1px solid rgba(229,231,235,.72);
-  border-radius:12px;
-  background:var(--btn-bg);
-  cursor:pointer;
-  white-space:nowrap;
-  font-size:12px;
-  font-weight:700;
-}
+    button{
+      padding:8px 10px;
+      border:1px solid rgba(229,231,235,.72);
+      border-radius:12px;
+      background:var(--btn-bg);
+      cursor:pointer;
+      white-space:nowrap;
+      font-size:12px;
+      font-weight:700;
+    }
 
     button:hover{background:var(--btn-hover)}
     button:disabled{opacity:.6;cursor:not-allowed}
@@ -193,24 +181,24 @@
     }
 
     .card{
-  border:1px solid rgba(229,231,235,.72);
-  border-radius:14px;
-  padding:9px;
-  cursor:pointer;
-  background:rgba(255,255,255,.68);
-  transition:background .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease;
-}
+      border:1px solid rgba(229,231,235,.72);
+      border-radius:14px;
+      padding:9px;
+      cursor:pointer;
+      background:rgba(255,255,255,.68);
+      transition:background .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease;
+    }
 
-   .card:hover{
-  background:rgba(255,255,255,.82);
-  transform:translateY(-1px);
-}
+    .card:hover{
+      background:rgba(255,255,255,.82);
+      transform:translateY(-1px);
+    }
 
     .card.selected{
-  background:rgba(239,246,255,.82);
-  border-color:rgba(147,197,253,.78);
-  box-shadow:0 0 0 1px rgba(147,197,253,.22) inset;
-}
+      background:rgba(239,246,255,.82);
+      border-color:rgba(147,197,253,.78);
+      box-shadow:0 0 0 1px rgba(147,197,253,.22) inset;
+    }
 
     .cardTop{
       display:flex;
@@ -283,18 +271,18 @@
       display:none;
     }
 
-   .chip{
-  display:inline-flex;
-  align-items:center;
-  font-size:11px;
-  padding:5px 9px;
-  border:1px solid rgba(229,231,235,.72);
-  border-radius:999px;
-  background:rgba(255,255,255,.56);
-  user-select:none;
-  cursor:pointer;
-  white-space:nowrap;
-}
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      font-size:11px;
+      padding:5px 9px;
+      border:1px solid rgba(229,231,235,.72);
+      border-radius:999px;
+      background:rgba(255,255,255,.56);
+      user-select:none;
+      cursor:pointer;
+      white-space:nowrap;
+    }
 
     .chip.active{
       font-weight:900;
@@ -643,7 +631,7 @@
     };
 
     const RANGE_A1 = `${CONFIG.SHEET_NAME}!A1:Z`;
-    const CACHE_KEY = `restaurant_map_cache_v16__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
+    const CACHE_KEY = `restaurant_map_cache_v17__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
 
     const PROGRAM_THEMES = {
       "미쉐린가이드 2026": {
@@ -671,6 +659,12 @@
       bg: "#f9fafb",
       border: "#e5e7eb",
       text: "#374151"
+    };
+
+    const KAKAO_ADFIT = {
+      UNIT: "DAN-QcJeLbFbhsCiwHH",
+      WIDTH: 320,
+      HEIGHT: 100
     };
 
     let map = null;
@@ -1020,7 +1014,6 @@
       });
 
       infoWindow.addListener("closeclick", () => {
-        // 닫기만 하고 지도 위치/줌은 유지
       });
     }
 
@@ -1205,46 +1198,43 @@
       return candidates[randomIndex];
     }
 
-    function createCoupangBannerCard() {
-      const div = document.createElement("div");
-      div.className = "card";
-      div.style.padding = "0";
-      div.style.cursor = "default";
-      div.style.border = "none";
-      div.style.background = "transparent";
-      div.style.boxShadow = "none";
+    function createKakaoAdfitCard() {
+      const outer = document.createElement("div");
+      outer.className = "card";
+      outer.style.padding = "0";
+      outer.style.cursor = "default";
+      outer.style.border = "none";
+      outer.style.background = "transparent";
+      outer.style.boxShadow = "none";
 
-      div.innerHTML = `
-        <div style="padding:2px 2px;">
-          <a 
-            href="https://link.coupang.com/a/ea29TJ"
-            target="_blank"
-            onclick="trackCoupangClick()"
-            referrerpolicy="unsafe-url"
-            style="
-              display:block;
-              overflow:hidden;
-              border-radius:12px;
-              background:#fff;
-            "
-          >
-            <img
-              src="https://ads-partners.coupang.com/banners/975246?subId=&traceId=V0-301-879dd1202e5c73b2-I975246&w=320&h=100"
-              alt=""
-              style="
-                display:block;
-                width:100%;
-                height:auto;
-                border:0;
-                transform: scale(1.03);
-                transform-origin: center center;
-              "
-            />
-          </a>
-        </div>
-      `;
+      const inner = document.createElement("div");
+      inner.style.padding = "2px 2px";
 
-      return div;
+      const adWrap = document.createElement("div");
+      adWrap.style.display = "block";
+      adWrap.style.overflow = "hidden";
+      adWrap.style.borderRadius = "12px";
+      adWrap.style.background = "#fff";
+      adWrap.style.minHeight = `${KAKAO_ADFIT.HEIGHT}px`;
+
+      const ins = document.createElement("ins");
+      ins.className = "kakao_ad_area";
+      ins.style.display = "none";
+      ins.setAttribute("data-ad-unit", KAKAO_ADFIT.UNIT);
+      ins.setAttribute("data-ad-width", String(KAKAO_ADFIT.WIDTH));
+      ins.setAttribute("data-ad-height", String(KAKAO_ADFIT.HEIGHT));
+
+      const script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src = "https://t1.daumcdn.net/kas/static/ba.min.js";
+      script.async = true;
+
+      adWrap.appendChild(ins);
+      adWrap.appendChild(script);
+      inner.appendChild(adWrap);
+      outer.appendChild(inner);
+
+      return outer;
     }
 
     function renderProgramChips(){
@@ -1382,8 +1372,11 @@
         fragMobile.appendChild(createCardElement(listRow));
 
         if (bannerInsertIndex === i + 1) {
-          fragDesktop.appendChild(createCoupangBannerCard());
-          fragMobile.appendChild(createCoupangBannerCard());
+          if (isMobile()) {
+            fragMobile.appendChild(createKakaoAdfitCard());
+          } else {
+            fragDesktop.appendChild(createKakaoAdfitCard());
+          }
         }
       }
 
@@ -1868,15 +1861,6 @@
 
     if (isIOS && !isInStandaloneMode && installGuide) {
       installGuide.hidden = false;
-    }
-
-    function trackCoupangClick() {
-      if (typeof gtag === "function") {
-        gtag('event', 'coupang_click', {
-          event_category: 'affiliate',
-          event_label: 'banner_click'
-        });
-      }
     }
   </script>
 </body>
