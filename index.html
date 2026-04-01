@@ -631,7 +631,7 @@
     };
 
     const RANGE_A1 = `${CONFIG.SHEET_NAME}!A1:Z`;
-    const CACHE_KEY = `restaurant_map_cache_v17__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
+    const CACHE_KEY = `restaurant_map_cache_v18__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
 
     const PROGRAM_THEMES = {
       "미쉐린가이드 2026": {
@@ -1188,14 +1188,9 @@
       return div;
     }
 
-    function getRandomBannerInsertIndex(listLength) {
-      if (listLength < 5) return -1;
-
-      const candidates = [2, 3, 4].filter(n => n < listLength);
-      if (!candidates.length) return -1;
-
-      const randomIndex = Math.floor(Math.random() * candidates.length);
-      return candidates[randomIndex];
+    function getBannerInsertIndex(listLength) {
+      if (listLength < 3) return -1;
+      return 3;
     }
 
     function createKakaoAdfitCard() {
@@ -1214,7 +1209,7 @@
       adWrap.style.display = "block";
       adWrap.style.overflow = "hidden";
       adWrap.style.borderRadius = "12px";
-      adWrap.style.background = "#fff";
+      adWrap.style.background = "#ffffff";
       adWrap.style.minHeight = `${KAKAO_ADFIT.HEIGHT}px`;
 
       const ins = document.createElement("ins");
@@ -1224,13 +1219,7 @@
       ins.setAttribute("data-ad-width", String(KAKAO_ADFIT.WIDTH));
       ins.setAttribute("data-ad-height", String(KAKAO_ADFIT.HEIGHT));
 
-      const script = document.createElement("script");
-      script.type = "text/javascript";
-      script.src = "https://t1.daumcdn.net/kas/static/ba.min.js";
-      script.async = true;
-
       adWrap.appendChild(ins);
-      adWrap.appendChild(script);
       inner.appendChild(adWrap);
       outer.appendChild(inner);
 
@@ -1361,7 +1350,7 @@
         });
       }
 
-      const bannerInsertIndex = getRandomBannerInsertIndex(listRows.length);
+      const bannerInsertIndex = getBannerInsertIndex(listRows.length);
 
       for (let i = 0; i < listRows.length; i++) {
         const listRow = listRows[i];
@@ -1372,10 +1361,12 @@
         fragMobile.appendChild(createCardElement(listRow));
 
         if (bannerInsertIndex === i + 1) {
+          const adCard = createKakaoAdfitCard();
+
           if (isMobile()) {
-            fragMobile.appendChild(createKakaoAdfitCard());
+            fragMobile.appendChild(adCard);
           } else {
-            fragDesktop.appendChild(createKakaoAdfitCard());
+            fragDesktop.appendChild(adCard);
           }
         }
       }
@@ -1863,5 +1854,7 @@
       installGuide.hidden = false;
     }
   </script>
+
+  <script type="text/javascript" src="https://t1.daumcdn.net/kas/static/ba.min.js" async></script>
 </body>
 </html>
