@@ -529,23 +529,6 @@
         bottom:90px !important;
       }
 
-.gm-style .gm-style-iw-c{
-  padding: 0 !important;
-  border-radius: 14px !important;
-}
-
-.gm-style .gm-style-iw-d{
-  overflow: hidden !important;
-  padding: 0 !important;
-}
-
-.gm-style .gm-ui-hover-effect{
-  top: 8px !important;
-  right: 8px !important;
-}
-
-      
-
       
     }
   </style>
@@ -1105,33 +1088,15 @@
     }
 
 
-
-
-    
-    function openInfo(row, marker){
+function openInfo(row, marker){
   infoWindow.close();
 
   const linkHtml = buildMapLinks(row);
   const programBadgeHtml = createProgramBadgeHtml(row.program || "");
 
   const html = `
-    <div style="
-      min-width:240px;
-      max-width:360px;
-      margin:0;
-      padding:16px;
-      line-height:1.4;
-      background:#fff;
-      border-radius:14px;
-    ">
-      <div style="
-        font-weight:900;
-        font-size:15px;
-        margin:0;
-        padding-right:28px;
-      ">
-        ${escapeHtml(row.name || "")}
-      </div>
+    <div style="min-width:240px;max-width:360px;">
+      <div style="font-weight:900;font-size:15px;">${escapeHtml(row.name || "")}</div>
       ${programBadgeHtml}
       ${row.address ? `<div style="margin-top:6px;">${escapeHtml(row.address)}</div>` : ""}
       ${row.note ? `<div style="margin-top:8px;color:#374151;font-size:12px;line-height:1.45;">${escapeHtml(row.note)}</div>` : ""}
@@ -1142,6 +1107,8 @@
   infoWindow.setContent(html);
   infoWindow.open({ map, anchor: marker });
 }
+
+
 
 
 
