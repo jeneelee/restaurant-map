@@ -38,9 +38,9 @@
       --border:#e5e7eb;
       --text:#111827;
       --muted:#6b7280;
-      --panel-bg:#ffffff;
-      --panel-shadow:0 -10px 30px rgba(0,0,0,.12);
-      --radius:16px;
+      --panel-bg:rgba(255,255,255,.96);
+      --panel-shadow:0 14px 36px rgba(0,0,0,.16);
+      --radius:22px;
       --btn-bg:#f9fafb;
       --btn-hover:#f3f4f6;
       --danger:#ef4444;
@@ -59,17 +59,10 @@
     }
 
     .wrap{
-      display:grid;
-      grid-template-columns:380px 1fr;
-      height:100vh;
+      position:relative;
       width:100%;
-    }
-
-    .side{
-      border-right:1px solid var(--border);
-      padding:14px;
-      overflow:auto;
-      background:var(--panel-bg);
+      height:100vh;
+      overflow:hidden;
     }
 
     .mapArea{
@@ -83,16 +76,47 @@
       height:100%;
     }
 
+    .side{
+      position:absolute;
+      top:14px;
+      left:14px;
+      bottom:14px;
+      width:360px;
+      z-index:20;
+      border:1px solid rgba(229,231,235,.95);
+      border-radius:var(--radius);
+      background:var(--panel-bg);
+      backdrop-filter:blur(10px);
+      box-shadow:var(--panel-shadow);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .side-top{
+      flex:0 0 auto;
+      padding:12px 12px 10px;
+      border-bottom:1px solid #eef2f7;
+      background:rgba(255,255,255,.98);
+    }
+
+    .side-body{
+      flex:1 1 auto;
+      overflow:auto;
+      padding:10px 12px 14px;
+      background:transparent;
+    }
+
     .brand-header{
       display:flex;
       align-items:center;
-      gap:10px;
-      margin-bottom:12px;
+      gap:9px;
+      margin-bottom:10px;
     }
 
     .brand-logo{
-      width:56px;
-      height:56px;
+      width:48px;
+      height:48px;
       object-fit:contain;
       display:block;
       flex-shrink:0;
@@ -100,66 +124,74 @@
 
     .title{
       font-weight:900;
-      font-size:18px;
-      margin:0 0 10px;
+      font-size:16px;
+      margin:0 0 8px;
+      letter-spacing:-0.2px;
     }
 
     .title.brand-title{
       margin:0;
-      line-height:1.1;
+      line-height:1.15;
     }
 
     .row{
       display:flex;
-      gap:8px;
-      margin:10px 0;
+      gap:6px;
+      margin:8px 0;
       align-items:center;
     }
 
     input{
       width:100%;
-      padding:10px 10px;
+      padding:9px 10px;
       border:1px solid var(--border);
       border-radius:12px;
       outline:none;
       background:#fff;
+      font-size:13px;
     }
 
     button{
-      padding:10px 12px;
+      padding:8px 10px;
       border:1px solid var(--border);
       border-radius:12px;
       background:var(--btn-bg);
       cursor:pointer;
       white-space:nowrap;
+      font-size:12px;
+      font-weight:700;
     }
 
     button:hover{background:var(--btn-hover)}
     button:disabled{opacity:.6;cursor:not-allowed}
 
     .status{
-      font-size:12px;
+      font-size:11px;
       color:var(--muted);
-      margin:8px 0 12px;
+      margin:6px 0 2px;
       white-space:pre-line;
+      line-height:1.45;
     }
 
     .list{
       display:flex;
       flex-direction:column;
-      gap:10px;
+      gap:8px;
     }
 
     .card{
       border:1px solid var(--border);
       border-radius:14px;
-      padding:10px;
+      padding:9px;
       cursor:pointer;
       background:#fff;
-      transition:background .16s ease,border-color .16s ease,box-shadow .16s ease;
+      transition:background .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease;
     }
 
-    .card:hover{background:#f9fafb}
+    .card:hover{
+      background:#f9fafb;
+      transform:translateY(-1px);
+    }
 
     .card.selected{
       background:var(--selected-bg);
@@ -171,72 +203,79 @@
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
-      gap:10px;
+      gap:8px;
     }
 
     .cardTitle{
       font-weight:900;
-      font-size:15px;
-      line-height:1.35;
+      font-size:14px;
+      line-height:1.32;
+      letter-spacing:-0.1px;
     }
 
     .distanceBadge{
       flex:0 0 auto;
-      font-size:11px;
+      font-size:10px;
       font-weight:800;
       color:var(--danger);
       background:#fef2f2;
       border:1px solid #fecaca;
       border-radius:999px;
-      padding:4px 8px;
+      padding:4px 7px;
       white-space:nowrap;
     }
 
     .selectedBadge{
       flex:0 0 auto;
-      font-size:11px;
+      font-size:10px;
       font-weight:800;
       color:var(--selected-text);
       background:#dbeafe;
       border:1px solid #bfdbfe;
       border-radius:999px;
-      padding:4px 8px;
+      padding:4px 7px;
       white-space:nowrap;
     }
 
+    .programBadge{
+      display:inline-flex;
+      align-items:center;
+      font-size:11px;
+      font-weight:800;
+      padding:5px 8px;
+      border-radius:999px;
+      border:1px solid transparent;
+      margin-top:6px;
+      width:max-content;
+      max-width:100%;
+      line-height:1;
+    }
 
-
-
-.programBadge{
-  display:inline-flex;
-  align-items:center;
-  font-size:12px;
-  font-weight:800;
-  padding:6px 10px;
-  border-radius:999px;
-  border:1px solid transparent;
-  margin-top:6px;
-  width:max-content;
-  max-width:100%;
-  line-height:1;
-}
-
-
-    
-    .meta{color:var(--muted);font-size:12px;margin-top:6px;line-height:1.45}
+    .meta{
+      color:var(--muted);
+      font-size:11px;
+      margin-top:5px;
+      line-height:1.42;
+      word-break:keep-all;
+    }
 
     .chipsRow{
       display:flex;
       gap:6px;
       overflow:auto;
       padding-bottom:2px;
+      scrollbar-width:none;
+    }
+
+    .chipsRow::-webkit-scrollbar{
+      display:none;
     }
 
     .chip{
       display:inline-flex;
       align-items:center;
-      font-size:12px;
-      padding:6px 10px;
+      font-size:11px;
+      padding:5px 9px;
       border:1px solid var(--border);
       border-radius:999px;
       background:#fff;
@@ -264,7 +303,7 @@
     .mapControls{
       position:fixed !important;
       right:14px !important;
-      bottom:200px !important;
+      bottom:26px !important;
       z-index:9999 !important;
       display:flex !important;
       flex-direction:column !important;
@@ -272,8 +311,8 @@
     }
 
     .mapIconBtn{
-      width:52px;
-      height:52px;
+      width:48px;
+      height:48px;
       border-radius:999px;
       border:1px solid rgba(229,231,235,.95);
       background:rgba(255,255,255,.96);
@@ -286,8 +325,8 @@
     }
 
     .mapIconBtn svg{
-      width:24px;
-      height:24px;
+      width:22px;
+      height:22px;
       display:block;
       fill:#111827;
     }
@@ -337,24 +376,24 @@
     }
 
     .install-wrap {
-      margin: 10px 0 14px;
+      margin: 8px 0 10px;
     }
 
     .install-btn {
       width: 100%;
-      padding: 12px 14px;
+      padding: 11px 12px;
       border: 0;
       border-radius: 12px;
       background: #111827;
       color: #ffffff;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
     }
 
     .install-guide {
-      margin: 8px 2px 0;
-      font-size: 12px;
+      margin: 7px 2px 0;
+      font-size: 11px;
       line-height: 1.4;
       color: #6b7280;
     }
@@ -363,7 +402,6 @@
     .sheet{display:none}
 
     @media (max-width:900px){
-      .wrap{grid-template-columns:1fr}
       .side{display:none}
       .mapArea,#map{height:100vh}
 
@@ -408,6 +446,7 @@
         border-radius:12px;
         outline:none;
         background:#fff;
+        font-size:13px;
       }
 
       .mobile-chip-wrap .chipsRow{
@@ -425,9 +464,9 @@
         bottom:0;
         z-index:12;
         background:var(--panel-bg);
-        border-top-left-radius:var(--radius);
-        border-top-right-radius:var(--radius);
-        box-shadow:var(--panel-shadow);
+        border-top-left-radius:18px;
+        border-top-right-radius:18px;
+        box-shadow:0 -10px 30px rgba(0,0,0,.12);
         flex-direction:column;
         height:68vh;
         transform:translateY(calc(100% - 180px));
@@ -472,7 +511,7 @@
 
       .sheet-status{
         margin-bottom:4px;
-        font-size:14px;
+        font-size:13px;
         color:#4b5563;
         white-space:pre-line;
       }
@@ -484,44 +523,17 @@
         overscroll-behavior:contain;
         padding:0 14px 18px;
       }
+
+      .mapControls{
+        right:12px !important;
+        bottom:90px !important;
+      }
     }
   </style>
 </head>
 
 <body>
   <div class="wrap">
-    <aside class="side">
-      <div class="brand-header">
-        <img src="logo.png" alt="모두의 맛집 로고" class="brand-logo" />
-        <h1 class="title brand-title">모두의 맛집 통합검색</h1>
-      </div>
-
-      <div class="install-wrap">
-        <button id="installAppBtn" class="install-btn" hidden>홈화면에 추가</button>
-        <p id="installGuide" class="install-guide" hidden>
-          아이폰은 Safari 공유 버튼 → 홈 화면에 추가에서 설치할 수 있습니다.
-        </p>
-      </div>
-
-      <div class="row">
-        <input id="q" placeholder="검색 (가게명/프로그램/주소/메모)" />
-      </div>
-
-      <div class="row">
-        <div class="chipsRow" id="programChips"></div>
-      </div>
-
-      <div class="row">
-        <button id="allBtn" class="chip clear" type="button">전체</button>
-        <button id="nearbyBtn" class="chip sort" type="button">가까운 순</button>
-        <div style="flex:1"></div>
-        <button id="reloadBtn" type="button">새로고침</button>
-      </div>
-
-      <div id="status" class="status">로딩 준비 중…</div>
-      <div class="list" id="list"></div>
-    </aside>
-
     <main class="mapArea">
       <div class="mapControls">
         <button id="myLocationBtn" class="mapIconBtn" type="button" aria-label="내 위치" title="내 위치">
@@ -532,6 +544,43 @@
       </div>
       <div id="map"></div>
     </main>
+
+    <aside class="side">
+      <div class="side-top">
+        <div class="brand-header">
+          <img src="logo.png" alt="모두의 맛집 로고" class="brand-logo" />
+          <h1 class="title brand-title">모두의 맛집 통합검색</h1>
+        </div>
+
+        <div class="install-wrap">
+          <button id="installAppBtn" class="install-btn" hidden>홈화면에 추가</button>
+          <p id="installGuide" class="install-guide" hidden>
+            아이폰은 Safari 공유 버튼 → 홈 화면에 추가에서 설치할 수 있습니다.
+          </p>
+        </div>
+
+        <div class="row">
+          <input id="q" placeholder="검색 (가게명/프로그램/주소/메모)" />
+        </div>
+
+        <div class="row">
+          <div class="chipsRow" id="programChips"></div>
+        </div>
+
+        <div class="row">
+          <button id="allBtn" class="chip clear" type="button">전체</button>
+          <button id="nearbyBtn" class="chip sort" type="button">가까운 순</button>
+          <div style="flex:1"></div>
+          <button id="reloadBtn" type="button">새로고침</button>
+        </div>
+
+        <div id="status" class="status">로딩 준비 중…</div>
+      </div>
+
+      <div class="side-body">
+        <div class="list" id="list"></div>
+      </div>
+    </aside>
   </div>
 
   <div class="mobile-topbar">
@@ -572,9 +621,9 @@
 
   <script>
     const CONFIG = {
-      MAPS_API_KEY: "AIzaSyCvTRT_Q498fX8wKOFqWUDzNol-Qq8-aUI",
-      SHEETS_API_KEY: "AIzaSyCvTRT_Q498fX8wKOFqWUDzNol-Qq8-aUI",
-      SPREADSHEET_ID: "1zNSdIdZeJuUrD56NbYCdby7QGfoRMC-WzGsLHjpKLlo",
+      MAPS_API_KEY: "여기에_기존_구글맵_API_KEY_넣기",
+      SHEETS_API_KEY: "여기에_기존_시트_API_KEY_넣기",
+      SPREADSHEET_ID: "여기에_기존_스프레드시트_ID_넣기",
       SHEET_NAME: "DB",
       CACHE_TTL_MS: 2 * 60 * 1000,
       DEFAULT_CENTER: { lat: 37.5665, lng: 126.9780 },
@@ -582,34 +631,28 @@
     };
 
     const RANGE_A1 = `${CONFIG.SHEET_NAME}!A1:Z`;
-    const CACHE_KEY = `restaurant_map_cache_v15__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
+    const CACHE_KEY = `restaurant_map_cache_v16__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
 
-
-
-
-const PROGRAM_THEMES = {
- "미쉐린가이드 2026": {
-  pin: "#d60000",
-  bg: "#fff1f1",
-  border: "#f5a3a3",
-  text: "#a80000"
-},
-  "미쉐린 빕 구르망": {
-    pin: "#f97316",
-    bg: "#fff7ed",
-    border: "#fdba74",
-    text: "#c2410c"
-  },
-  "성시경 먹을텐데": {
-    pin: "#16a34a",
-    bg: "#f0fdf4",
-    border: "#86efac",
-    text: "#15803d"
-  }
-};
-
-
-    
+    const PROGRAM_THEMES = {
+      "미쉐린가이드 2026": {
+        pin: "#d60000",
+        bg: "#fff1f1",
+        border: "#f5a3a3",
+        text: "#a80000"
+      },
+      "미쉐린 빕 구르망": {
+        pin: "#f97316",
+        bg: "#fff7ed",
+        border: "#fdba74",
+        text: "#c2410c"
+      },
+      "성시경 먹을텐데": {
+        pin: "#16a34a",
+        bg: "#f0fdf4",
+        border: "#86efac",
+        text: "#15803d"
+      }
+    };
 
     const DEFAULT_PROGRAM_THEME = {
       pin: "#6b7280",
@@ -741,49 +784,39 @@ const PROGRAM_THEMES = {
       `;
     }
 
+    function applyProgramChipStyle(el, program, active){
+      const theme = getProgramTheme(program);
 
+      if (active) {
+        el.style.background = theme.pin;
+        el.style.borderColor = theme.pin;
+        el.style.color = "#ffffff";
+        el.style.fontWeight = "900";
+        el.style.boxShadow = "0 1px 2px rgba(0,0,0,.08)";
+      } else {
+        el.style.background = theme.bg;
+        el.style.borderColor = theme.border;
+        el.style.color = theme.text;
+        el.style.fontWeight = "800";
+        el.style.boxShadow = "none";
+      }
+    }
 
-function applyProgramChipStyle(el, program, active){
-  const theme = getProgramTheme(program);
+    function createMarkerIcon(program){
+      const normalized = normalizeProgram(program);
 
-  if (active) {
-    el.style.background = theme.pin;
-    el.style.borderColor = theme.pin;
-    el.style.color = "#ffffff";
-    el.style.fontWeight = "900";
-    el.style.boxShadow = "0 1px 2px rgba(0,0,0,.08)";
-  } else {
-    el.style.background = theme.bg;
-    el.style.borderColor = theme.border;
-    el.style.color = theme.text;
-    el.style.fontWeight = "800";
-    el.style.boxShadow = "none";
-  }
-}
+      if (normalized === "미쉐린가이드 2026") {
+        return "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
+      }
+      if (normalized === "미쉐린 빕 구르망") {
+        return "https://maps.google.com/mapfiles/ms/icons/orange-dot.png";
+      }
+      if (normalized === "성시경 먹을텐데") {
+        return "https://maps.google.com/mapfiles/ms/icons/green-dot.png";
+      }
+      return "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
+    }
 
-    
-function createMarkerIcon(program){
-  const normalized = normalizeProgram(program);
-
-  if (normalized === "미쉐린가이드 2026") {
-    return "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
-  }
-
-  if (normalized === "미쉐린 빕 구르망") {
-    return "https://maps.google.com/mapfiles/ms/icons/orange-dot.png";
-  }
-
-  if (normalized === "성시경 먹을텐데") {
-    return "https://maps.google.com/mapfiles/ms/icons/green-dot.png";
-  }
-
-  return "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
-}
-
-
-
-
-    
     function formatDistance(m){
       if (!Number.isFinite(m)) return "";
       if (m < 1000) return `${Math.round(m)}m`;
@@ -866,7 +899,7 @@ function createMarkerIcon(program){
       const mapDiv = map.getDiv();
       const mapHeight = mapDiv.offsetHeight || window.innerHeight;
 
-      const verticalOffsetPx = mapHeight * 0.18;
+      const verticalOffsetPx = mapHeight * 0.16;
       const pixelOffset = verticalOffsetPx / scale / 256;
 
       const newPoint = new google.maps.Point(
@@ -895,9 +928,9 @@ function createMarkerIcon(program){
 
     function validateConfig(){
       const missing = [];
-      if (!CONFIG.MAPS_API_KEY) missing.push("MAPS_API_KEY");
-      if (!CONFIG.SHEETS_API_KEY) missing.push("SHEETS_API_KEY");
-      if (!CONFIG.SPREADSHEET_ID) missing.push("SPREADSHEET_ID");
+      if (!CONFIG.MAPS_API_KEY) missing.push("AIzaSyCvTRT_Q498fX8wKOFqWUDzNol-Qq8-aUI");
+      if (!CONFIG.SHEETS_API_KEY) missing.push("AIzaSyCvTRT_Q498fX8wKOFqWUDzNol-Qq8-aUI");
+      if (!CONFIG.SPREADSHEET_ID) missing.push("1zNSdIdZeJuUrD56NbYCdby7QGfoRMC-WzGsLHjpKLlo");
       if (missing.length) throw new Error("설정값이 비어 있습니다: " + missing.join(", "));
     }
 
@@ -912,39 +945,28 @@ function createMarkerIcon(program){
       });
     }
 
+    function initMap(){
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: CONFIG.DEFAULT_CENTER,
+        zoom: CONFIG.DEFAULT_ZOOM,
+        mapTypeControl:false,
+        streetViewControl:false,
+        fullscreenControl:false,
+        zoomControl:false,
+        gestureHandling:"greedy"
+      });
 
+      infoWindow = new google.maps.InfoWindow();
 
+      map.addListener("click", () => {
+        infoWindow.close();
+      });
 
+      infoWindow.addListener("closeclick", () => {
+        // 닫기만 하고 지도 위치/줌은 유지
+      });
+    }
 
-    
-  function initMap(){
-  map = new google.maps.Map(document.getElementById("map"), {
-    center: CONFIG.DEFAULT_CENTER,
-    zoom: CONFIG.DEFAULT_ZOOM,
-    mapTypeControl:false,
-    streetViewControl:false,
-    fullscreenControl:false,
-    zoomControl:false,
-    gestureHandling:"greedy"
-  });
-
-  infoWindow = new google.maps.InfoWindow();
-
-  map.addListener("click", () => {
-    infoWindow.close();
-  });
-
-  infoWindow.addListener("closeclick", () => {
-    // 닫기만 함
-  });
-}
-
-
-
-
-
-
-    
     function readCache(){
       const raw = localStorage.getItem(CACHE_KEY);
       if (!raw) return null;
@@ -1042,54 +1064,46 @@ function createMarkerIcon(program){
       }
     }
 
+    function buildMapLinks(row){
+      const naver = (row.naver_link || "").trim();
+      const kakao = (row.kakao_link || "").trim();
+      const google = (row.google_link || "").trim();
 
-   
-function buildMapLinks(row){
-  const naver = (row.naver_link || "").trim();
-  const kakao = (row.kakao_link || "").trim();
-  const google = (row.google_link || "").trim();
+      let html = `<div class="infoLinks">`;
 
-  let html = `<div class="infoLinks">`;
+      if (naver) {
+        html += `<a class="infoLinkBtn" href="${escapeHtml(naver)}" target="_blank" rel="noopener">네이버지도 열기</a>`;
+      }
+      if (kakao) {
+        html += `<a class="infoLinkBtn" href="${escapeHtml(kakao)}" target="_blank" rel="noopener">카카오맵 열기</a>`;
+      }
+      if (google) {
+        html += `<a class="infoLinkBtn" href="${escapeHtml(google)}" target="_blank" rel="noopener">구글지도 열기</a>`;
+      }
 
-  if (naver) {
-    html += `<a class="infoLinkBtn" href="${escapeHtml(naver)}" target="_blank" rel="noopener">네이버지도 열기</a>`;
-  }
-  if (kakao) {
-    html += `<a class="infoLinkBtn" href="${escapeHtml(kakao)}" target="_blank" rel="noopener">카카오맵 열기</a>`;
-  }
-  if (google) {
-    html += `<a class="infoLinkBtn" href="${escapeHtml(google)}" target="_blank" rel="noopener">구글지도 열기</a>`;
-  }
-
-  html += `</div>`;
-  return html;
-}
-
-
-
+      html += `</div>`;
+      return html;
+    }
 
     function openInfo(row, marker){
-  const linkHtml = buildMapLinks(row);
-  const programBadgeHtml = createProgramBadgeHtml(row.program || "");
+      infoWindow.close();
 
-  const html = `
-    <div style="min-width:240px;max-width:360px;">
-      <div style="font-weight:900;font-size:15px;">${escapeHtml(row.name || "")}</div>
-      ${programBadgeHtml}
-      ${row.address ? `<div style="margin-top:6px;">${escapeHtml(row.address)}</div>` : ""}
-      ${row.note ? `<div style="margin-top:8px;color:#374151;font-size:12px;line-height:1.45;">${escapeHtml(row.note)}</div>` : ""}
-      ${linkHtml}
-    </div>
-  `;
+      const linkHtml = buildMapLinks(row);
+      const programBadgeHtml = createProgramBadgeHtml(row.program || "");
 
-  infoWindow.setContent(html);
-  infoWindow.open({ map, anchor: marker });
-}
+      const html = `
+        <div style="min-width:240px;max-width:360px;">
+          <div style="font-weight:900;font-size:15px;">${escapeHtml(row.name || "")}</div>
+          ${programBadgeHtml}
+          ${row.address ? `<div style="margin-top:6px;">${escapeHtml(row.address)}</div>` : ""}
+          ${row.note ? `<div style="margin-top:8px;color:#374151;font-size:12px;line-height:1.45;">${escapeHtml(row.note)}</div>` : ""}
+          ${linkHtml}
+        </div>
+      `;
 
-
-
-    
-    
+      infoWindow.setContent(html);
+      infoWindow.open({ map, anchor: marker });
+    }
 
     function createCardElement(row){
       const div = document.createElement("div");
@@ -1124,67 +1138,57 @@ function buildMapLinks(row){
       return div;
     }
 
+    function getRandomBannerInsertIndex(listLength) {
+      if (listLength < 5) return -1;
 
+      const candidates = [2, 3, 4].filter(n => n < listLength);
+      if (!candidates.length) return -1;
 
+      const randomIndex = Math.floor(Math.random() * candidates.length);
+      return candidates[randomIndex];
+    }
 
+    function createCoupangBannerCard() {
+      const div = document.createElement("div");
+      div.className = "card";
+      div.style.padding = "0";
+      div.style.cursor = "default";
+      div.style.border = "none";
+      div.style.background = "transparent";
+      div.style.boxShadow = "none";
 
+      div.innerHTML = `
+        <div style="padding:2px 2px;">
+          <a 
+            href="https://link.coupang.com/a/ea29TJ"
+            target="_blank"
+            onclick="trackCoupangClick()"
+            referrerpolicy="unsafe-url"
+            style="
+              display:block;
+              overflow:hidden;
+              border-radius:12px;
+              background:#fff;
+            "
+          >
+            <img
+              src="https://ads-partners.coupang.com/banners/975246?subId=&traceId=V0-301-879dd1202e5c73b2-I975246&w=320&h=100"
+              alt=""
+              style="
+                display:block;
+                width:100%;
+                height:auto;
+                border:0;
+                transform: scale(1.03);
+                transform-origin: center center;
+              "
+            />
+          </a>
+        </div>
+      `;
 
-
-function getRandomBannerInsertIndex(listLength) {
-  if (listLength < 5) return -1;
-
-  const candidates = [2, 3, 4].filter(n => n < listLength);
-  if (!candidates.length) return -1;
-
-  const randomIndex = Math.floor(Math.random() * candidates.length);
-  return candidates[randomIndex];
-}
-
-
-
- function createCoupangBannerCard() {
-  const div = document.createElement("div");
-  div.className = "card";
-  div.style.padding = "0";
-  div.style.cursor = "default";
-  div.style.border = "none";
-  div.style.background = "transparent";
-  div.style.boxShadow = "none";
-
-  div.innerHTML = `
-    <div style="padding:2px 4px;">
-      <a 
-        href="https://link.coupang.com/a/ea29TJ"
-        target="_blank"
-        onclick="trackCoupangClick()"
-        referrerpolicy="unsafe-url"
-        style="
-          display:block;
-          overflow:hidden;
-          border-radius:12px;
-          background:#fff;
-        "
-      >
-        <img
-          src="https://ads-partners.coupang.com/banners/975246?subId=&traceId=V0-301-879dd1202e5c73b2-I975246&w=320&h=100"
-          alt=""
-          style="
-            display:block;
-            width:100%;
-            height:auto;
-            border:0;
-            transform: scale(1.04);
-            transform-origin: center center;
-          "
-        />
-      </a>
-    </div>
-  `;
-
-  return div;
-}
-
-    
+      return div;
+    }
 
     function renderProgramChips(){
       const programs = uniq(allRows.map(r => r.program)).sort((a,b) => a.localeCompare(b,"ko"));
@@ -1289,19 +1293,12 @@ function getRandomBannerInsertIndex(listLength) {
         const pos = { lat, lng };
         bounds.extend(pos);
 
-
-
-        
-       const marker = new google.maps.Marker({
-  map,
-  position: pos,
-  title: row.name || "",
-  icon: createMarkerIcon(row.program)
-});
-
-
-
-        
+        const marker = new google.maps.Marker({
+          map,
+          position: pos,
+          title: row.name || "",
+          icon: createMarkerIcon(row.program)
+        });
 
         marker.addListener("click", () => {
           selectPlace(row, true);
@@ -1315,61 +1312,48 @@ function getRandomBannerInsertIndex(listLength) {
         });
       }
 
+      const bannerInsertIndex = getRandomBannerInsertIndex(listRows.length);
 
-const bannerInsertIndex = getRandomBannerInsertIndex(listRows.length);
+      for (let i = 0; i < listRows.length; i++) {
+        const listRow = listRows[i];
+        const found = markerLookup.get(rowKey(listRow));
+        if (!found) continue;
 
-for (let i = 0; i < listRows.length; i++) {
-  const listRow = listRows[i];
-  const found = markerLookup.get(rowKey(listRow));
-  if (!found) continue;
+        fragDesktop.appendChild(createCardElement(listRow));
+        fragMobile.appendChild(createCardElement(listRow));
 
-  fragDesktop.appendChild(createCardElement(listRow));
-  fragMobile.appendChild(createCardElement(listRow));
-
-  if (bannerInsertIndex === i + 1) {
-    fragDesktop.appendChild(createCoupangBannerCard());
-    fragMobile.appendChild(createCoupangBannerCard());
-  }
-}
-
-      
+        if (bannerInsertIndex === i + 1) {
+          fragDesktop.appendChild(createCoupangBannerCard());
+          fragMobile.appendChild(createCoupangBannerCard());
+        }
+      }
 
       if (els.list) els.list.appendChild(fragDesktop);
       if (els.list_m) els.list_m.appendChild(fragMobile);
 
-   
+      if (validCount >= 2 && !sortByNearby && !selectedPlaceRow){
+        if (!hasInitialViewSet) {
+          map.setCenter(CONFIG.DEFAULT_CENTER);
+          map.setZoom(CONFIG.DEFAULT_ZOOM);
+          hasInitialViewSet = true;
+        } else {
+          map.fitBounds(bounds);
+        }
+      } else if (validCount === 1){
+        const only = rows.find(item => {
+          const lat = toNumber(item.lat);
+          const lng = toNumber(item.lng);
+          return lat != null && lng != null && isValidLatLng(lat, lng);
+        });
+        if (only){
+          map.setCenter({ lat: Number(only.lat), lng: Number(only.lng) });
+          map.setZoom(16);
+        }
+      } else if (validCount === 0){
+        map.setCenter(CONFIG.DEFAULT_CENTER);
+        map.setZoom(CONFIG.DEFAULT_ZOOM);
+      }
 
-
-
-      
-if (validCount >= 2 && !sortByNearby && !selectedPlaceRow){
-  if (!hasInitialViewSet) {
-    map.setCenter(CONFIG.DEFAULT_CENTER);
-    map.setZoom(CONFIG.DEFAULT_ZOOM);
-    hasInitialViewSet = true;
-  } else {
-    map.fitBounds(bounds);
-  }
-} else if (validCount === 1){
-  const only = rows.find(item => {
-    const lat = toNumber(item.lat);
-    const lng = toNumber(item.lng);
-    return lat != null && lng != null && isValidLatLng(lat, lng);
-  });
-  if (only){
-    map.setCenter({ lat: Number(only.lat), lng: Number(only.lng) });
-    map.setZoom(16);
-  }
-} else if (validCount === 0){
-  map.setCenter(CONFIG.DEFAULT_CENTER);
-  map.setZoom(CONFIG.DEFAULT_ZOOM);
-}
-
-
-
-
-
-      
       let message = `총 ${validCount}개 표시 중`;
 
       if (selectedPlaceRow) {
@@ -1419,9 +1403,7 @@ if (validCount >= 2 && !sortByNearby && !selectedPlaceRow){
       const getTranslateY = () => {
         const style = window.getComputedStyle(sheet);
         const transform = style.transform;
-
         if (!transform || transform === "none") return 0;
-
         const matrix = new DOMMatrixReadOnly(transform);
         return matrix.m42;
       };
@@ -1729,6 +1711,7 @@ if (validCount >= 2 && !sortByNearby && !selectedPlaceRow){
         selectedPlaceRow = null;
         sortByNearby = false;
         currentLocation = null;
+        infoWindow?.close();
 
         if (myLocationMarker) {
           myLocationMarker.setMap(null);
@@ -1828,23 +1811,14 @@ if (validCount >= 2 && !sortByNearby && !selectedPlaceRow){
       installGuide.hidden = false;
     }
 
-
-
-function trackCoupangClick() {
-  if (typeof gtag === "function") {
-    gtag('event', 'coupang_click', {
-      event_category: 'affiliate',
-      event_label: 'banner_click'
-    });
-  }
-}
-
-
-
-    
+    function trackCoupangClick() {
+      if (typeof gtag === "function") {
+        gtag('event', 'coupang_click', {
+          event_category: 'affiliate',
+          event_label: 'banner_click'
+        });
+      }
+    }
   </script>
-
-
-  
 </body>
 </html>
