@@ -932,13 +932,10 @@ function createMarkerIcon(program){
 
   map.addListener("click", () => {
     infoWindow.close();
-    selectedPlaceRow = null;
-    applyFilter();
   });
 
   infoWindow.addListener("closeclick", () => {
-    selectedPlaceRow = null;
-    applyFilter();
+    // 닫기만 함
   });
 }
 
