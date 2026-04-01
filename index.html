@@ -245,7 +245,6 @@
       padding:5px 8px;
       border-radius:999px;
       border:1px solid transparent;
-      margin-top:6px;
       width:max-content;
       max-width:100%;
       line-height:1;
@@ -528,8 +527,6 @@
         right:12px !important;
         bottom:90px !important;
       }
-
-      
     }
   </style>
 </head>
@@ -765,6 +762,40 @@
       return cleaned;
     }
 
+    function normalizeText(value){
+      return String(value || "").replace(/\s+/g, " ").trim();
+    }
+
+    function makeStoreGroupKey(row){
+      const name = normalizeText(row.name).toLowerCase();
+      const address = normalizeText(row.address).toLowerCase();
+      return `${name}__${address}`;
+    }
+
+    function mergeRowsByStore(rows){
+      const map = new Map();
+
+      for (const row of rows){
+        const key = makeStoreGroupKey(row);
+
+        if (!map.has(key)){
+          map.set(key, {
+            ...row,
+            programs: row.program ? [row.program] : [],
+            _groupKey: key
+          });
+        } else {
+          const existing = map.get(key);
+
+          if (row.program && !existing.programs.includes(row.program)) {
+            existing.programs.push(row.program);
+          }
+        }
+      }
+
+      return Array.from(map.values());
+    }
+
     function getProgramTheme(program){
       const normalized = normalizeProgram(program);
       return PROGRAM_THEMES[normalized] || DEFAULT_PROGRAM_THEME;
@@ -782,6 +813,17 @@
           "
         >
           ${escapeHtml(program || "")}
+        </div>
+      `;
+    }
+
+    function createProgramBadgesHtml(programs){
+      const list = Array.isArray(programs) && programs.length ? programs : [];
+      if (!list.length) return "";
+
+      return `
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">
+          ${list.map(program => createProgramBadgeHtml(program)).join("")}
         </div>
       `;
     }
@@ -838,7 +880,7 @@
     }
 
     function rowKey(row){
-      return [row.name, row.address, row.lat, row.lng].join("||");
+      return makeStoreGroupKey(row);
     }
 
     function getSelectedContextRows(baseRow, rows){
@@ -1087,33 +1129,25 @@
       return html;
     }
 
+    function openInfo(row, marker){
+      infoWindow.close();
 
-function openInfo(row, marker){
-  infoWindow.close();
+      const linkHtml = buildMapLinks(row);
+      const programBadgeHtml = createProgramBadgesHtml(row.programs || [row.program]);
 
-  const linkHtml = buildMapLinks(row);
-  const programBadgeHtml = createProgramBadgeHtml(row.program || "");
+      const html = `
+        <div style="min-width:240px;max-width:360px;">
+          <div style="font-weight:900;font-size:15px;">${escapeHtml(row.name || "")}</div>
+          ${programBadgeHtml}
+          ${row.address ? `<div style="margin-top:6px;">${escapeHtml(row.address)}</div>` : ""}
+          ${row.note ? `<div style="margin-top:8px;color:#374151;font-size:12px;line-height:1.45;">${escapeHtml(row.note)}</div>` : ""}
+          ${linkHtml}
+        </div>
+      `;
 
-  const html = `
-    <div style="min-width:240px;max-width:360px;">
-      <div style="font-weight:900;font-size:15px;">${escapeHtml(row.name || "")}</div>
-      ${programBadgeHtml}
-      ${row.address ? `<div style="margin-top:6px;">${escapeHtml(row.address)}</div>` : ""}
-      ${row.note ? `<div style="margin-top:8px;color:#374151;font-size:12px;line-height:1.45;">${escapeHtml(row.note)}</div>` : ""}
-      ${linkHtml}
-    </div>
-  `;
-
-  infoWindow.setContent(html);
-  infoWindow.open({ map, anchor: marker });
-}
-
-
-
-
-
-
-    
+      infoWindow.setContent(html);
+      infoWindow.open({ map, anchor: marker });
+    }
 
     function createCardElement(row){
       const div = document.createElement("div");
@@ -1128,7 +1162,7 @@ function openInfo(row, marker){
         badgeHtml = `<div class="distanceBadge">${escapeHtml(formatDistance(row._distance))}</div>`;
       }
 
-      const programBadgeHtml = createProgramBadgeHtml(row.program || "");
+      const programBadgeHtml = createProgramBadgesHtml(row.programs || [row.program]);
 
       div.innerHTML = `
         <div class="cardTop">
@@ -1264,6 +1298,8 @@ function openInfo(row, marker){
         });
       }
 
+      filtered = mergeRowsByStore(filtered);
+
       currentFilteredRows = filtered;
 
       if (selectedPlaceRow) {
@@ -1307,7 +1343,7 @@ function openInfo(row, marker){
           map,
           position: pos,
           title: row.name || "",
-          icon: createMarkerIcon(row.program)
+          icon: createMarkerIcon((row.programs && row.programs[0]) || row.program)
         });
 
         marker.addListener("click", () => {
