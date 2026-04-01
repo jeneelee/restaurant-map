@@ -35,17 +35,17 @@
 
   <style>
  :root{
-  --border:#e5e7eb;
+  --border:rgba(229,231,235,.78);
   --text:#111827;
   --muted:#6b7280;
-  --panel-bg:rgba(255,255,255,.80);
-  --panel-shadow:0 12px 28px rgba(0,0,0,.14);
+  --panel-bg:rgba(255,255,255,.76);
+  --panel-shadow:0 10px 24px rgba(0,0,0,.08);
   --radius:22px;
-  --btn-bg:#f9fafb;
-  --btn-hover:#f3f4f6;
+  --btn-bg:rgba(255,255,255,.58);
+  --btn-hover:rgba(255,255,255,.74);
   --danger:#ef4444;
-  --selected-bg:#eff6ff;
-  --selected-border:#93c5fd;
+  --selected-bg:rgba(239,246,255,.88);
+  --selected-border:rgba(147,197,253,.82);
   --selected-text:#1d4ed8;
 }
 
@@ -102,8 +102,8 @@
 .side-top{
   flex:0 0 auto;
   padding:12px 12px 10px;
-  border-bottom:1px solid rgba(238,242,247,.85);
-  background:rgba(255,255,255,.58);
+  border-bottom:1px solid rgba(229,231,235,.65);
+  background:rgba(255,255,255,.46);
 }
 
 
@@ -155,25 +155,25 @@
     }
 
     input{
-      width:100%;
-      padding:9px 10px;
-      border:1px solid var(--border);
-      border-radius:12px;
-      outline:none;
-      background:#fff;
-      font-size:13px;
-    }
+  width:100%;
+  padding:9px 10px;
+  border:1px solid rgba(229,231,235,.72);
+  border-radius:12px;
+  outline:none;
+  background:rgba(255,255,255,.56);
+  font-size:13px;
+}
 
-    button{
-      padding:8px 10px;
-      border:1px solid var(--border);
-      border-radius:12px;
-      background:var(--btn-bg);
-      cursor:pointer;
-      white-space:nowrap;
-      font-size:12px;
-      font-weight:700;
-    }
+   button{
+  padding:8px 10px;
+  border:1px solid rgba(229,231,235,.72);
+  border-radius:12px;
+  background:var(--btn-bg);
+  cursor:pointer;
+  white-space:nowrap;
+  font-size:12px;
+  font-weight:700;
+}
 
     button:hover{background:var(--btn-hover)}
     button:disabled{opacity:.6;cursor:not-allowed}
@@ -193,24 +193,24 @@
     }
 
     .card{
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:9px;
-      cursor:pointer;
-      background:#fff;
-      transition:background .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease;
-    }
+  border:1px solid rgba(229,231,235,.72);
+  border-radius:14px;
+  padding:9px;
+  cursor:pointer;
+  background:rgba(255,255,255,.68);
+  transition:background .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease;
+}
 
-    .card:hover{
-      background:#f9fafb;
-      transform:translateY(-1px);
-    }
+   .card:hover{
+  background:rgba(255,255,255,.82);
+  transform:translateY(-1px);
+}
 
     .card.selected{
-      background:var(--selected-bg);
-      border-color:var(--selected-border);
-      box-shadow:0 0 0 1px rgba(147,197,253,.28) inset;
-    }
+  background:rgba(239,246,255,.82);
+  border-color:rgba(147,197,253,.78);
+  box-shadow:0 0 0 1px rgba(147,197,253,.22) inset;
+}
 
     .cardTop{
       display:flex;
@@ -283,18 +283,18 @@
       display:none;
     }
 
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      font-size:11px;
-      padding:5px 9px;
-      border:1px solid var(--border);
-      border-radius:999px;
-      background:#fff;
-      user-select:none;
-      cursor:pointer;
-      white-space:nowrap;
-    }
+   .chip{
+  display:inline-flex;
+  align-items:center;
+  font-size:11px;
+  padding:5px 9px;
+  border:1px solid rgba(229,231,235,.72);
+  border-radius:999px;
+  background:rgba(255,255,255,.56);
+  user-select:none;
+  cursor:pointer;
+  white-space:nowrap;
+}
 
     .chip.active{
       font-weight:900;
