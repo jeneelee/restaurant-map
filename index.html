@@ -398,6 +398,32 @@
       color: #6b7280;
     }
 
+    .ad-slot-mount{
+      margin: 10px 0 8px;
+    }
+
+    .adfit-card{
+      width:100%;
+      border:1px solid rgba(229,231,235,.72);
+      border-radius:14px;
+      background:rgba(255,255,255,.9);
+      padding:8px;
+      overflow:hidden;
+    }
+
+    .adfit-inner{
+      width:100%;
+      min-height:100px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .adfit-inner ins{
+      display:block !important;
+      margin:0 auto;
+    }
+
     .mobile-topbar{display:none}
     .sheet{display:none}
 
@@ -574,6 +600,8 @@
           <button id="reloadBtn" type="button">새로고침</button>
         </div>
 
+        <div id="adfitMountDesktop" class="ad-slot-mount"></div>
+
         <div id="status" class="status">로딩 준비 중…</div>
       </div>
 
@@ -606,6 +634,8 @@
         <button id="reloadBtn_m" type="button">새로고침</button>
       </div>
 
+      <div id="adfitMountMobile" class="ad-slot-mount"></div>
+
       <div id="status_m" class="sheet-status">로딩 준비 중…</div>
     </div>
 
@@ -619,6 +649,21 @@
     <p>전국 지역의 미쉐린 가이드, 빕구르망, 유튜브 방송 맛집을 지도에서 찾을 수 있습니다.</p>
   </section>
 
+  <!-- 공유 애드핏 슬롯: JS가 데스크탑/모바일 mount 중 하나로 옮겨 붙임 -->
+  <template id="sharedAdTemplate">
+    <div class="adfit-card" id="sharedAdfitCard">
+      <div class="adfit-inner">
+        <ins
+          class="kakao_ad_area"
+          style="display:block;"
+          data-ad-unit="DAN-QcJeLbFbhsCiwHH"
+          data-ad-width="320"
+          data-ad-height="100">
+        </ins>
+      </div>
+    </div>
+  </template>
+
   <script>
     const CONFIG = {
       MAPS_API_KEY: "AIzaSyCvTRT_Q498fX8wKOFqWUDzNol-Qq8-aUI",
@@ -631,7 +676,7 @@
     };
 
     const RANGE_A1 = `${CONFIG.SHEET_NAME}!A1:Z`;
-    const CACHE_KEY = `restaurant_map_cache_v18__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
+    const CACHE_KEY = `restaurant_map_cache_v19__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
 
     const PROGRAM_THEMES = {
       "미쉐린가이드 2026": {
@@ -659,12 +704,6 @@
       bg: "#f9fafb",
       border: "#e5e7eb",
       text: "#374151"
-    };
-
-    const KAKAO_ADFIT = {
-      UNIT: "DAN-QcJeLbFbhsCiwHH",
-      WIDTH: 320,
-      HEIGHT: 100
     };
 
     let map = null;
@@ -712,8 +751,14 @@
       sheetContent: document.getElementById("sheetContent"),
       sheetHandleBar: document.getElementById("sheetHandleBar"),
 
-      myLocationBtn: document.getElementById("myLocationBtn")
+      myLocationBtn: document.getElementById("myLocationBtn"),
+
+      adfitMountDesktop: document.getElementById("adfitMountDesktop"),
+      adfitMountMobile: document.getElementById("adfitMountMobile"),
+      sharedAdTemplate: document.getElementById("sharedAdTemplate")
     };
+
+    let sharedAdNode = null;
 
     function isMobile(){
       return window.matchMedia("(max-width: 900px)").matches;
@@ -1012,9 +1057,21 @@
       map.addListener("click", () => {
         infoWindow.close();
       });
+    }
 
-      infoWindow.addListener("closeclick", () => {
-      });
+    function mountSharedAd(){
+      if (!sharedAdNode) {
+        const fragment = els.sharedAdTemplate.content.cloneNode(true);
+        sharedAdNode = fragment.firstElementChild;
+      }
+
+      const target = isMobile() ? els.adfitMountMobile : els.adfitMountDesktop;
+      if (!target || !sharedAdNode) return;
+
+      if (sharedAdNode.parentNode !== target) {
+        target.innerHTML = "";
+        target.appendChild(sharedAdNode);
+      }
     }
 
     function readCache(){
@@ -1188,44 +1245,6 @@
       return div;
     }
 
-    function getBannerInsertIndex(listLength) {
-      if (listLength < 3) return -1;
-      return 3;
-    }
-
-    function createKakaoAdfitCard() {
-      const outer = document.createElement("div");
-      outer.className = "card";
-      outer.style.padding = "0";
-      outer.style.cursor = "default";
-      outer.style.border = "none";
-      outer.style.background = "transparent";
-      outer.style.boxShadow = "none";
-
-      const inner = document.createElement("div");
-      inner.style.padding = "2px 2px";
-
-      const adWrap = document.createElement("div");
-      adWrap.style.display = "block";
-      adWrap.style.overflow = "hidden";
-      adWrap.style.borderRadius = "12px";
-      adWrap.style.background = "#ffffff";
-      adWrap.style.minHeight = `${KAKAO_ADFIT.HEIGHT}px`;
-
-      const ins = document.createElement("ins");
-      ins.className = "kakao_ad_area";
-      ins.style.display = "none";
-      ins.setAttribute("data-ad-unit", KAKAO_ADFIT.UNIT);
-      ins.setAttribute("data-ad-width", String(KAKAO_ADFIT.WIDTH));
-      ins.setAttribute("data-ad-height", String(KAKAO_ADFIT.HEIGHT));
-
-      adWrap.appendChild(ins);
-      inner.appendChild(adWrap);
-      outer.appendChild(inner);
-
-      return outer;
-    }
-
     function renderProgramChips(){
       const programs = uniq(allRows.map(r => r.program)).sort((a,b) => a.localeCompare(b,"ko"));
 
@@ -1350,25 +1369,12 @@
         });
       }
 
-      const bannerInsertIndex = getBannerInsertIndex(listRows.length);
-
-      for (let i = 0; i < listRows.length; i++) {
-        const listRow = listRows[i];
+      for (const listRow of listRows) {
         const found = markerLookup.get(rowKey(listRow));
         if (!found) continue;
 
         fragDesktop.appendChild(createCardElement(listRow));
         fragMobile.appendChild(createCardElement(listRow));
-
-        if (bannerInsertIndex === i + 1) {
-          const adCard = createKakaoAdfitCard();
-
-          if (isMobile()) {
-            fragMobile.appendChild(adCard);
-          } else {
-            fragDesktop.appendChild(adCard);
-          }
-        }
       }
 
       if (els.list) els.list.appendChild(fragDesktop);
@@ -1420,10 +1426,6 @@
 
     function closeSheet(){
       if (sheetController) sheetController.setState("collapsed");
-    }
-
-    function toggleSheet(){
-      if (sheetController) sheetController.toggle();
     }
 
     function bindSheetGesture(){
@@ -1567,7 +1569,6 @@
 
       sheetController = {
         setState,
-        toggle,
         getState: () => currentState
       };
 
@@ -1779,12 +1780,16 @@
 
       if (els.myLocationBtn) els.myLocationBtn.addEventListener("click", moveToMyLocation);
 
-      window.addEventListener("resize", syncQuery);
+      window.addEventListener("resize", () => {
+        syncQuery();
+        mountSharedAd();
+      });
     }
 
     async function boot(){
       try{
         validateConfig();
+        mountSharedAd();
         setStatus("지도 로딩 중…");
         bindSheetGesture();
         await loadGoogleMaps();
@@ -1802,21 +1807,6 @@
     }
 
     boot();
-  </script>
-
-  <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", async () => {
-        try {
-          const registrations = await navigator.serviceWorker.getRegistrations();
-          for (const registration of registrations) {
-            await registration.unregister();
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      });
-    }
   </script>
 
   <script>
