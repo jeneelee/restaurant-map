@@ -715,16 +715,7 @@
       myLocationBtn: document.getElementById("myLocationBtn")
     };
 
-    window.adfitNoAdCallback = function(targetEl){
-      try {
-        const card = targetEl && targetEl.closest ? targetEl.closest(".adfit-card") : null;
-        if (card) {
-          card.style.display = "none";
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    };
+
 
     function isMobile(){
       return window.matchMedia("(max-width: 900px)").matches;
@@ -1230,7 +1221,6 @@
       ins.setAttribute("data-ad-unit", KAKAO_ADFIT.UNIT);
       ins.setAttribute("data-ad-width", String(KAKAO_ADFIT.WIDTH));
       ins.setAttribute("data-ad-height", String(KAKAO_ADFIT.HEIGHT));
-      ins.setAttribute("data-ad-onfail", "adfitNoAdCallback");
 
       const script = document.createElement("script");
       script.async = true;
