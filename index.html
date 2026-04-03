@@ -1374,16 +1374,6 @@
         fragDesktop.appendChild(createCardElement(listRow));
         fragMobile.appendChild(createCardElement(listRow));
 
-        if (bannerInsertIndex === i + 1) {
-          const adCard = createKakaoAdfitCard();
-
-          if (isMobile()) {
-            fragMobile.appendChild(adCard);
-          } else {
-            fragDesktop.appendChild(adCard);
-          }
-        }
-      }
 
       if (els.list) els.list.appendChild(fragDesktop);
       if (els.list_m) els.list_m.appendChild(fragMobile);
@@ -1867,6 +1857,35 @@
     if (isIOS && !isInStandaloneMode && installGuide) {
       installGuide.hidden = false;
     }
+
+
   </script>
+
+
+<div id="adfitTestBottom"
+     style="
+       position:fixed;
+       left:50%;
+       bottom:16px;
+       transform:translateX(-50%);
+       z-index:99999;
+       width:320px;
+       height:100px;
+       background:#fff;
+       border-radius:12px;
+       overflow:hidden;
+       box-shadow:0 8px 20px rgba(0,0,0,.15);
+     ">
+  <ins class="kakao_ad_area"
+       style="display:none;"
+       data-ad-unit="DAN-QcJeLbFbhsCiwHH"
+       data-ad-width="320"
+       data-ad-height="100"></ins>
+  <script type="text/javascript"
+          src="https://t1.daumcdn.net/kas/static/ba.min.js"
+          async></script>
+</div>
+
+  
 </body>
 </html>
