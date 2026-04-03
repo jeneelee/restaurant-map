@@ -631,7 +631,7 @@
     };
 
     const RANGE_A1 = `${CONFIG.SHEET_NAME}!A1:Z`;
-    const CACHE_KEY = `restaurant_map_cache_v19__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
+    const CACHE_KEY = `restaurant_map_cache_v18__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
 
     const PROGRAM_THEMES = {
       "미쉐린가이드 2026": {
@@ -714,8 +714,6 @@
 
       myLocationBtn: document.getElementById("myLocationBtn")
     };
-
-
 
     function isMobile(){
       return window.matchMedia("(max-width: 900px)").matches;
@@ -1015,7 +1013,8 @@
         infoWindow.close();
       });
 
-      infoWindow.addListener("closeclick", () => {});
+      infoWindow.addListener("closeclick", () => {
+      });
     }
 
     function readCache(){
@@ -1196,7 +1195,7 @@
 
     function createKakaoAdfitCard() {
       const outer = document.createElement("div");
-      outer.className = "card adfit-card";
+      outer.className = "card";
       outer.style.padding = "0";
       outer.style.cursor = "default";
       outer.style.border = "none";
@@ -1212,30 +1211,17 @@
       adWrap.style.borderRadius = "12px";
       adWrap.style.background = "#ffffff";
       adWrap.style.minHeight = `${KAKAO_ADFIT.HEIGHT}px`;
-      adWrap.style.width = "100%";
 
       const ins = document.createElement("ins");
       ins.className = "kakao_ad_area";
       ins.style.display = "none";
-      ins.style.width = "100%";
       ins.setAttribute("data-ad-unit", KAKAO_ADFIT.UNIT);
       ins.setAttribute("data-ad-width", String(KAKAO_ADFIT.WIDTH));
       ins.setAttribute("data-ad-height", String(KAKAO_ADFIT.HEIGHT));
 
-      const script = document.createElement("script");
-      script.async = true;
-      script.type = "text/javascript";
-      script.charset = "utf-8";
-      script.src = "https://t1.daumcdn.net/kas/static/ba.min.js";
-
       adWrap.appendChild(ins);
-      adWrap.appendChild(script);
       inner.appendChild(adWrap);
       outer.appendChild(inner);
-
-      outer.addEventListener("click", (e) => {
-        e.stopPropagation();
-      });
 
       return outer;
     }
@@ -1374,6 +1360,16 @@
         fragDesktop.appendChild(createCardElement(listRow));
         fragMobile.appendChild(createCardElement(listRow));
 
+        if (bannerInsertIndex === i + 1) {
+          const adCard = createKakaoAdfitCard();
+
+          if (isMobile()) {
+            fragMobile.appendChild(adCard);
+          } else {
+            fragDesktop.appendChild(adCard);
+          }
+        }
+      }
 
       if (els.list) els.list.appendChild(fragDesktop);
       if (els.list_m) els.list_m.appendChild(fragMobile);
@@ -1857,10 +1853,8 @@
     if (isIOS && !isInStandaloneMode && installGuide) {
       installGuide.hidden = false;
     }
-
-
   </script>
 
- 
+  <script type="text/javascript" src="https://t1.daumcdn.net/kas/static/ba.min.js" async></script>
 </body>
 </html>
