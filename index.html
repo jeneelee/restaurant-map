@@ -174,6 +174,21 @@
       line-height:1.45;
     }
 
+    .adfit-box{
+      margin-top:10px;
+      display:flex;
+      justify-content:center;
+      min-height:100px;
+    }
+
+    .adfit-inner{
+      width:320px;
+      min-height:100px;
+      overflow:hidden;
+      border-radius:12px;
+      background:#fff;
+    }
+
     .list{
       display:flex;
       flex-direction:column;
@@ -575,6 +590,16 @@
         </div>
 
         <div id="status" class="status">로딩 준비 중…</div>
+
+        <div class="adfit-box">
+          <div class="adfit-inner">
+            <ins class="kakao_ad_area"
+                 style="display:block;"
+                 data-ad-unit="DAN-QcJeLbFbhsCiwHH"
+                 data-ad-width="320"
+                 data-ad-height="100"></ins>
+          </div>
+        </div>
       </div>
 
       <div class="side-body">
@@ -631,7 +656,7 @@
     };
 
     const RANGE_A1 = `${CONFIG.SHEET_NAME}!A1:Z`;
-    const CACHE_KEY = `restaurant_map_cache_v18__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
+    const CACHE_KEY = `restaurant_map_cache_v19__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
 
     const PROGRAM_THEMES = {
       "미쉐린가이드 2026": {
@@ -659,13 +684,6 @@
       bg: "#f9fafb",
       border: "#e5e7eb",
       text: "#374151"
-    };
-
-    const KAKAO_ADFIT = {
-      UNIT: "DAN-QcJeLbFbhsCiwHH",
-      WIDTH: 320,
-      HEIGHT: 100,
-      SCRIPT_ID: "kakao-adfit-script"
     };
 
     let map = null;
@@ -1188,57 +1206,6 @@
       return div;
     }
 
-    function getBannerInsertIndex(listLength) {
-      if (listLength < 3) return -1;
-      return 3;
-    }
-
-    function createKakaoAdfitCard() {
-      const outer = document.createElement("div");
-      outer.className = "card";
-      outer.style.padding = "0";
-      outer.style.cursor = "default";
-      outer.style.border = "none";
-      outer.style.background = "transparent";
-      outer.style.boxShadow = "none";
-
-      const inner = document.createElement("div");
-      inner.style.padding = "2px 2px";
-
-      const adWrap = document.createElement("div");
-      adWrap.style.display = "block";
-      adWrap.style.overflow = "hidden";
-      adWrap.style.borderRadius = "12px";
-      adWrap.style.background = "#fff";
-      adWrap.style.minHeight = `${KAKAO_ADFIT.HEIGHT}px`;
-
-      const ins = document.createElement("ins");
-      ins.className = "kakao_ad_area";
-      ins.style.display = "none";
-      ins.setAttribute("data-ad-unit", KAKAO_ADFIT.UNIT);
-      ins.setAttribute("data-ad-width", String(KAKAO_ADFIT.WIDTH));
-      ins.setAttribute("data-ad-height", String(KAKAO_ADFIT.HEIGHT));
-
-      adWrap.appendChild(ins);
-      inner.appendChild(adWrap);
-      outer.appendChild(inner);
-
-      return outer;
-    }
-
-    function refreshKakaoAdfit(){
-      const oldScript = document.getElementById(KAKAO_ADFIT.SCRIPT_ID);
-      if (oldScript) oldScript.remove();
-
-      const script = document.createElement("script");
-      script.id = KAKAO_ADFIT.SCRIPT_ID;
-      script.type = "text/javascript";
-      script.src = "https://t1.daumcdn.net/kas/static/ba.min.js";
-      script.async = true;
-
-      document.body.appendChild(script);
-    }
-
     function renderProgramChips(){
       const programs = uniq(allRows.map(r => r.program)).sort((a,b) => a.localeCompare(b,"ko"));
 
@@ -1333,8 +1300,6 @@
         ? getSelectedContextRows(selectedPlaceRow, rows)
         : rows;
 
-      const bannerInsertIndex = getBannerInsertIndex(listRows.length);
-
       for (const row of rows){
         const lat = toNumber(row.lat);
         const lng = toNumber(row.lng);
@@ -1372,24 +1337,10 @@
 
         fragDesktop.appendChild(createCardElement(listRow));
         fragMobile.appendChild(createCardElement(listRow));
-
-        if (bannerInsertIndex === i + 1) {
-          if (isMobile()) {
-            fragMobile.appendChild(createKakaoAdfitCard());
-          } else {
-            fragDesktop.appendChild(createKakaoAdfitCard());
-          }
-        }
       }
 
       if (els.list) els.list.appendChild(fragDesktop);
       if (els.list_m) els.list_m.appendChild(fragMobile);
-
-      if (bannerInsertIndex !== -1) {
-        setTimeout(() => {
-          refreshKakaoAdfit();
-        }, 0);
-      }
 
       if (validCount >= 2 && !sortByNearby && !selectedPlaceRow){
         if (!hasInitialViewSet) {
@@ -1869,5 +1820,7 @@
       installGuide.hidden = false;
     }
   </script>
+
+  <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
 </body>
 </html>
