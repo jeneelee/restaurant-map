@@ -1188,16 +1188,17 @@
       return div;
     }
 
-    function getRandomBannerInsertIndex(listLength) {
-      if (listLength < 5) return -1;
 
-      const candidates = [2, 3, 4].filter(n => n < listLength);
-      if (!candidates.length) return -1;
 
-      const randomIndex = Math.floor(Math.random() * candidates.length);
-      return candidates[randomIndex];
-    }
+    
+function getBannerInsertIndex(listLength) {
+  if (listLength < 3) return -1;
+  return 3;
+}
 
+
+
+    
     function createKakaoAdfitCard() {
       const outer = document.createElement("div");
       outer.className = "card";
@@ -1363,6 +1364,7 @@
 
       const bannerInsertIndex = getRandomBannerInsertIndex(listRows.length);
 
+      
       for (let i = 0; i < listRows.length; i++) {
         const listRow = listRows[i];
         const found = markerLookup.get(rowKey(listRow));
