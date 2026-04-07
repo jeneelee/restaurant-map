@@ -1362,7 +1362,10 @@ function getBannerInsertIndex(listLength) {
         });
       }
 
-      const bannerInsertIndex = getRandomBannerInsertIndex(listRows.length);
+     function getRandomBannerInsertIndex(listLength) {
+  if (listLength < 3) return -1;
+  return 3;
+}
 
       
       for (let i = 0; i < listRows.length; i++) {
