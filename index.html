@@ -174,21 +174,6 @@
       line-height:1.45;
     }
 
-    .adfit-box{
-      margin-top:10px;
-      display:flex;
-      justify-content:center;
-      min-height:100px;
-    }
-
-    .adfit-inner{
-      width:320px;
-      min-height:100px;
-      overflow:hidden;
-      border-radius:12px;
-      background:#fff;
-    }
-
     .list{
       display:flex;
       flex-direction:column;
@@ -317,8 +302,8 @@
 
     .mapControls{
       position:fixed !important;
-      right:14px !important;
-      bottom:26px !important;
+      right:20px !important;
+      bottom:130px !important;
       z-index:9999 !important;
       display:flex !important;
       flex-direction:column !important;
@@ -413,12 +398,89 @@
       color: #6b7280;
     }
 
+    /* 데스크톱 광고 영역 */
+    .desktop-right-ad{
+      position:fixed;
+      top:50%;
+      right:14px;
+      transform:translateY(-50%);
+      z-index:9998;
+      width:160px;
+      min-height:600px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      pointer-events:auto;
+    }
+
+    .desktop-right-ad .ad-box{
+      width:160px;
+      min-height:600px;
+      border-radius:16px;
+      overflow:hidden;
+      background:rgba(255,255,255,.92);
+      border:1px solid rgba(229,231,235,.9);
+      box-shadow:0 10px 24px rgba(0,0,0,.12);
+      padding:0;
+    }
+
+    .desktop-bottom-ad{
+      position:fixed;
+      left:50%;
+      bottom:16px;
+      transform:translateX(-50%);
+      z-index:9998;
+      width:728px;
+      min-height:90px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      pointer-events:auto;
+    }
+
+    .desktop-bottom-ad .ad-box{
+      width:728px;
+      min-height:90px;
+      border-radius:16px;
+      overflow:hidden;
+      background:rgba(255,255,255,.92);
+      border:1px solid rgba(229,231,235,.9);
+      box-shadow:0 10px 24px rgba(0,0,0,.12);
+      padding:0;
+    }
+
+    .desktop-right-ad ins,
+    .desktop-bottom-ad ins{
+      display:block !important;
+    }
+
     .mobile-topbar{display:none}
     .sheet{display:none}
+
+    @media (max-width:1400px){
+      .desktop-right-ad{
+        display:none;
+      }
+    }
+
+    @media (max-width:1100px){
+      .desktop-bottom-ad{
+        display:none;
+      }
+
+      .mapControls{
+        bottom:26px !important;
+      }
+    }
 
     @media (max-width:900px){
       .side{display:none}
       .mapArea,#map{height:100vh}
+
+      .desktop-right-ad,
+      .desktop-bottom-ad{
+        display:none !important;
+      }
 
       .mobile-topbar{
         display:flex;
@@ -590,16 +652,6 @@
         </div>
 
         <div id="status" class="status">로딩 준비 중…</div>
-
-        <div class="adfit-box">
-          <div class="adfit-inner">
-            <ins class="kakao_ad_area"
-                 style="display:block;"
-                 data-ad-unit="DAN-QcJeLbFbhsCiwHH"
-                 data-ad-width="320"
-                 data-ad-height="100"></ins>
-          </div>
-        </div>
       </div>
 
       <div class="side-body">
@@ -607,6 +659,28 @@
       </div>
     </aside>
   </div>
+
+  <!-- 데스크톱 오른쪽 사이드 광고 -->
+  <aside class="desktop-right-ad" aria-label="오른쪽 광고">
+    <div class="ad-box">
+      <ins class="kakao_ad_area"
+           style="display:none;"
+           data-ad-unit="DAN-spM8U2BCKhLSHIeG"
+           data-ad-width="160"
+           data-ad-height="600"></ins>
+    </div>
+  </aside>
+
+  <!-- 데스크톱 하단 중앙 광고 -->
+  <aside class="desktop-bottom-ad" aria-label="하단 광고">
+    <div class="ad-box">
+      <ins class="kakao_ad_area"
+           style="display:none;"
+           data-ad-unit="DAN-1Sggk8GSN1SeEY3g"
+           data-ad-width="728"
+           data-ad-height="90"></ins>
+    </div>
+  </aside>
 
   <div class="mobile-topbar">
     <div class="mobile-search-wrap">
@@ -1821,6 +1895,7 @@
     }
   </script>
 
+  <!-- 카카오 광고 스크립트: 한 번만 넣기 -->
   <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
 </body>
 </html>
