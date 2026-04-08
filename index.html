@@ -398,7 +398,7 @@
       color: #6b7280;
     }
 
-    /* 데스크톱 광고 영역 */
+    /* 광고는 꾸미지 않고 원본 영역만 유지 */
     .desktop-right-ad{
       position:fixed;
       top:50%;
@@ -406,22 +406,8 @@
       transform:translateY(-50%);
       z-index:9998;
       width:160px;
-      min-height:600px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      pointer-events:auto;
-    }
-
-    .desktop-right-ad .ad-box{
-      width:160px;
-      min-height:600px;
-      border-radius:16px;
+      height:600px;
       overflow:hidden;
-      background:rgba(255,255,255,.92);
-      border:1px solid rgba(229,231,235,.9);
-      box-shadow:0 10px 24px rgba(0,0,0,.12);
-      padding:0;
     }
 
     .desktop-bottom-ad{
@@ -431,27 +417,15 @@
       transform:translateX(-50%);
       z-index:9998;
       width:728px;
-      min-height:90px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      pointer-events:auto;
-    }
-
-    .desktop-bottom-ad .ad-box{
-      width:728px;
-      min-height:90px;
-      border-radius:16px;
+      height:90px;
       overflow:hidden;
-      background:rgba(255,255,255,.92);
-      border:1px solid rgba(229,231,235,.9);
-      box-shadow:0 10px 24px rgba(0,0,0,.12);
-      padding:0;
     }
 
     .desktop-right-ad ins,
     .desktop-bottom-ad ins{
       display:block !important;
+      margin:0 !important;
+      padding:0 !important;
     }
 
     .mobile-topbar{display:none}
@@ -660,27 +634,23 @@
     </aside>
   </div>
 
-  <!-- 데스크톱 오른쪽 사이드 광고 -->
-  <aside class="desktop-right-ad" aria-label="오른쪽 광고">
-    <div class="ad-box">
-      <ins class="kakao_ad_area"
-           style="display:none;"
-           data-ad-unit="DAN-spM8U2BCKhLSHIeG"
-           data-ad-width="160"
-           data-ad-height="600"></ins>
-    </div>
-  </aside>
+  <!-- 오른쪽 광고: 장식 없이 원본 영역만 -->
+  <div class="desktop-right-ad" aria-label="오른쪽 광고">
+    <ins class="kakao_ad_area"
+         style="display:none;"
+         data-ad-unit="DAN-spM8U2BCKhLSHIeG"
+         data-ad-width="160"
+         data-ad-height="600"></ins>
+  </div>
 
-  <!-- 데스크톱 하단 중앙 광고 -->
-  <aside class="desktop-bottom-ad" aria-label="하단 광고">
-    <div class="ad-box">
-      <ins class="kakao_ad_area"
-           style="display:none;"
-           data-ad-unit="DAN-1Sggk8GSN1SeEY3g"
-           data-ad-width="728"
-           data-ad-height="90"></ins>
-    </div>
-  </aside>
+  <!-- 하단 광고: 장식 없이 원본 영역만 -->
+  <div class="desktop-bottom-ad" aria-label="하단 광고">
+    <ins class="kakao_ad_area"
+         style="display:none;"
+         data-ad-unit="DAN-1Sggk8GSN1SeEY3g"
+         data-ad-width="728"
+         data-ad-height="90"></ins>
+  </div>
 
   <div class="mobile-topbar">
     <div class="mobile-search-wrap">
@@ -1895,7 +1865,6 @@
     }
   </script>
 
-  <!-- 카카오 광고 스크립트: 한 번만 넣기 -->
   <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
 </body>
 </html>
