@@ -92,11 +92,38 @@
       overflow:hidden;
       display:flex;
       flex-direction:column;
+      transition:transform .25s ease;
+      will-change:transform;
+    }
+
+    .side-drag-handle{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:24px;
+      cursor:grab;
+      user-select:none;
+      -webkit-user-select:none;
+      touch-action:none;
+      background:rgba(255,255,255,.28);
+      border-bottom:1px solid rgba(229,231,235,.45);
+      flex:0 0 auto;
+    }
+
+    .side-drag-handle:active{
+      cursor:grabbing;
+    }
+
+    .side-drag-bar{
+      width:56px;
+      height:6px;
+      border-radius:999px;
+      background:#c7cbd1;
     }
 
     .side-top{
       flex:0 0 auto;
-      padding:12px 12px 10px;
+      padding:18px 12px 10px;
       border-bottom:1px solid rgba(229,231,235,.65);
       background:rgba(255,255,255,.46);
     }
@@ -113,6 +140,7 @@
       align-items:center;
       gap:9px;
       margin-bottom:10px;
+      min-height:52px;
     }
 
     .brand-logo{
@@ -128,11 +156,13 @@
       font-size:16px;
       margin:0 0 8px;
       letter-spacing:-0.2px;
+      overflow:visible;
     }
 
     .title.brand-title{
       margin:0;
-      line-height:1.15;
+      line-height:1.3;
+      padding-top:1px;
     }
 
     .row{
@@ -300,15 +330,15 @@
       color:#b91c1c;
     }
 
-   .mapControls{
-  position:fixed !important;
-  right:32px !important;
-  bottom:70px !important;
-  z-index:9999 !important;
-  display:flex !important;
-  flex-direction:column !important;
-  gap:8px !important;
-}
+    .mapControls{
+      position:fixed !important;
+      right:32px !important;
+      bottom:70px !important;
+      z-index:9999 !important;
+      display:flex !important;
+      flex-direction:column !important;
+      gap:8px !important;
+    }
 
     .mapIconBtn{
       width:48px;
@@ -398,7 +428,6 @@
       color: #6b7280;
     }
 
-    /* 광고는 꾸미지 않고 원본 영역만 유지 */
     .desktop-right-ad{
       position:fixed;
       top:50%;
@@ -449,6 +478,7 @@
 
     @media (max-width:900px){
       .side{display:none}
+      .side-drag-handle{display:none}
       .mapArea,#map{height:100vh}
 
       .desktop-right-ad,
@@ -459,7 +489,7 @@
       .mobile-topbar{
         display:flex;
         position:fixed;
-        top:12px;
+        top:16px;
         left:12px;
         right:12px;
         z-index:11;
@@ -597,6 +627,10 @@
     </main>
 
     <aside class="side">
+      <div class="side-drag-handle" id="sideDragHandle" aria-label="목록 패널 드래그 핸들">
+        <div class="side-drag-bar"></div>
+      </div>
+
       <div class="side-top">
         <div class="brand-header">
           <img src="logo.png" alt="모두의 맛집 로고" class="brand-logo" />
@@ -634,7 +668,6 @@
     </aside>
   </div>
 
-  <!-- 오른쪽 광고: 장식 없이 원본 영역만 -->
   <div class="desktop-right-ad" aria-label="오른쪽 광고">
     <ins class="kakao_ad_area"
          style="display:none;"
@@ -643,7 +676,6 @@
          data-ad-height="600"></ins>
   </div>
 
-  <!-- 하단 광고: 장식 없이 원본 영역만 -->
   <div class="desktop-bottom-ad" aria-label="하단 광고">
     <ins class="kakao_ad_area"
          style="display:none;"
@@ -720,6 +752,12 @@
         bg: "#f0fdf4",
         border: "#86efac",
         text: "#15803d"
+      },
+      "맛있는 녀석들": {
+        pin: "#8B4513",
+        bg: "#f5ede6",
+        border: "#d6bfae",
+        text: "#5c3b1e"
       }
     };
 
@@ -745,6 +783,7 @@
     let selectedPlaceRow = null;
     let markerLookup = new Map();
     let sheetController = null;
+    let desktopSideController = null;
     let hasInitialViewSet = false;
 
     const els = {
@@ -775,7 +814,10 @@
       sheetContent: document.getElementById("sheetContent"),
       sheetHandleBar: document.getElementById("sheetHandleBar"),
 
-      myLocationBtn: document.getElementById("myLocationBtn")
+      myLocationBtn: document.getElementById("myLocationBtn"),
+
+      side: document.querySelector(".side"),
+      sideDragHandle: document.getElementById("sideDragHandle")
     };
 
     function isMobile(){
@@ -827,6 +869,7 @@
 
       if (cleaned.includes("빕 구르망")) return "미쉐린 빕 구르망";
       if (cleaned.includes("성시경 먹을텐데")) return "성시경 먹을텐데";
+      if (cleaned.includes("맛있는 녀석들")) return "맛있는 녀석들";
       if (cleaned.includes("미쉐린")) return "미쉐린가이드 2026";
 
       return cleaned;
@@ -927,6 +970,16 @@
       }
       if (normalized === "성시경 먹을텐데") {
         return "https://maps.google.com/mapfiles/ms/icons/green-dot.png";
+      }
+      if (normalized === "맛있는 녀석들") {
+        return {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 8,
+          fillColor: "#8B4513",
+          fillOpacity: 1,
+          strokeColor: "#ffffff",
+          strokeWeight: 2
+        };
       }
       return "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
     }
@@ -1585,6 +1638,125 @@
       updateMapControlsPosition();
     }
 
+    function bindDesktopSideGesture(){
+      if (!els.side || !els.sideDragHandle) return;
+
+      const side = els.side;
+      const handle = els.sideDragHandle;
+
+      let startX = 0;
+      let currentX = 0;
+      let startTranslate = 0;
+      let isDragging = false;
+      let moved = false;
+      let currentState = "open";
+
+      const getPanelWidth = () => side.getBoundingClientRect().width;
+      const getClosedX = () => -(getPanelWidth() - 44);
+
+      const getTranslateX = () => {
+        const style = window.getComputedStyle(side);
+        const transform = style.transform;
+        if (!transform || transform === "none") return 0;
+        const matrix = new DOMMatrixReadOnly(transform);
+        return matrix.m41;
+      };
+
+      const setState = (state) => {
+        currentState = state;
+        side.style.transition = "transform .25s ease";
+
+        if (state === "open") {
+          side.style.transform = "translateX(0)";
+        } else {
+          side.style.transform = `translateX(${getClosedX()}px)`;
+        }
+      };
+
+      const toggle = () => {
+        setState(currentState === "open" ? "closed" : "open");
+      };
+
+      const findNearestState = (x) => {
+        const openX = 0;
+        const closedX = getClosedX();
+
+        const openDist = Math.abs(x - openX);
+        const closedDist = Math.abs(x - closedX);
+
+        return openDist <= closedDist ? "open" : "closed";
+      };
+
+      const onPointerDown = (e) => {
+        if (isMobile()) return;
+
+        isDragging = true;
+        moved = false;
+        startX = e.clientX;
+        currentX = e.clientX;
+        startTranslate = getTranslateX();
+        side.style.transition = "none";
+
+        try {
+          handle.setPointerCapture(e.pointerId);
+        } catch (_) {}
+      };
+
+      const onPointerMove = (e) => {
+        if (!isDragging) return;
+
+        currentX = e.clientX;
+        const deltaX = currentX - startX;
+
+        if (Math.abs(deltaX) > 5) moved = true;
+
+        let next = startTranslate + deltaX;
+        const minX = getClosedX();
+        const maxX = 0;
+
+        if (next < minX) next = minX;
+        if (next > maxX) next = maxX;
+
+        side.style.transform = `translateX(${next}px)`;
+      };
+
+      const onPointerUp = () => {
+        if (!isDragging) return;
+
+        isDragging = false;
+
+        if (!moved) {
+          toggle();
+          return;
+        }
+
+        const currentTranslate = getTranslateX();
+        const nextState = findNearestState(currentTranslate);
+        setState(nextState);
+      };
+
+      handle.addEventListener("pointerdown", onPointerDown);
+      handle.addEventListener("pointermove", onPointerMove);
+      handle.addEventListener("pointerup", onPointerUp);
+      handle.addEventListener("pointercancel", onPointerUp);
+
+      window.addEventListener("resize", () => {
+        if (isMobile()) {
+          side.style.transform = "translateX(0)";
+          return;
+        }
+        setState(currentState);
+      });
+
+      desktopSideController = {
+        setState,
+        toggle,
+        getState: () => currentState
+      };
+
+      setState("open");
+    }
+
     function resetMyLocationMode(){
       currentLocation = null;
       sortByNearby = false;
@@ -1797,6 +1969,7 @@
         validateConfig();
         setStatus("지도 로딩 중…");
         bindSheetGesture();
+        bindDesktopSideGesture();
         await loadGoogleMaps();
         initMap();
         bindUI();
