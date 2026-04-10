@@ -1093,23 +1093,23 @@
     }
 
     function createMarkerIcon(program){
-      const normalized = normalizeProgram(program);
+  const normalized = normalizeProgram(program);
 
-      if (normalized === "미쉐린가이드 2026") {
-        return "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
-      }
-      if (normalized === "미쉐린 빕 구르망") {
-        return "https://maps.google.com/mapfiles/ms/icons/orange-dot.png";
-      }
-      if (normalized === "성시경 먹을텐데") {
-        return "https://maps.google.com/mapfiles/ms/icons/green-dot.png";
-      }
-      if (normalized === "맛있는 녀석들") {
-        return makeClassicPinIcon("#8B4513");
-      }
+  if (normalized === "미쉐린가이드 2026") {
+    return "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
+  }
+  if (normalized === "미쉐린 빕 구르망") {
+    return "https://maps.google.com/mapfiles/ms/icons/orange-dot.png";
+  }
+  if (normalized === "성시경 먹을텐데") {
+    return "https://maps.google.com/mapfiles/ms/icons/green-dot.png";
+  }
+  if (normalized === "맛있는 녀석들") {
+    return "https://maps.google.com/mapfiles/ms/icons/purple-dot.png";
+  }
 
-      return "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
-    }
+  return "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
+}
 
     function formatDistance(m){
       if (!Number.isFinite(m)) return "";
