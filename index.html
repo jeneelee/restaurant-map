@@ -1489,26 +1489,35 @@ function bindDraggableHorizontalScroll(rowEl, prevBtn, nextBtn){
     }
   });
 
-  const endDrag = (e) => {
-    if (!isPointerDown) return;
 
-    const releasedChip = e.target.closest(".chip");
 
-    rowEl.classList.remove("dragging");
-    isPointerDown = false;
+  
+const endDrag = (e) => {
+  if (!isPointerDown) return;
 
-    // 드래그가 아니고, 누른 칩과 뗀 칩이 같으면 선택 처리
-    if (!dragged && pressedChip && releasedChip && pressedChip === releasedChip) {
-      const program = pressedChip.dataset.program || "";
-      if (program) {
-        toggleProgram(program);
-      }
+  const releasedEl = document.elementFromPoint(e.clientX, e.clientY);
+  const releasedChip = releasedEl ? releasedEl.closest(".chip") : null;
+
+  rowEl.classList.remove("dragging");
+  isPointerDown = false;
+
+  // 드래그가 아니고, 누른 칩과 뗀 칩이 같으면 선택 처리
+  if (!dragged && pressedChip && releasedChip && pressedChip === releasedChip) {
+    const program = pressedChip.dataset.program || "";
+    if (program) {
+      toggleProgram(program);
     }
+  }
 
-    pressedChip = null;
-    dragged = false;
-  };
+  pressedChip = null;
+  dragged = false;
+};
 
+
+
+
+
+  
   rowEl.addEventListener("pointerup", endDrag);
   rowEl.addEventListener("pointercancel", endDrag);
   rowEl.addEventListener("lostpointercapture", () => {
