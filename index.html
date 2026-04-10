@@ -1438,104 +1438,107 @@
       nextBtn.disabled = rowEl.scrollLeft >= maxScrollLeft - 2;
     }
 
-    function bindDraggableHorizontalScroll(rowEl, prevBtn, nextBtn){
-      if (!rowEl || rowEl.dataset.dragBound === "1") return;
-      rowEl.dataset.dragBound = "1";
-
-      let isPointerDown = false;
-      let isDragging = false;
-      let startX = 0;
-      let startScrollLeft = 0;
-      let suppressClick = false;
-
-      const DRAG_THRESHOLD = 6;
-
-      const syncButtons = () => updateChipNavState(rowEl, prevBtn, nextBtn);
-
-     rowEl.addEventListener("pointerdown", (e) => {
-  if (e.pointerType === "mouse" && e.button !== 0) return;
-  if (isMobile()) return;
-
-  // 칩 자체를 누른 경우에는 드래그 스크롤 시작하지 않음
-  if (e.target.closest(".chip")) return;
-
-  isPointerDown = true;
-  isDragging = false;
-  startX = e.clientX;
-  startScrollLeft = rowEl.scrollLeft;
-  suppressClick = false;
-
-  rowEl.classList.add("dragging");
-
-  try {
-    rowEl.setPointerCapture(e.pointerId);
-  } catch (_) {}
-});
-
-      rowEl.addEventListener("pointermove", (e) => {
-        if (!isPointerDown) return;
-
-        const dx = e.clientX - startX;
-
-        if (!isDragging && Math.abs(dx) >= DRAG_THRESHOLD) {
-          isDragging = true;
-          suppressClick = true;
-        }
-
-        if (!isDragging) return;
-
-        rowEl.scrollLeft = startScrollLeft - dx;
-        syncButtons();
-      });
-
-      const endDrag = () => {
-        isPointerDown = false;
-        rowEl.classList.remove("dragging");
-
-        requestAnimationFrame(() => {
-          isDragging = false;
-        });
-      };
-
-      rowEl.addEventListener("pointerup", endDrag);
-      rowEl.addEventListener("pointercancel", endDrag);
-      rowEl.addEventListener("lostpointercapture", endDrag);
-
-      rowEl.addEventListener("wheel", (e) => {
-        if (isMobile()) return;
-
-        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-          rowEl.scrollLeft += e.deltaY;
-          e.preventDefault();
-          syncButtons();
-        }
-      }, { passive:false });
-
-
-
-rowEl.addEventListener("click", (e) => {
-  if (!suppressClick) return;
-
-  // 실제 드래그한 경우에만 클릭 막기
-  e.preventDefault();
-  e.stopPropagation();
-  suppressClick = false;
-}, true);
-
-rowEl.addEventListener("pointerup", () => {
-  if (!isDragging) suppressClick = false;
-});
 
 
 
 
-      
-      rowEl.addEventListener("scroll", syncButtons);
-      window.addEventListener("resize", syncButtons);
 
-      syncButtons();
+function bindDraggableHorizontalScroll(rowEl, prevBtn, nextBtn){
+  if (!rowEl || rowEl.dataset.dragBound === "1") return;
+  rowEl.dataset.dragBound = "1";
+
+  let isPointerDown = false;
+  let isDragging = false;
+  let startX = 0;
+  let startScrollLeft = 0;
+  let suppressClick = false;
+
+  const DRAG_THRESHOLD = 8;
+
+  const syncButtons = () => updateChipNavState(rowEl, prevBtn, nextBtn);
+
+  rowEl.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    if (isMobile()) return;
+
+    isPointerDown = true;
+    isDragging = false;
+    startX = e.clientX;
+    startScrollLeft = rowEl.scrollLeft;
+    suppressClick = false;
+
+    rowEl.classList.add("dragging");
+
+    try {
+      rowEl.setPointerCapture(e.pointerId);
+    } catch (_) {}
+  });
+
+  rowEl.addEventListener("pointermove", (e) => {
+    if (!isPointerDown) return;
+
+    const dx = e.clientX - startX;
+
+    if (!isDragging && Math.abs(dx) >= DRAG_THRESHOLD) {
+      isDragging = true;
+      suppressClick = true;
     }
 
+    if (!isDragging) return;
+
+    rowEl.scrollLeft = startScrollLeft - dx;
+    syncButtons();
+    e.preventDefault();
+  });
+
+  const endDrag = () => {
+    if (!isPointerDown) return;
+
+    isPointerDown = false;
+    rowEl.classList.remove("dragging");
+
+    setTimeout(() => {
+      isDragging = false;
+      suppressClick = false;
+    }, 0);
+  };
+
+  rowEl.addEventListener("pointerup", endDrag);
+  rowEl.addEventListener("pointercancel", endDrag);
+  rowEl.addEventListener("lostpointercapture", endDrag);
+
+  rowEl.addEventListener("wheel", (e) => {
+    if (isMobile()) return;
+
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      rowEl.scrollLeft += e.deltaY;
+      e.preventDefault();
+      syncButtons();
+    }
+  }, { passive:false });
+
+  rowEl.addEventListener("click", (e) => {
+    if (!suppressClick) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+  }, true);
+
+  rowEl.addEventListener("scroll", syncButtons);
+  window.addEventListener("resize", syncButtons);
+
+  syncButtons();
+}
+    
+    
+
+
+
+
+
+
+
+    
     function initProgramChipScroller(){
       if (!els.programChips || !els.programChipsPrev || !els.programChipsNext) return;
 
