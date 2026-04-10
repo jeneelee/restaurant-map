@@ -108,14 +108,14 @@
     .side-edge-tab{
       position:absolute;
       top:50%;
-      right:-22px;
+      right:-18px;
       transform:translateY(-50%);
-      width:22px;
-      height:96px;
+      width:18px;
+      height:88px;
       border:1px solid rgba(229,231,235,.9);
       border-left:none;
-      border-top-right-radius:14px;
-      border-bottom-right-radius:14px;
+      border-top-right-radius:12px;
+      border-bottom-right-radius:12px;
       background:rgba(255,255,255,.96);
       box-shadow:0 8px 20px rgba(0,0,0,.12);
       display:flex;
@@ -133,8 +133,8 @@
     }
 
     .side-edge-tab svg{
-      width:14px;
-      height:14px;
+      width:12px;
+      height:12px;
       fill:#6b7280;
       display:block;
     }
@@ -310,28 +310,34 @@
     .chipsScroller{
       display:flex;
       align-items:center;
-      gap:6px;
+      gap:4px;
       width:100%;
       min-width:0;
     }
 
     .chipNavBtn{
       flex:0 0 auto;
-      width:28px;
-      height:28px;
+      width:20px;
+      height:24px;
       padding:0;
-      border-radius:999px;
+      border-radius:8px;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:14px;
+      font-size:12px;
       font-weight:900;
-      background:rgba(255,255,255,.82);
-      border:1px solid rgba(229,231,235,.86);
+      color:#4b5563;
+      background:rgba(255,255,255,.72);
+      border:1px solid rgba(229,231,235,.78);
+      box-shadow:none;
+    }
+
+    .chipNavBtn:hover{
+      background:rgba(255,255,255,.94);
     }
 
     .chipNavBtn:disabled{
-      opacity:.35;
+      opacity:.28;
       cursor:default;
     }
 
@@ -344,10 +350,14 @@
     .chipsRow{
       display:flex;
       gap:6px;
-      overflow:auto;
+      overflow-x:auto;
+      overflow-y:hidden;
       padding-bottom:2px;
       scrollbar-width:none;
       -ms-overflow-style:none;
+      -webkit-overflow-scrolling:touch;
+      scroll-behavior:smooth;
+      touch-action:pan-x;
     }
 
     .chipsRow::-webkit-scrollbar{
@@ -358,12 +368,15 @@
       cursor:grab;
       user-select:none;
       -webkit-user-select:none;
-      scroll-behavior:smooth;
     }
 
     .chipsRow.pc-draggable.dragging{
       cursor:grabbing;
       scroll-behavior:auto;
+    }
+
+    .chipsRow.pc-draggable .chip{
+      pointer-events:auto;
     }
 
     .chip{
@@ -611,8 +624,12 @@
       .mobile-chip-wrap .chipsRow{
         display:flex;
         gap:6px;
-        overflow:auto;
+        overflow-x:auto;
+        overflow-y:hidden;
         padding-bottom:2px;
+        -webkit-overflow-scrolling:touch;
+        touch-action:pan-x;
+        scroll-behavior:smooth;
       }
 
       .mobile-chip-wrap .chipsRow.pc-draggable{
@@ -828,7 +845,7 @@
     };
 
     const RANGE_A1 = `${CONFIG.SHEET_NAME}!A1:Z`;
-    const CACHE_KEY = `restaurant_map_cache_v20__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
+    const CACHE_KEY = `restaurant_map_cache_v21__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
 
     const PROGRAM_THEMES = {
       "미쉐린가이드 2026": {
@@ -1425,21 +1442,26 @@
       if (!rowEl || rowEl.dataset.dragBound === "1") return;
       rowEl.dataset.dragBound = "1";
 
-      let isDown = false;
+      let isPointerDown = false;
+      let isDragging = false;
       let startX = 0;
       let startScrollLeft = 0;
-      let moved = false;
+      let suppressClick = false;
+
+      const DRAG_THRESHOLD = 6;
 
       const syncButtons = () => updateChipNavState(rowEl, prevBtn, nextBtn);
 
       rowEl.addEventListener("pointerdown", (e) => {
+        if (e.pointerType === "mouse" && e.button !== 0) return;
         if (isMobile()) return;
-        if (e.target.closest(".chip")) return;
 
-        isDown = true;
-        moved = false;
+        isPointerDown = true;
+        isDragging = false;
         startX = e.clientX;
         startScrollLeft = rowEl.scrollLeft;
+        suppressClick = false;
+
         rowEl.classList.add("dragging");
 
         try {
@@ -1448,16 +1470,28 @@
       });
 
       rowEl.addEventListener("pointermove", (e) => {
-        if (!isDown) return;
+        if (!isPointerDown) return;
+
         const dx = e.clientX - startX;
-        if (Math.abs(dx) > 4) moved = true;
+
+        if (!isDragging && Math.abs(dx) >= DRAG_THRESHOLD) {
+          isDragging = true;
+          suppressClick = true;
+        }
+
+        if (!isDragging) return;
+
         rowEl.scrollLeft = startScrollLeft - dx;
         syncButtons();
       });
 
       const endDrag = () => {
-        isDown = false;
+        isPointerDown = false;
         rowEl.classList.remove("dragging");
+
+        requestAnimationFrame(() => {
+          isDragging = false;
+        });
       };
 
       rowEl.addEventListener("pointerup", endDrag);
@@ -1466,12 +1500,21 @@
 
       rowEl.addEventListener("wheel", (e) => {
         if (isMobile()) return;
+
         if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
           rowEl.scrollLeft += e.deltaY;
           e.preventDefault();
           syncButtons();
         }
       }, { passive:false });
+
+      rowEl.addEventListener("click", (e) => {
+        if (!suppressClick) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+        suppressClick = false;
+      }, true);
 
       rowEl.addEventListener("scroll", syncButtons);
       window.addEventListener("resize", syncButtons);
@@ -1482,7 +1525,7 @@
     function initProgramChipScroller(){
       if (!els.programChips || !els.programChipsPrev || !els.programChipsNext) return;
 
-      const step = 180;
+      const step = 120;
 
       els.programChipsPrev.onclick = () => {
         els.programChips.scrollBy({ left: -step, behavior: "smooth" });
@@ -1494,6 +1537,35 @@
 
       bindDraggableHorizontalScroll(els.programChips, els.programChipsPrev, els.programChipsNext);
       updateChipNavState(els.programChips, els.programChipsPrev, els.programChipsNext);
+    }
+
+    function bindMobileChipMomentum(){
+      const mobileRow = els.programChips_top_m;
+      if (!mobileRow || mobileRow.dataset.touchBound === "1") return;
+
+      mobileRow.dataset.touchBound = "1";
+
+      let startX = 0;
+      let startScrollLeft = 0;
+      let touching = false;
+
+      mobileRow.addEventListener("touchstart", (e) => {
+        if (!e.touches || !e.touches[0]) return;
+        touching = true;
+        startX = e.touches[0].clientX;
+        startScrollLeft = mobileRow.scrollLeft;
+      }, { passive:true });
+
+      mobileRow.addEventListener("touchmove", (e) => {
+        if (!touching || !e.touches || !e.touches[0]) return;
+
+        const dx = e.touches[0].clientX - startX;
+        mobileRow.scrollLeft = startScrollLeft - dx;
+      }, { passive:true });
+
+      mobileRow.addEventListener("touchend", () => {
+        touching = false;
+      }, { passive:true });
     }
 
     function renderProgramChips(){
@@ -1847,7 +1919,7 @@
       let currentState = "open";
 
       const getPanelWidth = () => side.getBoundingClientRect().width;
-      const getClosedX = () => -(getPanelWidth() - 28);
+      const getClosedX = () => -(getPanelWidth() - 24);
 
       const getTranslateX = () => {
         const style = window.getComputedStyle(side);
@@ -2182,6 +2254,7 @@
         bindSheetGesture();
         bindDesktopSideGesture();
         initProgramChipScroller();
+        bindMobileChipMomentum();
         await loadGoogleMaps();
         initMap();
         bindUI();
