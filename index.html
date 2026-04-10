@@ -1511,14 +1511,25 @@
         }
       }, { passive:false });
 
-      rowEl.addEventListener("click", (e) => {
-        if (!suppressClick) return;
 
-        e.preventDefault();
-        e.stopPropagation();
-        suppressClick = false;
-      }, true);
 
+rowEl.addEventListener("click", (e) => {
+  if (!suppressClick) return;
+
+  // 실제 드래그한 경우에만 클릭 막기
+  e.preventDefault();
+  e.stopPropagation();
+  suppressClick = false;
+}, true);
+
+rowEl.addEventListener("pointerup", () => {
+  if (!isDragging) suppressClick = false;
+});
+
+
+
+
+      
       rowEl.addEventListener("scroll", syncButtons);
       window.addEventListener("resize", syncButtons);
 
