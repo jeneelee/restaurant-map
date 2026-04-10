@@ -1443,15 +1443,17 @@
 
 
 
+
+
 function bindDraggableHorizontalScroll(rowEl, prevBtn, nextBtn){
   if (!rowEl || rowEl.dataset.dragBound === "1") return;
   rowEl.dataset.dragBound = "1";
 
   let isPointerDown = false;
-  let isDragging = false;
   let startX = 0;
   let startScrollLeft = 0;
-  let suppressClick = false;
+  let dragged = false;
+  let suppressNextClick = false;
 
   const DRAG_THRESHOLD = 8;
 
@@ -1462,10 +1464,9 @@ function bindDraggableHorizontalScroll(rowEl, prevBtn, nextBtn){
     if (isMobile()) return;
 
     isPointerDown = true;
-    isDragging = false;
+    dragged = false;
     startX = e.clientX;
     startScrollLeft = rowEl.scrollLeft;
-    suppressClick = false;
 
     rowEl.classList.add("dragging");
 
@@ -1479,16 +1480,12 @@ function bindDraggableHorizontalScroll(rowEl, prevBtn, nextBtn){
 
     const dx = e.clientX - startX;
 
-    if (!isDragging && Math.abs(dx) >= DRAG_THRESHOLD) {
-      isDragging = true;
-      suppressClick = true;
+    if (Math.abs(dx) >= DRAG_THRESHOLD) {
+      dragged = true;
+      rowEl.scrollLeft = startScrollLeft - dx;
+      syncButtons();
+      e.preventDefault();
     }
-
-    if (!isDragging) return;
-
-    rowEl.scrollLeft = startScrollLeft - dx;
-    syncButtons();
-    e.preventDefault();
   });
 
   const endDrag = () => {
@@ -1497,15 +1494,27 @@ function bindDraggableHorizontalScroll(rowEl, prevBtn, nextBtn){
     isPointerDown = false;
     rowEl.classList.remove("dragging");
 
-    setTimeout(() => {
-      isDragging = false;
-      suppressClick = false;
-    }, 0);
+    if (dragged) {
+      suppressNextClick = true;
+
+      // 드래그 직후 발생하는 클릭 1회만 막고 바로 해제
+      setTimeout(() => {
+        suppressNextClick = false;
+      }, 0);
+    }
   };
 
   rowEl.addEventListener("pointerup", endDrag);
   rowEl.addEventListener("pointercancel", endDrag);
   rowEl.addEventListener("lostpointercapture", endDrag);
+
+  rowEl.addEventListener("click", (e) => {
+    if (!suppressNextClick) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    suppressNextClick = false;
+  }, true);
 
   rowEl.addEventListener("wheel", (e) => {
     if (isMobile()) return;
@@ -1517,18 +1526,16 @@ function bindDraggableHorizontalScroll(rowEl, prevBtn, nextBtn){
     }
   }, { passive:false });
 
-  rowEl.addEventListener("click", (e) => {
-    if (!suppressClick) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-  }, true);
-
   rowEl.addEventListener("scroll", syncButtons);
   window.addEventListener("resize", syncButtons);
 
   syncButtons();
 }
+
+
+
+
+    
     
     
 
