@@ -1452,22 +1452,25 @@
 
       const syncButtons = () => updateChipNavState(rowEl, prevBtn, nextBtn);
 
-      rowEl.addEventListener("pointerdown", (e) => {
-        if (e.pointerType === "mouse" && e.button !== 0) return;
-        if (isMobile()) return;
+     rowEl.addEventListener("pointerdown", (e) => {
+  if (e.pointerType === "mouse" && e.button !== 0) return;
+  if (isMobile()) return;
 
-        isPointerDown = true;
-        isDragging = false;
-        startX = e.clientX;
-        startScrollLeft = rowEl.scrollLeft;
-        suppressClick = false;
+  // 칩 자체를 누른 경우에는 드래그 스크롤 시작하지 않음
+  if (e.target.closest(".chip")) return;
 
-        rowEl.classList.add("dragging");
+  isPointerDown = true;
+  isDragging = false;
+  startX = e.clientX;
+  startScrollLeft = rowEl.scrollLeft;
+  suppressClick = false;
 
-        try {
-          rowEl.setPointerCapture(e.pointerId);
-        } catch (_) {}
-      });
+  rowEl.classList.add("dragging");
+
+  try {
+    rowEl.setPointerCapture(e.pointerId);
+  } catch (_) {}
+});
 
       rowEl.addEventListener("pointermove", (e) => {
         if (!isPointerDown) return;
