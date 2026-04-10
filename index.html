@@ -1453,7 +1453,7 @@ function bindDraggableHorizontalScroll(rowEl, prevBtn, nextBtn){
   let startX = 0;
   let startScrollLeft = 0;
   let dragged = false;
-  let suppressNextClick = false;
+  let suppressClickUntil = 0;
 
   const DRAG_THRESHOLD = 8;
 
@@ -1494,13 +1494,9 @@ function bindDraggableHorizontalScroll(rowEl, prevBtn, nextBtn){
     isPointerDown = false;
     rowEl.classList.remove("dragging");
 
+    // 실제 드래그가 있었던 경우에만, 직후 클릭 1회만 잠깐 막음
     if (dragged) {
-      suppressNextClick = true;
-
-      // 드래그 직후 발생하는 클릭 1회만 막고 바로 해제
-      setTimeout(() => {
-        suppressNextClick = false;
-      }, 0);
+      suppressClickUntil = Date.now() + 220;
     }
   };
 
@@ -1509,11 +1505,10 @@ function bindDraggableHorizontalScroll(rowEl, prevBtn, nextBtn){
   rowEl.addEventListener("lostpointercapture", endDrag);
 
   rowEl.addEventListener("click", (e) => {
-    if (!suppressNextClick) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-    suppressNextClick = false;
+    if (Date.now() <= suppressClickUntil) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
   }, true);
 
   rowEl.addEventListener("wheel", (e) => {
