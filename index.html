@@ -1453,7 +1453,6 @@ function bindDraggableHorizontalScroll(rowEl, prevBtn, nextBtn){
   let startX = 0;
   let startScrollLeft = 0;
   let dragged = false;
-  let suppressClickUntil = 0;
 
   const DRAG_THRESHOLD = 8;
 
@@ -1494,22 +1493,17 @@ function bindDraggableHorizontalScroll(rowEl, prevBtn, nextBtn){
     isPointerDown = false;
     rowEl.classList.remove("dragging");
 
-    // 실제 드래그가 있었던 경우에만, 직후 클릭 1회만 잠깐 막음
     if (dragged) {
-      suppressClickUntil = Date.now() + 220;
+      rowEl.dataset.dragJustHappened = "1";
+      setTimeout(() => {
+        rowEl.dataset.dragJustHappened = "0";
+      }, 250);
     }
   };
 
   rowEl.addEventListener("pointerup", endDrag);
   rowEl.addEventListener("pointercancel", endDrag);
   rowEl.addEventListener("lostpointercapture", endDrag);
-
-  rowEl.addEventListener("click", (e) => {
-    if (Date.now() <= suppressClickUntil) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  }, true);
 
   rowEl.addEventListener("wheel", (e) => {
     if (isMobile()) return;
@@ -1590,15 +1584,34 @@ function bindDraggableHorizontalScroll(rowEl, prevBtn, nextBtn){
     function renderProgramChips(){
       const programs = uniq(allRows.map(r => r.program)).sort((a,b) => a.localeCompare(b,"ko"));
 
-      const buildChip = (label, active, onClick) => {
-        const el = document.createElement("span");
-        el.className = `chip${active ? " active" : ""}`;
-        el.textContent = label;
-        applyProgramChipStyle(el, label, active);
-        el.addEventListener("click", onClick);
-        return el;
-      };
 
+
+      
+ const buildChip = (label, active, onClick) => {
+  const el = document.createElement("span");
+  el.className = `chip${active ? " active" : ""}`;
+  el.textContent = label;
+  applyProgramChipStyle(el, label, active);
+
+  el.addEventListener("click", (e) => {
+    const row = el.parentElement;
+    if (row && row.dataset.dragJustHappened === "1") {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    onClick();
+  });
+
+  return el;
+};
+
+
+
+      
+
+
+      
       if (els.programChips) els.programChips.innerHTML = "";
       if (els.programChips_top_m) els.programChips_top_m.innerHTML = "";
 
