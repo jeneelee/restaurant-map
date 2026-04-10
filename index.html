@@ -307,16 +307,63 @@
       word-break:keep-all;
     }
 
+    .chipsScroller{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      width:100%;
+      min-width:0;
+    }
+
+    .chipNavBtn{
+      flex:0 0 auto;
+      width:28px;
+      height:28px;
+      padding:0;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:14px;
+      font-weight:900;
+      background:rgba(255,255,255,.82);
+      border:1px solid rgba(229,231,235,.86);
+    }
+
+    .chipNavBtn:disabled{
+      opacity:.35;
+      cursor:default;
+    }
+
+    .chipsViewport{
+      flex:1 1 auto;
+      min-width:0;
+      overflow:hidden;
+    }
+
     .chipsRow{
       display:flex;
       gap:6px;
       overflow:auto;
       padding-bottom:2px;
       scrollbar-width:none;
+      -ms-overflow-style:none;
     }
 
     .chipsRow::-webkit-scrollbar{
       display:none;
+    }
+
+    .chipsRow.pc-draggable{
+      cursor:grab;
+      user-select:none;
+      -webkit-user-select:none;
+      scroll-behavior:smooth;
+    }
+
+    .chipsRow.pc-draggable.dragging{
+      cursor:grabbing;
+      scroll-behavior:auto;
     }
 
     .chip{
@@ -330,6 +377,7 @@
       user-select:none;
       cursor:pointer;
       white-space:nowrap;
+      flex:0 0 auto;
     }
 
     .chip.active{
@@ -548,11 +596,27 @@
         font-size:13px;
       }
 
+      .mobile-chip-wrap .chipsScroller{
+        display:block;
+      }
+
+      .mobile-chip-wrap .chipNavBtn{
+        display:none;
+      }
+
+      .mobile-chip-wrap .chipsViewport{
+        overflow:visible;
+      }
+
       .mobile-chip-wrap .chipsRow{
         display:flex;
         gap:6px;
         overflow:auto;
         padding-bottom:2px;
+      }
+
+      .mobile-chip-wrap .chipsRow.pc-draggable{
+        cursor:auto;
       }
 
       .sheet{
@@ -664,7 +728,13 @@
           </div>
 
           <div class="row">
-            <div class="chipsRow" id="programChips"></div>
+            <div class="chipsScroller">
+              <button id="programChipsPrev" class="chipNavBtn" type="button" aria-label="이전 프로그램">‹</button>
+              <div class="chipsViewport">
+                <div class="chipsRow pc-draggable" id="programChips"></div>
+              </div>
+              <button id="programChipsNext" class="chipNavBtn" type="button" aria-label="다음 프로그램">›</button>
+            </div>
           </div>
 
           <div class="row">
@@ -712,7 +782,11 @@
     </div>
 
     <div class="mobile-chip-wrap">
-      <div class="chipsRow" id="programChips_top_m"></div>
+      <div class="chipsScroller">
+        <div class="chipsViewport">
+          <div class="chipsRow" id="programChips_top_m"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -754,7 +828,7 @@
     };
 
     const RANGE_A1 = `${CONFIG.SHEET_NAME}!A1:Z`;
-    const CACHE_KEY = `restaurant_map_cache_v19__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
+    const CACHE_KEY = `restaurant_map_cache_v20__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
 
     const PROGRAM_THEMES = {
       "미쉐린가이드 2026": {
@@ -814,6 +888,8 @@
 
       programChips: document.getElementById("programChips"),
       programChips_top_m: document.getElementById("programChips_top_m"),
+      programChipsPrev: document.getElementById("programChipsPrev"),
+      programChipsNext: document.getElementById("programChipsNext"),
 
       reloadBtn: document.getElementById("reloadBtn"),
       reloadBtn_m: document.getElementById("reloadBtn_m"),
@@ -981,6 +1057,24 @@
       }
     }
 
+    function makeClassicPinIcon(colorHex){
+      const fill = String(colorHex || "#d60000").replace("#", "");
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="48" viewBox="0 0 32 48">
+          <path d="M16 1.8C8.9 1.8 3.2 7.5 3.2 14.6c0 10.1 10.3 20.1 12 22.3.4.5 1.2.5 1.6 0 1.7-2.2 12-12.2 12-22.3C28.8 7.5 23.1 1.8 16 1.8z"
+                fill="#${fill}" stroke="#2b2b2b" stroke-width="1.5" stroke-linejoin="round"/>
+          <circle cx="16" cy="14.8" r="4.2" fill="#2b2b2b"/>
+          <ellipse cx="16" cy="10.3" rx="5.8" ry="3.2" fill="rgba(255,255,255,.16)"/>
+        </svg>
+      `.trim();
+
+      return {
+        url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg),
+        scaledSize: new google.maps.Size(28, 40),
+        anchor: new google.maps.Point(14, 38)
+      };
+    }
+
     function createMarkerIcon(program){
       const normalized = normalizeProgram(program);
 
@@ -994,19 +1088,7 @@
         return "https://maps.google.com/mapfiles/ms/icons/green-dot.png";
       }
       if (normalized === "맛있는 녀석들") {
-        const svg = `
-          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-            <path d="M16 2C10.48 2 6 6.48 6 12c0 7.1 8.26 16.2 9.02 17.03a1.3 1.3 0 0 0 1.96 0C17.74 28.2 26 19.1 26 12 26 6.48 21.52 2 16 2z" fill="#8B4513"/>
-            <circle cx="16" cy="12" r="4.6" fill="#ffffff"/>
-            <path d="M16 4.2c-4.31 0-7.8 3.49-7.8 7.8 0 4.83 4.94 11.17 7.8 14.4 2.86-3.23 7.8-9.57 7.8-14.4 0-4.31-3.49-7.8-7.8-7.8z" fill="none" stroke="rgba(0,0,0,.12)" stroke-width="1"/>
-          </svg>
-        `.trim();
-
-        return {
-          url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg),
-          scaledSize: new google.maps.Size(28, 28),
-          anchor: new google.maps.Point(14, 28)
-        };
+        return makeClassicPinIcon("#8B4513");
       }
 
       return "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
@@ -1331,6 +1413,89 @@
       return div;
     }
 
+    function updateChipNavState(rowEl, prevBtn, nextBtn){
+      if (!rowEl || !prevBtn || !nextBtn) return;
+
+      const maxScrollLeft = Math.max(0, rowEl.scrollWidth - rowEl.clientWidth);
+      prevBtn.disabled = rowEl.scrollLeft <= 2;
+      nextBtn.disabled = rowEl.scrollLeft >= maxScrollLeft - 2;
+    }
+
+    function bindDraggableHorizontalScroll(rowEl, prevBtn, nextBtn){
+      if (!rowEl || rowEl.dataset.dragBound === "1") return;
+      rowEl.dataset.dragBound = "1";
+
+      let isDown = false;
+      let startX = 0;
+      let startScrollLeft = 0;
+      let moved = false;
+
+      const syncButtons = () => updateChipNavState(rowEl, prevBtn, nextBtn);
+
+      rowEl.addEventListener("pointerdown", (e) => {
+        if (isMobile()) return;
+        if (e.target.closest(".chip")) return;
+
+        isDown = true;
+        moved = false;
+        startX = e.clientX;
+        startScrollLeft = rowEl.scrollLeft;
+        rowEl.classList.add("dragging");
+
+        try {
+          rowEl.setPointerCapture(e.pointerId);
+        } catch (_) {}
+      });
+
+      rowEl.addEventListener("pointermove", (e) => {
+        if (!isDown) return;
+        const dx = e.clientX - startX;
+        if (Math.abs(dx) > 4) moved = true;
+        rowEl.scrollLeft = startScrollLeft - dx;
+        syncButtons();
+      });
+
+      const endDrag = () => {
+        isDown = false;
+        rowEl.classList.remove("dragging");
+      };
+
+      rowEl.addEventListener("pointerup", endDrag);
+      rowEl.addEventListener("pointercancel", endDrag);
+      rowEl.addEventListener("lostpointercapture", endDrag);
+
+      rowEl.addEventListener("wheel", (e) => {
+        if (isMobile()) return;
+        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+          rowEl.scrollLeft += e.deltaY;
+          e.preventDefault();
+          syncButtons();
+        }
+      }, { passive:false });
+
+      rowEl.addEventListener("scroll", syncButtons);
+      window.addEventListener("resize", syncButtons);
+
+      syncButtons();
+    }
+
+    function initProgramChipScroller(){
+      if (!els.programChips || !els.programChipsPrev || !els.programChipsNext) return;
+
+      const step = 180;
+
+      els.programChipsPrev.onclick = () => {
+        els.programChips.scrollBy({ left: -step, behavior: "smooth" });
+      };
+
+      els.programChipsNext.onclick = () => {
+        els.programChips.scrollBy({ left: step, behavior: "smooth" });
+      };
+
+      bindDraggableHorizontalScroll(els.programChips, els.programChipsPrev, els.programChipsNext);
+      updateChipNavState(els.programChips, els.programChipsPrev, els.programChipsNext);
+    }
+
     function renderProgramChips(){
       const programs = uniq(allRows.map(r => r.program)).sort((a,b) => a.localeCompare(b,"ko"));
 
@@ -1354,6 +1519,8 @@
           els.programChips_top_m.appendChild(buildChip(p, selectedProgram===p, () => toggleProgram(p)));
         }
       }
+
+      updateChipNavState(els.programChips, els.programChipsPrev, els.programChipsNext);
     }
 
     function toggleProgram(program){
@@ -2002,7 +2169,10 @@
 
       if (els.myLocationBtn) els.myLocationBtn.addEventListener("click", moveToMyLocation);
 
-      window.addEventListener("resize", syncQuery);
+      window.addEventListener("resize", () => {
+        syncQuery();
+        updateChipNavState(els.programChips, els.programChipsPrev, els.programChipsNext);
+      });
     }
 
     async function boot(){
@@ -2011,6 +2181,7 @@
         setStatus("지도 로딩 중…");
         bindSheetGesture();
         bindDesktopSideGesture();
+        initProgramChipScroller();
         await loadGoogleMaps();
         initMap();
         bindUI();
