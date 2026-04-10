@@ -1453,6 +1453,7 @@ function bindDraggableHorizontalScroll(rowEl, prevBtn, nextBtn){
   let startX = 0;
   let startScrollLeft = 0;
   let dragged = false;
+  let pressedChip = null;
 
   const DRAG_THRESHOLD = 8;
 
@@ -1466,6 +1467,7 @@ function bindDraggableHorizontalScroll(rowEl, prevBtn, nextBtn){
     dragged = false;
     startX = e.clientX;
     startScrollLeft = rowEl.scrollLeft;
+    pressedChip = e.target.closest(".chip");
 
     rowEl.classList.add("dragging");
 
@@ -1487,23 +1489,34 @@ function bindDraggableHorizontalScroll(rowEl, prevBtn, nextBtn){
     }
   });
 
-  const endDrag = () => {
+  const endDrag = (e) => {
     if (!isPointerDown) return;
 
-    isPointerDown = false;
-    rowEl.classList.remove("dragging");
+    const releasedChip = e.target.closest(".chip");
 
-    if (dragged) {
-      rowEl.dataset.dragJustHappened = "1";
-      setTimeout(() => {
-        rowEl.dataset.dragJustHappened = "0";
-      }, 250);
+    rowEl.classList.remove("dragging");
+    isPointerDown = false;
+
+    // 드래그가 아니고, 누른 칩과 뗀 칩이 같으면 선택 처리
+    if (!dragged && pressedChip && releasedChip && pressedChip === releasedChip) {
+      const program = pressedChip.dataset.program || "";
+      if (program) {
+        toggleProgram(program);
+      }
     }
+
+    pressedChip = null;
+    dragged = false;
   };
 
   rowEl.addEventListener("pointerup", endDrag);
   rowEl.addEventListener("pointercancel", endDrag);
-  rowEl.addEventListener("lostpointercapture", endDrag);
+  rowEl.addEventListener("lostpointercapture", () => {
+    rowEl.classList.remove("dragging");
+    isPointerDown = false;
+    pressedChip = null;
+    dragged = false;
+  });
 
   rowEl.addEventListener("wheel", (e) => {
     if (isMobile()) return;
@@ -1587,22 +1600,12 @@ function bindDraggableHorizontalScroll(rowEl, prevBtn, nextBtn){
 
 
       
- const buildChip = (label, active, onClick) => {
+const buildChip = (label, active) => {
   const el = document.createElement("span");
   el.className = `chip${active ? " active" : ""}`;
   el.textContent = label;
+  el.dataset.program = label;
   applyProgramChipStyle(el, label, active);
-
-  el.addEventListener("click", (e) => {
-    const row = el.parentElement;
-    if (row && row.dataset.dragJustHappened === "1") {
-      e.preventDefault();
-      e.stopPropagation();
-      return;
-    }
-    onClick();
-  });
-
   return el;
 };
 
@@ -1612,18 +1615,25 @@ function bindDraggableHorizontalScroll(rowEl, prevBtn, nextBtn){
 
 
       
-      if (els.programChips) els.programChips.innerHTML = "";
-      if (els.programChips_top_m) els.programChips_top_m.innerHTML = "";
+     if (els.programChips) els.programChips.innerHTML = "";
+if (els.programChips_top_m) els.programChips_top_m.innerHTML = "";
 
-      for (const p of programs){
-        if (els.programChips){
-          els.programChips.appendChild(buildChip(p, selectedProgram===p, () => toggleProgram(p)));
-        }
-        if (els.programChips_top_m){
-          els.programChips_top_m.appendChild(buildChip(p, selectedProgram===p, () => toggleProgram(p)));
-        }
-      }
+for (const p of programs){
+  if (els.programChips){
+    els.programChips.appendChild(buildChip(p, selectedProgram===p));
+  }
+  if (els.programChips_top_m){
+    els.programChips_top_m.appendChild(buildChip(p, selectedProgram===p));
+  }
+}
 
+
+
+
+
+
+
+      
       updateChipNavState(els.programChips, els.programChipsPrev, els.programChipsNext);
     }
 
