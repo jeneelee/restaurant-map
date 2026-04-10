@@ -1495,7 +1495,20 @@ function bindDraggableHorizontalScroll(rowEl, prevBtn, nextBtn){
 const endDrag = (e) => {
   if (!isPointerDown) return;
 
-  const releasedEl = document.elementFromPoint(e.clientX, e.clientY);
+  let clientX = e.clientX;
+  let clientY = e.clientY;
+
+  // 모바일 touchend 대응
+  if ((clientX == null || clientY == null) && e.changedTouches && e.changedTouches.length) {
+    clientX = e.changedTouches[0].clientX;
+    clientY = e.changedTouches[0].clientY;
+  }
+
+  const releasedEl =
+    clientX != null && clientY != null
+      ? document.elementFromPoint(clientX, clientY)
+      : null;
+
   const releasedChip = releasedEl ? releasedEl.closest(".chip") : null;
 
   rowEl.classList.remove("dragging");
