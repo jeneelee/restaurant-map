@@ -382,15 +382,20 @@
     .chip{
       display:inline-flex;
       align-items:center;
+      justify-content:center;
       font-size:11px;
       padding:5px 9px;
       border:1px solid rgba(229,231,235,.72);
       border-radius:999px;
       background:rgba(255,255,255,.56);
       user-select:none;
-      cursor:pointer;
       white-space:nowrap;
       flex:0 0 auto;
+      appearance:none;
+      -webkit-appearance:none;
+      outline:none;
+      cursor:pointer;
+      line-height:1;
     }
 
     .chip.active{
@@ -777,21 +782,21 @@
     </aside>
   </div>
 
-<div class="desktop-right-ad" aria-label="오른쪽 광고">
-  <ins class="kakao_ad_area"
-       style="display:none;"
-       data-ad-unit="DAN-spM8U2BCKhLSHIeG"
-       data-ad-width="160"
-       data-ad-height="600"></ins>
-</div>
+  <div class="desktop-right-ad" aria-label="오른쪽 광고">
+    <ins class="kakao_ad_area"
+         style="display:none;"
+         data-ad-unit="DAN-spM8U2BCKhLSHIeG"
+         data-ad-width="160"
+         data-ad-height="600"></ins>
+  </div>
 
-<div class="desktop-bottom-ad" aria-label="하단 광고">
-  <ins class="kakao_ad_area"
-       style="display:none;"
-       data-ad-unit="DAN-jVXdEaMdXW5eAS6L"
-       data-ad-width="728"
-       data-ad-height="90"></ins>
-</div>
+  <div class="desktop-bottom-ad" aria-label="하단 광고">
+    <ins class="kakao_ad_area"
+         style="display:none;"
+         data-ad-unit="DAN-jVXdEaMdXW5eAS6L"
+         data-ad-width="728"
+         data-ad-height="90"></ins>
+  </div>
 
   <div class="mobile-topbar">
     <div class="mobile-search-wrap">
@@ -845,7 +850,7 @@
     };
 
     const RANGE_A1 = `${CONFIG.SHEET_NAME}!A1:Z`;
-    const CACHE_KEY = `restaurant_map_cache_v21__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
+    const CACHE_KEY = `restaurant_map_cache_v22__${CONFIG.SPREADSHEET_ID}__${CONFIG.SHEET_NAME}`;
 
     const PROGRAM_THEMES = {
       "미쉐린가이드 2026": {
@@ -866,12 +871,12 @@
         border: "#86efac",
         text: "#15803d"
       },
-    "맛있는 녀석들": {
-  pin: "#7fc8ff",
-  bg: "#eef8ff",
-  border: "#b6e0ff",
-  text: "#2563a6"
-}
+      "맛있는 녀석들": {
+        pin: "#7fc8ff",
+        bg: "#eef8ff",
+        border: "#b6e0ff",
+        text: "#2563a6"
+      }
     };
 
     const DEFAULT_PROGRAM_THEME = {
@@ -1074,42 +1079,24 @@
       }
     }
 
-    function makeClassicPinIcon(colorHex){
-      const fill = String(colorHex || "#d60000").replace("#", "");
-      const svg = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="48" viewBox="0 0 32 48">
-          <path d="M16 1.8C8.9 1.8 3.2 7.5 3.2 14.6c0 10.1 10.3 20.1 12 22.3.4.5 1.2.5 1.6 0 1.7-2.2 12-12.2 12-22.3C28.8 7.5 23.1 1.8 16 1.8z"
-                fill="#${fill}" stroke="#2b2b2b" stroke-width="1.5" stroke-linejoin="round"/>
-          <circle cx="16" cy="14.8" r="4.2" fill="#2b2b2b"/>
-          <ellipse cx="16" cy="10.3" rx="5.8" ry="3.2" fill="rgba(255,255,255,.16)"/>
-        </svg>
-      `.trim();
-
-      return {
-        url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg),
-        scaledSize: new google.maps.Size(28, 40),
-        anchor: new google.maps.Point(14, 38)
-      };
-    }
-
     function createMarkerIcon(program){
-  const normalized = normalizeProgram(program);
+      const normalized = normalizeProgram(program);
 
-  if (normalized === "미쉐린가이드 2026") {
-    return "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
-  }
-  if (normalized === "미쉐린 빕 구르망") {
-    return "https://maps.google.com/mapfiles/ms/icons/orange-dot.png";
-  }
-  if (normalized === "성시경 먹을텐데") {
-    return "https://maps.google.com/mapfiles/ms/icons/green-dot.png";
-  }
-  if (normalized === "맛있는 녀석들") {
-  return "https://maps.google.com/mapfiles/ms/icons/ltblue-dot.png";
-}
+      if (normalized === "미쉐린가이드 2026") {
+        return "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
+      }
+      if (normalized === "미쉐린 빕 구르망") {
+        return "https://maps.google.com/mapfiles/ms/icons/orange-dot.png";
+      }
+      if (normalized === "성시경 먹을텐데") {
+        return "https://maps.google.com/mapfiles/ms/icons/green-dot.png";
+      }
+      if (normalized === "맛있는 녀석들") {
+        return "https://maps.google.com/mapfiles/ms/icons/ltblue-dot.png";
+      }
 
-  return "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
-}
+      return "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
+    }
 
     function formatDistance(m){
       if (!Number.isFinite(m)) return "";
@@ -1438,138 +1425,95 @@
       nextBtn.disabled = rowEl.scrollLeft >= maxScrollLeft - 2;
     }
 
+    function bindDraggableHorizontalScroll(rowEl, prevBtn, nextBtn){
+      if (!rowEl || rowEl.dataset.dragBound === "1") return;
+      rowEl.dataset.dragBound = "1";
 
+      let isPointerDown = false;
+      let startX = 0;
+      let startScrollLeft = 0;
+      let dragged = false;
+      let suppressClick = false;
 
+      const DRAG_THRESHOLD = 8;
 
+      const syncButtons = () => updateChipNavState(rowEl, prevBtn, nextBtn);
 
+      rowEl.addEventListener("pointerdown", (e) => {
+        if (e.pointerType === "mouse" && e.button !== 0) return;
+        if (isMobile()) return;
 
+        isPointerDown = true;
+        dragged = false;
+        startX = e.clientX;
+        startScrollLeft = rowEl.scrollLeft;
 
+        rowEl.classList.add("dragging");
 
-function bindDraggableHorizontalScroll(rowEl, prevBtn, nextBtn){
-  if (!rowEl || rowEl.dataset.dragBound === "1") return;
-  rowEl.dataset.dragBound = "1";
+        try {
+          rowEl.setPointerCapture(e.pointerId);
+        } catch (_) {}
+      });
 
-  let isPointerDown = false;
-  let startX = 0;
-  let startScrollLeft = 0;
-  let dragged = false;
-  let pressedChip = null;
+      rowEl.addEventListener("pointermove", (e) => {
+        if (!isPointerDown) return;
 
-  const DRAG_THRESHOLD = 8;
+        const dx = e.clientX - startX;
 
-  const syncButtons = () => updateChipNavState(rowEl, prevBtn, nextBtn);
+        if (Math.abs(dx) >= DRAG_THRESHOLD) {
+          dragged = true;
+          rowEl.scrollLeft = startScrollLeft - dx;
+          syncButtons();
+          e.preventDefault();
+        }
+      });
 
-  rowEl.addEventListener("pointerdown", (e) => {
-    if (e.pointerType === "mouse" && e.button !== 0) return;
-    if (isMobile()) return;
+      const endDrag = () => {
+        if (!isPointerDown) return;
 
-    isPointerDown = true;
-    dragged = false;
-    startX = e.clientX;
-    startScrollLeft = rowEl.scrollLeft;
-    pressedChip = e.target.closest(".chip");
+        rowEl.classList.remove("dragging");
+        isPointerDown = false;
 
-    rowEl.classList.add("dragging");
+        if (dragged) {
+          suppressClick = true;
+          setTimeout(() => {
+            suppressClick = false;
+          }, 0);
+        }
 
-    try {
-      rowEl.setPointerCapture(e.pointerId);
-    } catch (_) {}
-  });
+        dragged = false;
+      };
 
-  rowEl.addEventListener("pointermove", (e) => {
-    if (!isPointerDown) return;
+      rowEl.addEventListener("pointerup", endDrag);
+      rowEl.addEventListener("pointercancel", endDrag);
+      rowEl.addEventListener("lostpointercapture", () => {
+        rowEl.classList.remove("dragging");
+        isPointerDown = false;
+        dragged = false;
+      });
 
-    const dx = e.clientX - startX;
+      rowEl.addEventListener("click", (e) => {
+        if (!suppressClick) return;
+        e.preventDefault();
+        e.stopPropagation();
+      }, true);
 
-    if (Math.abs(dx) >= DRAG_THRESHOLD) {
-      dragged = true;
-      rowEl.scrollLeft = startScrollLeft - dx;
-      syncButtons();
-      e.preventDefault();
-    }
-  });
+      rowEl.addEventListener("wheel", (e) => {
+        if (isMobile()) return;
 
+        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+          rowEl.scrollLeft += e.deltaY;
+          e.preventDefault();
+          syncButtons();
+        }
+      }, { passive:false });
 
+      rowEl.addEventListener("scroll", syncButtons);
+      window.addEventListener("resize", syncButtons);
 
-  
-const endDrag = (e) => {
-  if (!isPointerDown) return;
-
-  let clientX = e.clientX;
-  let clientY = e.clientY;
-
-  // 모바일 touchend 대응
-  if ((clientX == null || clientY == null) && e.changedTouches && e.changedTouches.length) {
-    clientX = e.changedTouches[0].clientX;
-    clientY = e.changedTouches[0].clientY;
-  }
-
-  const releasedEl =
-    clientX != null && clientY != null
-      ? document.elementFromPoint(clientX, clientY)
-      : null;
-
-  const releasedChip = releasedEl ? releasedEl.closest(".chip") : null;
-
-  rowEl.classList.remove("dragging");
-  isPointerDown = false;
-
-  // 드래그가 아니고, 누른 칩과 뗀 칩이 같으면 선택 처리
-  if (!dragged && pressedChip && releasedChip && pressedChip === releasedChip) {
-    const program = pressedChip.dataset.program || "";
-    if (program) {
-      toggleProgram(program);
-    }
-  }
-
-  pressedChip = null;
-  dragged = false;
-};
-
-
-
-
-
-  
-  rowEl.addEventListener("pointerup", endDrag);
-  rowEl.addEventListener("pointercancel", endDrag);
-  rowEl.addEventListener("lostpointercapture", () => {
-    rowEl.classList.remove("dragging");
-    isPointerDown = false;
-    pressedChip = null;
-    dragged = false;
-  });
-
-  rowEl.addEventListener("wheel", (e) => {
-    if (isMobile()) return;
-
-    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-      rowEl.scrollLeft += e.deltaY;
-      e.preventDefault();
       syncButtons();
     }
-  }, { passive:false });
 
-  rowEl.addEventListener("scroll", syncButtons);
-  window.addEventListener("resize", syncButtons);
-
-  syncButtons();
-}
-
-
-
-
-    
-    
-    
-
-
-
-
-
-
-
-    
     function initProgramChipScroller(){
       if (!els.programChips || !els.programChipsPrev || !els.programChipsNext) return;
 
@@ -1619,43 +1563,35 @@ const endDrag = (e) => {
     function renderProgramChips(){
       const programs = uniq(allRows.map(r => r.program)).sort((a,b) => a.localeCompare(b,"ko"));
 
+      const buildChip = (label, active) => {
+        const el = document.createElement("button");
+        el.type = "button";
+        el.className = `chip${active ? " active" : ""}`;
+        el.textContent = label;
+        el.dataset.program = label;
+        applyProgramChipStyle(el, label, active);
 
+        el.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          toggleProgram(label);
+        });
 
-      
-const buildChip = (label, active) => {
-  const el = document.createElement("span");
-  el.className = `chip${active ? " active" : ""}`;
-  el.textContent = label;
-  el.dataset.program = label;
-  applyProgramChipStyle(el, label, active);
-  return el;
-};
+        return el;
+      };
 
+      if (els.programChips) els.programChips.innerHTML = "";
+      if (els.programChips_top_m) els.programChips_top_m.innerHTML = "";
 
+      for (const p of programs){
+        if (els.programChips){
+          els.programChips.appendChild(buildChip(p, selectedProgram===p));
+        }
+        if (els.programChips_top_m){
+          els.programChips_top_m.appendChild(buildChip(p, selectedProgram===p));
+        }
+      }
 
-      
-
-
-      
-     if (els.programChips) els.programChips.innerHTML = "";
-if (els.programChips_top_m) els.programChips_top_m.innerHTML = "";
-
-for (const p of programs){
-  if (els.programChips){
-    els.programChips.appendChild(buildChip(p, selectedProgram===p));
-  }
-  if (els.programChips_top_m){
-    els.programChips_top_m.appendChild(buildChip(p, selectedProgram===p));
-  }
-}
-
-
-
-
-
-
-
-      
       updateChipNavState(els.programChips, els.programChipsPrev, els.programChipsNext);
     }
 
