@@ -330,6 +330,8 @@
       background:rgba(255,255,255,.72);
       border:1px solid rgba(229,231,235,.78);
       box-shadow:none;
+      position:relative;
+      z-index:3;
     }
 
     .chipNavBtn:hover{
@@ -345,6 +347,8 @@
       flex:1 1 auto;
       min-width:0;
       overflow:hidden;
+      position:relative;
+      z-index:1;
     }
 
     .chipsRow{
@@ -375,10 +379,6 @@
       scroll-behavior:auto;
     }
 
-    .chipsRow.pc-draggable .chip{
-      pointer-events:auto;
-    }
-
     .chip{
       display:inline-flex;
       align-items:center;
@@ -396,6 +396,8 @@
       outline:none;
       cursor:pointer;
       line-height:1;
+      position:relative;
+      z-index:2;
     }
 
     .chip.active{
@@ -716,13 +718,8 @@
     }
   </style>
 
-
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5631540000962743"
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5631540000962743"
      crossorigin="anonymous"></script>
-
-
-
-  
 </head>
 
 <body>
@@ -1442,6 +1439,7 @@
       let startScrollLeft = 0;
       let dragged = false;
       let suppressClick = false;
+      let pressedChip = null;
 
       const DRAG_THRESHOLD = 8;
 
@@ -1453,6 +1451,7 @@
 
         isPointerDown = true;
         dragged = false;
+        pressedChip = e.target.closest(".chip");
         startX = e.clientX;
         startScrollLeft = rowEl.scrollLeft;
 
@@ -1476,28 +1475,46 @@
         }
       });
 
-      const endDrag = () => {
+      const endDrag = (e) => {
         if (!isPointerDown) return;
 
         rowEl.classList.remove("dragging");
         isPointerDown = false;
+
+        const releasedEl = document.elementFromPoint(e.clientX, e.clientY);
+        const releasedChip = releasedEl ? releasedEl.closest(".chip") : null;
 
         if (dragged) {
           suppressClick = true;
           setTimeout(() => {
             suppressClick = false;
           }, 0);
+        } else if (!isMobile() && pressedChip && releasedChip && pressedChip === releasedChip) {
+          const program = pressedChip.dataset.program || "";
+          if (program) {
+            toggleProgram(program);
+            suppressClick = true;
+            setTimeout(() => {
+              suppressClick = false;
+            }, 0);
+          }
         }
 
+        pressedChip = null;
         dragged = false;
       };
 
       rowEl.addEventListener("pointerup", endDrag);
-      rowEl.addEventListener("pointercancel", endDrag);
+      rowEl.addEventListener("pointercancel", (e) => {
+        pressedChip = null;
+        endDrag(e);
+      });
+
       rowEl.addEventListener("lostpointercapture", () => {
         rowEl.classList.remove("dragging");
         isPointerDown = false;
         dragged = false;
+        pressedChip = null;
       });
 
       rowEl.addEventListener("click", (e) => {
@@ -1571,7 +1588,7 @@
     function renderProgramChips(){
       const programs = uniq(allRows.map(r => r.program)).sort((a,b) => a.localeCompare(b,"ko"));
 
-      const buildChip = (label, active) => {
+      const buildChip = (label, active, isDesktopChip = false) => {
         const el = document.createElement("button");
         el.type = "button";
         el.className = `chip${active ? " active" : ""}`;
@@ -1582,6 +1599,11 @@
         el.addEventListener("click", (e) => {
           e.preventDefault();
           e.stopPropagation();
+
+          if (isDesktopChip && !isMobile()) {
+            return;
+          }
+
           toggleProgram(label);
         });
 
@@ -1593,10 +1615,10 @@
 
       for (const p of programs){
         if (els.programChips){
-          els.programChips.appendChild(buildChip(p, selectedProgram===p));
+          els.programChips.appendChild(buildChip(p, selectedProgram===p, true));
         }
         if (els.programChips_top_m){
-          els.programChips_top_m.appendChild(buildChip(p, selectedProgram===p));
+          els.programChips_top_m.appendChild(buildChip(p, selectedProgram===p, false));
         }
       }
 
