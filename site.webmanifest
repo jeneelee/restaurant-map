@@ -1,6 +1,6 @@
 {
-  "name": "모두의 맛집",
-  "short_name": "모두의 맛집",
+  "name": "맛스타",
+  "short_name": "맛스타",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
