@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <title>{{ page.title }} | {{ site.title }}</title>
+  <meta name="description" content="{{ page.description | default: site.description }}">
+  <link rel="canonical" href="{{ page.url | absolute_url }}">
+
+  <link rel="icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-serif;
+      color: #111827;
+      background: #ffffff;
+      line-height: 1.7;
+    }
+    .header {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 16px 20px;
+    }
+    .header a {
+      color: #111827;
+      text-decoration: none;
+      font-weight: 800;
+      margin-right: 16px;
+    }
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 36px 18px 80px;
+    }
+    h1 {
+      font-size: 30px;
+      line-height: 1.35;
+      margin: 0 0 12px;
+    }
+    h2 {
+      margin-top: 36px;
+      font-size: 22px;
+    }
+    p {
+      color: #374151;
+    }
+    .post-meta {
+      color: #6b7280;
+      font-size: 14px;
+      margin-bottom: 28px;
+    }
+    .post-list {
+      list-style: none;
+      padding: 0;
+      margin: 24px 0 0;
+    }
+    .post-list li {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 18px 0;
+    }
+    .post-list a {
+      font-size: 20px;
+      font-weight: 800;
+      color: #111827;
+      text-decoration: none;
+    }
+    .post-list p {
+      margin: 6px 0 0;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <a href="/">맛스타 지도</a>
+    <a href="/blog/">맛집 블로그</a>
+  </header>
+
+  <main class="container">
+    {{ content }}
+  </main>
+</body>
+</html>
