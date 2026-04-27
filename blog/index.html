@@ -1,0 +1,23 @@
+---
+layout: default
+title: 맛집 블로그
+description: 미쉐린, 빕구르망, 성시경 먹을텐데, 맛있는 녀석들 맛집 정보를 정리한 블로그입니다.
+permalink: /blog/
+---
+
+<h1>맛집 블로그</h1>
+
+<p>
+  미쉐린, 빕구르망, 유튜브, TV방송에 소개된 맛집 정보를 정리합니다.
+  지도에서 보기 어려운 설명형 콘텐츠를 이곳에 따로 정리합니다.
+</p>
+
+<ul class="post-list">
+  {% for post in site.posts %}
+    <li>
+      <a href="{{ post.url }}">{{ post.title }}</a>
+      <p>{{ post.description }}</p>
+      <small>{{ post.date | date: "%Y.%m.%d" }}</small>
+    </li>
+  {% endfor %}
+</ul>
