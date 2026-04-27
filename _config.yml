@@ -1,0 +1,13 @@
+title: 맛스타 통합검색
+description: 전국 맛집 지도, 미쉐린, 빕구르망, 유튜브, TV방송 맛집 정보
+url: "https://boogiee.com"
+baseurl: ""
+
+timezone: Asia/Seoul
+lang: ko-KR
+
+permalink: /blog/:title/
+
+plugins:
+  - jekyll-sitemap
+  - jekyll-feed
